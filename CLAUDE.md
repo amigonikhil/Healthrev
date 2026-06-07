@@ -86,6 +86,10 @@ insurer/employer B2B features, and ABDM (until M6). Don’t build these unasked.
 
 ## Module status
 
-- **M0 — Foundation: IN PROGRESS.** Backend = Python / FastAPI. DB = Supabase Postgres
+- **M0 — Foundation: DONE.** Backend = Python / FastAPI. DB = Supabase Postgres
   with SQL migrations under `supabase/migrations/`. See `README.md` for layout and
   `docs/M0-foundation.md` for the compliance design (consent + audit log).
+- **M1 — Wearable pipe: IN PROGRESS.** Cloud wearable = **Whoop** (free OAuth2).
+  Backend slice done: data model, consent-gated ingest, OAuth + sync, normalization
+  to a shared sample vocabulary, encrypted tokens at rest. See `docs/M1-wearables.md`.
+  Remaining: Expo app shell + on-device HealthKit / Health Connect bridge.

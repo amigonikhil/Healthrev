@@ -6,8 +6,10 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
+from cryptography.fernet import Fernet
 
 TEST_JWT_SECRET = "test-secret-do-not-use-in-prod-0123456789abcdef"
+TEST_FERNET_KEY = Fernet.generate_key().decode()
 
 
 @pytest.fixture(autouse=True)
@@ -15,6 +17,10 @@ def _env_and_reset(monkeypatch):
     """Configure the JWT secret and reset module-level in-memory singletons."""
     monkeypatch.setenv("SUPABASE_JWT_SECRET", TEST_JWT_SECRET)
     monkeypatch.setenv("ENVIRONMENT", "test")
+    monkeypatch.setenv("TOKEN_ENCRYPTION_KEY", TEST_FERNET_KEY)
+    monkeypatch.setenv("WHOOP_CLIENT_ID", "test-whoop-client")
+    monkeypatch.setenv("WHOOP_CLIENT_SECRET", "test-whoop-secret")
+    monkeypatch.setenv("WHOOP_REDIRECT_URI", "http://localhost:8000/wearables/whoop/callback")
 
     from app.config import get_settings
 

@@ -38,3 +38,43 @@ class AuditEntryResponse(BaseModel):
 class HealthCheckResponse(BaseModel):
     status: str
     environment: str
+
+
+# -- Wearables (M1) -----------------------------------------------------------
+
+
+class WearableConnectResponse(BaseModel):
+    """The provider consent URL the client should open, plus the bound state."""
+
+    authorization_url: str
+    state: str
+
+
+class WearableSyncResponse(BaseModel):
+    provider: str
+    new_samples: int
+    synced_at: datetime
+
+
+class WearableProviderInfo(BaseModel):
+    provider: str
+    supported: bool
+    connected: bool
+    last_sync_at: datetime | None = None
+
+
+class WearableConnectionStatusResponse(BaseModel):
+    provider: str
+    status: str
+
+
+class WearableSampleResponse(BaseModel):
+    """A normalized sample. This is the user's own health data, returned over an
+    authenticated, consent-gated channel; values must never be logged."""
+
+    provider: str
+    metric: str
+    value: float
+    unit: str
+    start_time: datetime
+    end_time: datetime

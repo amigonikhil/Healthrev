@@ -19,6 +19,15 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str = ""
     supabase_service_role_key: str = ""
 
+    # Fernet key for encrypting wearable OAuth tokens at rest (M1).
+    token_encryption_key: str = ""
+
+    # Whoop OAuth app credentials (M1). Free developer app.
+    whoop_client_id: str = ""
+    whoop_client_secret: str = ""
+    # Where Whoop redirects after consent; must match the registered app.
+    whoop_redirect_uri: str = "http://localhost:8000/wearables/whoop/callback"
+
     allowed_origins: str = "http://localhost:8081,http://localhost:19006"
     environment: str = "development"
     log_level: str = "INFO"

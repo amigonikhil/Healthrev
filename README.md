@@ -7,8 +7,9 @@ wearable data to show trends and "what to change before your next test."
 fasting insulin, HOMA-IR, lipid panel). See [`CLAUDE.md`](./CLAUDE.md) for the
 full architecture, constraints, and build order.
 
-> **Status:** M0 — Foundation (in progress). Compliance scaffolding (consent +
-> audit log), auth, DB schema, and CI are in place before any feature module.
+> **Status:** M0 — Foundation (done) · M1 — Wearable pipe (backend slice done;
+> Whoop OAuth + sync, mobile shell next). Compliance scaffolding (consent + audit
+> log), auth, DB schema, and CI underpin every feature module.
 
 ## Repository layout
 
@@ -22,17 +23,23 @@ full architecture, constraints, and build order.
 │   │   ├── main.py            # App entrypoint + /health
 │   │   ├── config.py          # Env-only settings (no hard-coded secrets)
 │   │   ├── auth.py            # Supabase JWT verification
-│   │   ├── dependencies.py    # require_consent() gate + repository wiring
-│   │   ├── repository.py      # Data-access seam (in-memory for M0)
-│   │   ├── routers/           # consent, markers (sample), audit
-│   │   └── security/
-│   │       ├── consent.py     # Pure consent-evaluation rule
-│   │       └── audit.py       # PHI-safe audit entries
-│   ├── tests/                 # consent + audit unit tests, end-to-end API tests
+│   │   ├── dependencies.py    # require_consent() gate + repository/wearable wiring
+│   │   ├── repository.py      # Data-access seam (in-memory for M0/M1)
+│   │   ├── routers/           # consent, markers (sample), audit, wearables
+│   │   ├── security/
+│   │   │   ├── consent.py     # Pure consent-evaluation rule
+│   │   │   ├── audit.py       # PHI-safe audit entries
+│   │   │   └── crypto.py      # Fernet token encryption at rest (M1)
+│   │   └── wearables/         # M1: provider interface, Whoop client, normalize, sync
+│   ├── tests/                 # consent/audit/crypto/normalize/OAuth + e2e API tests
 │   └── .env.example
-├── docs/M0-foundation.md      # Compliance design notes
+├── docs/
+│   ├── M0-foundation.md       # Compliance design notes
+│   └── M1-wearables.md        # Wearable pipe (Whoop) design notes
 └── supabase/
-    └── migrations/0001_foundation.sql   # profiles, consents, audit_log + RLS
+    └── migrations/
+        ├── 0001_foundation.sql   # profiles, consents, audit_log + RLS
+        └── 0002_wearables.sql    # wearable_connections, wearable_samples + RLS
 ```
 
 ## Backend — local development

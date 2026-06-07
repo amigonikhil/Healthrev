@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import audit, consent, markers
+from app.routers import audit, consent, markers, wearables
 from app.schemas import HealthCheckResponse
 
 settings = get_settings()
@@ -34,6 +34,7 @@ app.add_middleware(
 app.include_router(consent.router)
 app.include_router(markers.router)
 app.include_router(audit.router)
+app.include_router(wearables.router)
 
 
 @app.get("/health", response_model=HealthCheckResponse, tags=["meta"])
