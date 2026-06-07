@@ -1,0 +1,44 @@
+# --- Secrets / env (NEVER commit real values) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# --- Node / React Native (Expo) — added in M1 ---
+node_modules/
+.expo/
+dist-web/
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- Supabase local ---
+supabase/.branches/
+supabase/.temp/
