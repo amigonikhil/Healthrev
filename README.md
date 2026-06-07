@@ -33,6 +33,10 @@ full architecture, constraints, and build order.
 │   │   └── wearables/         # M1: provider interface, Whoop client, normalize, sync
 │   ├── tests/                 # consent/audit/crypto/normalize/OAuth + e2e API tests
 │   └── .env.example
+├── mobile/                    # Expo / React Native app (M1)
+│   ├── app/                   # expo-router screens (sign-in, home)
+│   ├── src/                   # api client, auth, health bridges + pure normalize
+│   └── __tests__/             # unit tests for the pure normalization layer
 ├── docs/
 │   ├── M0-foundation.md       # Compliance design notes
 │   └── M1-wearables.md        # Wearable pipe (Whoop) design notes

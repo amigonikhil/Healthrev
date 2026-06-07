@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+from math import isfinite
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.security.consent import ConsentPurpose, ConsentStatus
+from app.wearables.metrics import WearableMetric
 
 
 class ConsentGrantRequest(BaseModel):
@@ -78,3 +80,33 @@ class WearableSampleResponse(BaseModel):
     unit: str
     start_time: datetime
     end_time: datetime
+
+
+class DeviceSampleIn(BaseModel):
+    """One sample pushed from an on-device bridge (HealthKit / Health Connect).
+
+    Apple/Google health data has no cloud API, so the mobile app reads it
+    on-device and pushes it here (architectural constraint #1)."""
+
+    metric: WearableMetric
+    value: float
+    start_time: datetime
+    end_time: datetime
+    unit: str | None = None
+
+    @field_validator("value")
+    @classmethod
+    def _finite(cls, v: float) -> float:
+        if not isfinite(v):
+            raise ValueError("value must be a finite number")
+        return v
+
+    @model_validator(mode="after")
+    def _window_ok(self) -> DeviceSampleIn:
+        if self.end_time < self.start_time:
+            raise ValueError("end_time must be >= start_time")
+        return self
+
+
+class DeviceSamplesIngest(BaseModel):
+    samples: list[DeviceSampleIn] = Field(..., min_length=1, max_length=1000)

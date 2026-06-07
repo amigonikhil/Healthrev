@@ -12,12 +12,19 @@ from datetime import UTC, datetime
 
 from app.repository import Repository
 from app.security.crypto import TokenCipher
-from app.wearables.metrics import WearableConnection, WearableProvider
+from app.wearables.metrics import WearableConnection, WearableProvider, WearableSample
 from app.wearables.provider import OAuthTokens, WearableClient
+
+# Providers whose data is read on-device and pushed to us (no cloud OAuth).
+DEVICE_PROVIDERS = {WearableProvider.APPLE_HEALTH, WearableProvider.HEALTH_CONNECT}
 
 
 class InvalidOAuthState(ValueError):
     """Raised when an OAuth callback `state` can't be verified."""
+
+
+class NotADeviceProvider(ValueError):
+    """Raised when device ingest is attempted for a cloud (OAuth) provider."""
 
 
 class WearableService:
@@ -108,3 +115,33 @@ class WearableService:
         connection.last_sync_at = datetime.now(UTC)
         self._repo.upsert_connection(connection)
         return new_count
+
+    # -- On-device ingest ------------------------------------------------------
+
+    def ensure_device_connection(
+        self, *, user_id: str, provider: WearableProvider
+    ) -> WearableConnection:
+        """Get or create the (token-less) connection row for a device provider."""
+        existing = self._repo.get_connection(user_id, provider)
+        if existing is not None:
+            return existing
+        return self._repo.upsert_connection(
+            WearableConnection(id="", user_id=user_id, provider=provider, status="connected")
+        )
+
+    def ingest_device_samples(
+        self,
+        *,
+        user_id: str,
+        provider: WearableProvider,
+        samples: list[WearableSample],
+    ) -> int:
+        """Store samples pushed from an on-device bridge. Returns NEW count."""
+        if provider not in DEVICE_PROVIDERS:
+            raise NotADeviceProvider(
+                f"{provider.value} is a cloud provider; use the OAuth sync flow"
+            )
+        connection = self.ensure_device_connection(user_id=user_id, provider=provider)
+        connection.last_sync_at = datetime.now(UTC)
+        self._repo.upsert_connection(connection)
+        return self._repo.upsert_samples(user_id, samples)

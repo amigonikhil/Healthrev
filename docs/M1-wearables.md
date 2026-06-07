@@ -86,7 +86,22 @@ sync → samples → re-sync (idempotent) → disconnect, asserts the consent ga
 blocks each health-data step without `wearable_sync` consent, and confirms the
 audit trail carries counts only.
 
-## Not in this slice (next PR)
+## On-device ingest (constraint #1)
 
-Expo app shell, on-device HealthKit (iOS) / Health Connect (Android) bridge for
-steps + local data, and the screen that renders synced samples.
+Apple HealthKit / Google Health Connect have no cloud API, so the mobile app
+reads them on-device and **pushes** to `POST /wearables/device/{provider}/samples`
+(`apple_health` / `health_connect`). The endpoint is `wearable_sync`-consent
+gated and audited (counts only), validates each sample (finite value, ordered
+time window, known metric), auto-creates a token-less device "connection", and
+deduplicates by `dedup_key` like the cloud path. Cloud providers (Whoop) are
+rejected from this endpoint — they use the OAuth sync flow.
+
+## Mobile shell (`mobile/`)
+
+Expo + expo-router app: Supabase email-OTP sign-in, a consent step, "Connect
+Whoop" (opens the backend-issued OAuth URL), "Sync device health" (reads
+HealthKit / Health Connect and pushes), and a samples dashboard. The
+provider-specific reads sit behind a `HealthBridge` interface; the **pure**
+normalization (`src/health/normalize.ts`) is unit-tested. See `mobile/README.md`
+— native modules require a custom dev build (not Expo Go) and can't be exercised
+in CI, so verify on a device before the pilot.

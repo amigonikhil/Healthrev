@@ -31,6 +31,7 @@ from app.dependencies import (
 )
 from app.repository import Repository
 from app.schemas import (
+    DeviceSamplesIngest,
     WearableConnectionStatusResponse,
     WearableConnectResponse,
     WearableProviderInfo,
@@ -39,9 +40,9 @@ from app.schemas import (
 )
 from app.security.audit import AuditAction, build_audit_entry
 from app.security.consent import ConsentPurpose
-from app.wearables.metrics import WearableProvider
+from app.wearables.metrics import WearableProvider, WearableSample
 from app.wearables.provider import WearableClient
-from app.wearables.service import InvalidOAuthState, WearableService
+from app.wearables.service import InvalidOAuthState, NotADeviceProvider, WearableService
 
 router = APIRouter(prefix="/wearables", tags=["wearables"])
 
@@ -173,6 +174,61 @@ async def list_samples(
         )
         for s in repo.list_samples(grant.user.id)
     ]
+
+
+@router.post("/device/{provider}/samples", response_model=WearableSyncResponse)
+async def ingest_device_samples(
+    provider: WearableProvider,
+    body: DeviceSamplesIngest,
+    grant: ConsentGrant = Depends(
+        require_consent(ConsentPurpose.WEARABLE_SYNC, action=AuditAction.DATA_WRITE)
+    ),
+    repo: Repository = Depends(get_repository),
+    service: WearableService = Depends(get_wearable_service),
+) -> WearableSyncResponse:
+    """Receive on-device (HealthKit / Health Connect) samples and store them.
+
+    Apple/Google health data has no cloud API, so the mobile app reads it
+    on-device and pushes it here (architectural constraint #1)."""
+    samples = [
+        WearableSample(
+            provider=provider,
+            metric=s.metric,
+            value=s.value,
+            start_time=s.start_time,
+            end_time=s.end_time,
+            unit=s.unit or "",
+        )
+        for s in body.samples
+    ]
+    try:
+        new_count = service.ingest_device_samples(
+            user_id=grant.user.id, provider=provider, samples=samples
+        )
+    except NotADeviceProvider as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+
+    repo.record_audit(
+        build_audit_entry(
+            action=AuditAction.DATA_WRITE,
+            user_id=grant.user.id,
+            purpose=ConsentPurpose.WEARABLE_SYNC,
+            resource_type="wearable_sample",
+            consent_id=grant.consent_id,
+            metadata={
+                "provider": provider.value,
+                "source": "on_device",
+                "new_samples": new_count,
+            },
+        )
+    )
+    return WearableSyncResponse(
+        provider=provider.value,
+        new_samples=new_count,
+        synced_at=datetime.now(UTC),
+    )
 
 
 @router.delete("/{provider}", response_model=WearableConnectionStatusResponse)
