@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
 
+    # Demo mode: serves a clickable web walkthrough at /demo and a /demo/token
+    # endpoint that mints a short-lived JWT. MUST stay off in production — it is
+    # an intentional auth shortcut for the hosted demo only.
+    demo_mode: bool = False
+
     @property
     def origins(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]

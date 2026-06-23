@@ -33,6 +33,10 @@ select = ["E", "F", "I", "W", "UP", "B"]
 # UP042: `class X(str, Enum)` serialises cleanly with Pydantic/FastAPI; keep it.
 ignore = ["B008", "UP042"]
 
+[tool.ruff.lint.per-file-ignores]
+# demo.py embeds a single-file HTML page (inline CSS/JS); don't reflow string lines.
+"app/routers/demo.py" = ["E501"]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["app*"]
