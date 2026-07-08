@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f8fa;
+  --foreground: #12161c;
+  --card: #ffffff;
+  --border: #e4e7ec;
+  --muted: #667085;
+  --brand: #0b4f9c; /* HDFC-adjacent deep blue */
+  --brand-fg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0c0f14;
+    --foreground: #e6e9ef;
+    --card: #141922;
+    --border: #232a35;
+    --muted: #98a2b3;
+    --brand: #2f7ce0;
+    --brand-fg: #ffffff;
+  }
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+}

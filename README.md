@@ -1,86 +1,88 @@
-# Chronic Health Tracker (MVP)
+# RK Solutions — Recovery Ops Platform
 
-Tracks chronic-condition blood markers over time and fuses them with fitness
-wearable data to show trends and "what to change before your next test."
+Back-office operations platform for **RK Solutions**, a debt-recovery agency
+contracted to **HDFC Bank** for 4-wheeler loan recovery (buckets X, B1–B6;
+repossession / settlement / foreclosure). It replaces the agency's messy
+multi-sheet Excel workflow with one system: ingest the monthly HDFC allocation
+file, manage every case live, auto-compute executive payouts and the HDFC bill,
+and show the MIS live.
 
-**Current wedge:** pre-diabetes / metabolic health only (fasting glucose, HbA1c,
-fasting insulin, HOMA-IR, lipid panel). See [`CLAUDE.md`](./CLAUDE.md) for the
-full architecture, constraints, and build order.
+See [`CLAUDE.md`](./CLAUDE.md) for the full build spec.
 
-> **Status:** M0 — Foundation (done) · M1 — Wearable pipe (backend slice done;
-> Whoop OAuth + sync, mobile shell next). Compliance scaffolding (consent + audit
-> log), auth, DB schema, and CI underpin every feature module.
+## Status — Phase 1 (Foundation) is code-complete
 
-## Repository layout
+| Phase | Scope | State |
+|---|---|---|
+| **1 — Foundation** | Schema + RLS, auth (email OTP), roles, audit log, app shell | ✅ Ready |
+| 2 — Ingestion + case mgmt | Upload/parse/commit HDFC `DATA` sheet; case list + live edit | ⏳ |
+| 3 — Payout engine | Configurable rule builder, monthly run preview/lock | ⏳ |
+| 4 — Billing engine | HDFC rate card, compute bill, reconcile, P&L | ⏳ |
+| 5 — MIS + Excel export | Live dashboards mirroring the 6-sheet MIS | ⏳ |
+
+## Tech stack
+
+- **Next.js 15 (App Router, TypeScript)** on Vercel
+- **Supabase** — Postgres, Auth (email OTP), Storage
+- Tailwind CSS v4, Recharts, TanStack Table, SheetJS (`xlsx`)
+- Node 22, pnpm
+
+## Project layout
 
 ```
-.
-├── CLAUDE.md                  # Architecture, constraints, build order (read first)
-├── README.md
-├── .github/workflows/ci.yml   # Lint + tests + committed-secret guard
-├── backend/                   # FastAPI API (Python 3.11)
-│   ├── app/
-│   │   ├── main.py            # App entrypoint + /health
-│   │   ├── config.py          # Env-only settings (no hard-coded secrets)
-│   │   ├── auth.py            # Supabase JWT verification
-│   │   ├── dependencies.py    # require_consent() gate + repository/wearable wiring
-│   │   ├── repository.py      # Data-access seam (in-memory for M0/M1)
-│   │   ├── routers/           # consent, markers (sample), audit, wearables
-│   │   ├── security/
-│   │   │   ├── consent.py     # Pure consent-evaluation rule
-│   │   │   ├── audit.py       # PHI-safe audit entries
-│   │   │   └── crypto.py      # Fernet token encryption at rest (M1)
-│   │   └── wearables/         # M1: provider interface, Whoop client, normalize, sync
-│   ├── tests/                 # consent/audit/crypto/normalize/OAuth + e2e API tests
-│   └── .env.example
-├── mobile/                    # Expo / React Native app (M1)
-│   ├── app/                   # expo-router screens (sign-in, home)
-│   ├── src/                   # api client, auth, health bridges + pure normalize
-│   └── __tests__/             # unit tests for the pure normalization layer
-├── docs/
-│   ├── M0-foundation.md       # Compliance design notes
-│   └── M1-wearables.md        # Wearable pipe (Whoop) design notes
-└── supabase/
-    └── migrations/
-        ├── 0001_foundation.sql   # profiles, consents, audit_log + RLS
-        └── 0002_wearables.sql    # wearable_connections, wearable_samples + RLS
+CLAUDE.md                       # build spec (source of truth)
+middleware.ts                   # session refresh + route guard
+src/
+  app/
+    login/                      # email-OTP sign in (6-digit code + magic link)
+    auth/confirm/               # magic-link verify (token_hash / PKCE code)
+    auth/signout/               # POST sign out
+    (app)/                      # authenticated shell (sidebar + role-gated nav)
+      dashboard/  cases/  payouts/  billing/  staff/  settings/
+  components/                   # nav, sign-out, page header, placeholders
+  lib/
+    auth.ts                     # requireProfile() / requireAdmin()
+    supabase/{client,server,middleware}.ts
+supabase/
+  migrations/0001_foundation.sql # all tables + RLS + audit log + auth trigger
+  seed.sql                       # example staff + payout rules (dev only)
+docs/phase-1-foundation.md       # compliance / access-control design
 ```
 
-## Backend — local development
+## Access model (Phase 1)
 
-Requires Python 3.11+.
+- **Two app roles:** `admin` (full access incl. payout rules, billing, staff) and
+  `operator` (case work only — cannot read `payout_*`, `hdfc_*`, or `payout_rules`).
+- Roles are enforced in **RLS at the database layer** (not just the UI), in the
+  auth middleware, and in the page guards.
+- The **first user to sign up becomes `admin`** (bootstrap); everyone after
+  defaults to `operator`. Admins manage roles from the DB / (Phase 3) UI.
+- Every write to a business table is captured in `audit_log` (before/after JSON,
+  actor, timestamp) via a generic trigger. Admins can read the audit log.
 
-```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+## Local setup
 
-cp .env.example .env        # fill in Supabase values; never commit .env
+1. **Create a Supabase project** and run the migration:
+   ```bash
+   # via the Supabase SQL editor, paste supabase/migrations/0001_foundation.sql
+   # (optionally supabase/seed.sql for example data)
+   # or, with the Supabase CLI linked to your project:
+   supabase db push
+   ```
+2. **Configure env** — copy `.env.example` to `.env.local` and fill in your
+   project URL + anon key (service-role key is server-only, never `NEXT_PUBLIC_`).
+3. **Install & run:**
+   ```bash
+   pnpm install
+   pnpm dev
+   ```
+4. Open http://localhost:3000, sign in with your email, enter the 6-digit code.
+   The first account becomes admin.
 
-# Run tests + lint
-pytest -q
-ruff check .
+## Guardrails (enforced from Phase 1)
 
-# Run the API
-uvicorn app.main:app --reload
-# → http://localhost:8000/health  and  /docs
-```
-
-### Database
-
-Apply `supabase/migrations/0001_foundation.sql` to your Supabase Postgres
-(Supabase SQL editor, or `supabase db push` with the CLI). It creates the
-`profiles`, `consents`, and `audit_log` tables with Row Level Security and an
-append-only audit trail.
-
-## Compliance guardrails (DPDPA — enforced, not aspirational)
-
-- **Every health-data read passes the consent gate** (`require_consent`), which
-  denies without a valid, unexpired, purpose-specific consent and writes an
-  audit entry on success.
-- **No PHI in the audit log.** `build_audit_entry` rejects metadata that looks
-  like PHI (marker values, names, email, DOB).
-- **No secrets in code.** All configuration is read from the environment.
-- **Audit log is append-only**, enforced by both RLS and a DB trigger.
-
-See [`docs/M0-foundation.md`](./docs/M0-foundation.md) for details.
+- Nothing money-related is hardcoded — rates/commissions/salaries live in config
+  tables, versioned by effective date.
+- RLS on every table; no public tables; no client-side secrets; audit log on writes.
+- Idempotent ingestion (Phase 2): re-uploading a month never duplicates and
+  preserves operator edits — the schema already carries the `(loan_no,
+  allocation_month)` unique key and an `operator_touched` flag for this.

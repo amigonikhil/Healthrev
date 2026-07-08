@@ -1,47 +1,46 @@
-# --- Secrets / env (NEVER commit real values) ---
-.env
-.env.*
-!.env.example
-*.pem
-*.key
-secrets/
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
 
-# --- Python ---
-__pycache__/
-*.py[cod]
-*.egg-info/
-.eggs/
-build/
-dist/
-.venv/
-venv/
-env/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-coverage.xml
+# next.js
+/.next/
+/out/
+next-env.d.ts
 
-# --- Node / React Native (Expo) — added in M1 ---
-node_modules/
-.expo/
-dist-web/
-*.log
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# production
+/build
 
-# --- OS / editor ---
+# misc
 .DS_Store
-Thumbs.db
-.idea/
-.vscode/
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (never commit secrets)
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# editor / os
+.idea
+.vscode
 *.swp
 
-# --- Supabase local ---
-supabase/.branches/
-supabase/.temp/
-
-# --- Vercel ---
-.vercel/
+# supabase local
+/supabase/.temp
+/supabase/.branches
