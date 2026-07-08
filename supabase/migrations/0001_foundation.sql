@@ -39,7 +39,24 @@ begin
   return new;
 end $$;
 
--- App-role checks. SECURITY DEFINER to avoid RLS recursion on `profiles`.
+-- ============================================================================
+-- profiles — one row per app login (links to auth.users)
+-- ============================================================================
+create table public.profiles (
+  id         uuid primary key references auth.users(id) on delete cascade,
+  email      text not null,
+  full_name  text,
+  app_role   app_role not null default 'operator',
+  active      boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create trigger trg_profiles_updated before update on public.profiles
+  for each row execute function public.set_updated_at();
+
+-- App-role checks. Defined AFTER `profiles` because a `language sql` function
+-- body is validated at creation time (the table must already exist).
+-- SECURITY DEFINER so RLS policies calling these do not recurse on `profiles`.
 create or replace function public.is_active_user()
 returns boolean
 language sql stable security definer set search_path = public as $$
@@ -57,21 +74,6 @@ language sql stable security definer set search_path = public as $$
     where id = auth.uid() and active and app_role = 'admin'
   );
 $$;
-
--- ============================================================================
--- profiles — one row per app login (links to auth.users)
--- ============================================================================
-create table public.profiles (
-  id         uuid primary key references auth.users(id) on delete cascade,
-  email      text not null,
-  full_name  text,
-  app_role   app_role not null default 'operator',
-  active      boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create trigger trg_profiles_updated before update on public.profiles
-  for each row execute function public.set_updated_at();
 
 -- ============================================================================
 -- staff — DRAs and internal staff (NOT app logins). Payout/billing attach here.
