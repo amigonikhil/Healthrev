@@ -1,0 +1,38 @@
+name: Creator Assist CI
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["creator-assist/**", ".github/workflows/creator-assist.yml"]
+  pull_request:
+    paths: ["creator-assist/**", ".github/workflows/creator-assist.yml"]
+
+defaults:
+  run:
+    working-directory: creator-assist
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: creator-assist/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000

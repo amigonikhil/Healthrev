@@ -9,6 +9,9 @@ and show the MIS live.
 
 See [`CLAUDE.md`](./CLAUDE.md) for the full build spec.
 
+> This repo also contains **Creator Assist**, a separate app in [`creator-assist/`](./creator-assist/README.md)
+> (deploy it on Vercel with Root Directory = `creator-assist`).
+
 ## Status — Phase 1 (Foundation) is code-complete
 
 | Phase | Scope | State |

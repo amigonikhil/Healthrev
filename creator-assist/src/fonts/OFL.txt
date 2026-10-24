@@ -1,0 +1,4 @@
+Plus Jakarta Sans (Tokotype) and Noto Serif (Google) are licensed under the
+SIL Open Font License, Version 1.1. https://openfontlicense.org
+Files here are the Google Fonts "latin-ext" builds, used to embed fonts (with
+the ₹ glyph) in generated PDF invoices and agreements.

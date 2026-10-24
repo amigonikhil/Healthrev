@@ -1,0 +1,43 @@
+// Indian states / UTs with GST state codes.
+export const STATES: { name: string; code: string; abbr: string }[] = [
+  { name: "Andaman and Nicobar Islands", code: "35", abbr: "AN" },
+  { name: "Andhra Pradesh", code: "37", abbr: "AP" },
+  { name: "Arunachal Pradesh", code: "12", abbr: "AR" },
+  { name: "Assam", code: "18", abbr: "AS" },
+  { name: "Bihar", code: "10", abbr: "BR" },
+  { name: "Chandigarh", code: "04", abbr: "CH" },
+  { name: "Chhattisgarh", code: "22", abbr: "CG" },
+  { name: "Dadra and Nagar Haveli and Daman and Diu", code: "26", abbr: "DN" },
+  { name: "Delhi", code: "07", abbr: "DL" },
+  { name: "Goa", code: "30", abbr: "GA" },
+  { name: "Gujarat", code: "24", abbr: "GJ" },
+  { name: "Haryana", code: "06", abbr: "HR" },
+  { name: "Himachal Pradesh", code: "02", abbr: "HP" },
+  { name: "Jammu and Kashmir", code: "01", abbr: "JK" },
+  { name: "Jharkhand", code: "20", abbr: "JH" },
+  { name: "Karnataka", code: "29", abbr: "KA" },
+  { name: "Kerala", code: "32", abbr: "KL" },
+  { name: "Ladakh", code: "38", abbr: "LA" },
+  { name: "Lakshadweep", code: "31", abbr: "LD" },
+  { name: "Madhya Pradesh", code: "23", abbr: "MP" },
+  { name: "Maharashtra", code: "27", abbr: "MH" },
+  { name: "Manipur", code: "14", abbr: "MN" },
+  { name: "Meghalaya", code: "17", abbr: "ML" },
+  { name: "Mizoram", code: "15", abbr: "MZ" },
+  { name: "Nagaland", code: "13", abbr: "NL" },
+  { name: "Odisha", code: "21", abbr: "OD" },
+  { name: "Puducherry", code: "34", abbr: "PY" },
+  { name: "Punjab", code: "03", abbr: "PB" },
+  { name: "Rajasthan", code: "08", abbr: "RJ" },
+  { name: "Sikkim", code: "11", abbr: "SK" },
+  { name: "Tamil Nadu", code: "33", abbr: "TN" },
+  { name: "Telangana", code: "36", abbr: "TS" },
+  { name: "Tripura", code: "16", abbr: "TR" },
+  { name: "Uttar Pradesh", code: "09", abbr: "UP" },
+  { name: "Uttarakhand", code: "05", abbr: "UK" },
+  { name: "West Bengal", code: "19", abbr: "WB" },
+];
+
+export const stateByName = (name: string | null | undefined) =>
+  STATES.find((s) => s.name.toLowerCase() === (name ?? "").trim().toLowerCase());
+export const stateByCode = (code: string | null | undefined) => STATES.find((s) => s.code === code);
