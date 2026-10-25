@@ -5,7 +5,8 @@ import { audit } from "@/lib/audit";
 import { getTax, loadDeal, requireProfile } from "@/lib/data";
 import { todayIST } from "@/lib/dates";
 import { viewDeal } from "@/lib/deal-view";
-import { noticeDraft } from "@/lib/notice";
+import { noticeText } from "@/lib/notice";
+import { noticeFor } from "@/lib/notice-data";
 
 export type EscState = { error?: string } | undefined;
 
@@ -17,7 +18,7 @@ export async function submitLawyerNotice(dealId: string, _: EscState, f: FormDat
   if (!deal?.invoice) return { error: "There's no invoice on this deal yet" };
   const v = viewDeal(deal, profile, await getTax(db), todayIST());
   const { data, error } = await db.from("escalations").insert({
-    deal_id: deal.id, type: "lawyer_notice", draft: noticeDraft(v, profile), status: "in_review", is_sample: deal.is_sample,
+    deal_id: deal.id, type: "lawyer_notice", draft: noticeText(noticeFor(v, profile)), status: "in_review", is_sample: deal.is_sample,
   }).select("id").single();
   if (error || !data) return { error: "Could not save: " + error?.message };
   await db.from("deals").update({ status: "escalated" }).eq("id", deal.id);

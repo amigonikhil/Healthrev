@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Chip, Top } from "@/components/ui";
+import { ADVOCATE } from "@/lib/advocate";
 import { msmeAnnualRate } from "@/lib/calc";
 import { loadDealView } from "@/lib/data";
 import { inr } from "@/lib/money";
@@ -36,7 +37,7 @@ export default async function EscalatePage({ params }: { params: Promise<{ id: s
         </Link>
         <Link className="item" href={`/deals/${d.id}/notice`}>
           <span className="l"><span className="t">2 · Lawyer notice</span><span className="s">An independent lawyer reviews and sends</span></span>
-          <Chip tone="info">₹1,499</Chip>
+          <Chip tone="info">{ADVOCATE.fee}</Chip>
         </Link>
         {profile.udyam_no && <SamadhaanItem dealId={d.id} />}
         <div className="info">Nothing is sent to the brand without your approval.</div>

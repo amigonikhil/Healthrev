@@ -9,12 +9,13 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   // @react-pdf/renderer ships ESM + native-ish deps; keep it out of the server bundle.
   serverExternalPackages: ["@react-pdf/renderer"],
-  // PDF fonts are read from disk at runtime, and pdfkit loads its standard
+  // PDF fonts and images are read from disk at runtime, and pdfkit loads its standard
   // fonts through a package "imports" alias (#standard-fonts/*) that Vercel's
   // file tracer doesn't follow. Ship both explicitly for every route.
   outputFileTracingIncludes: {
     "/**/*": [
       "./src/fonts/**/*",
+      "./src/assets/**/*",
       "./node_modules/.pnpm/pdfkit@*/node_modules/pdfkit/js/standard-fonts/**/*",
     ],
   },

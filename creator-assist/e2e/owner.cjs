@@ -106,7 +106,11 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.getByRole("link", { name: /Lawyer notice/ }).click();
   await page.waitForSelector("text=Draft · demand notice");
   t = await text();
-  ok(t.includes("despite three reminders, the balance of ₹38,100 remains unpaid") || t.includes("three reminders"), "notice draft facts");
+  ok(t.includes("RTK/2026-27/014") && t.includes("to pay ₹38,100 within 7 days") && t.includes("Sri Hari Legal Chambers"), "notice draft facts");
+  const noticeRes = await page.request.get(dealUrl.replace("/deals/", "/api/deals/") + "/notice");
+  const buf = await noticeRes.body();
+  ok(noticeRes.ok() && noticeRes.headers()["content-type"] === "application/pdf" && buf.subarray(0, 4).toString() === "%PDF", "notice PDF renders");
+  require("fs").writeFileSync(SHOTS + "notice.pdf", buf);
   await page.getByLabel("I confirm the facts above are correct").check();
   await page.getByRole("button", { name: "Send to lawyer for review" }).click();
   await page.waitForURL("**/notice/sent");
