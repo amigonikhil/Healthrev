@@ -65,6 +65,7 @@ The owner suite checks the prototype's numbers (₹85,300 owed, ₹47,200 due th
 2. **Phone auth**: Auth → Providers → Phone. Turn it on with **Twilio Verify** (or MSG91 via Twilio-compatible setup). Indian SMS needs DLT-registered templates. Until that's ready, set `NEXT_PUBLIC_SMS_ENABLED=false` and testers use the Email tab.
    Add `DEMO_OWNER_PHONE` (without `+`) under **Test phone numbers** with a fixed OTP so demos never depend on SMS.
 3. **Email OTP template**: Auth → Email Templates → *Magic Link* and *Confirm signup*. Paste `supabase/templates/otp.html`, which includes the 6-digit `{{ .Token }}` the sign-in screen asks for. Under URL Configuration, set the Site URL to your Vercel URL and add `<url>/auth/callback` to the redirect URLs.
+3a. **Google sign-in (free, no SMS/email limits)**: in Google Cloud Console create an OAuth client (type *Web application*) with authorised redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`. Paste its Client ID and secret into Supabase → Auth → Sign In / Providers → Google and enable it. Then set `NEXT_PUBLIC_GOOGLE_AUTH=true` in Vercel and redeploy to show the button.
 4. **Resend**: verify a sending domain; set `RESEND_API_KEY` and `RESEND_FROM`.
 5. **Vercel**: import the repo with **Root Directory = `creator-assist`**. Set every variable from `.env.example` (generate `ENCRYPTION_KEY` and `CRON_SECRET` with `openssl rand -base64 32`). The cron in `vercel.json` runs daily at 09:00 IST. Enable Vercel Analytics in the project.
 6. Sign in with the owner number to check the demo, then share the URL.

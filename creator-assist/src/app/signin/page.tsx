@@ -1,8 +1,11 @@
 import { SignInForm } from "./form";
+import { GoogleButton } from "./google";
 
 export const metadata = { title: "Sign in · Creator Assist" };
 
-export default function SignIn() {
+export default async function SignIn({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
+  const google = process.env.NEXT_PUBLIC_GOOGLE_AUTH === "true";
   return (
     <main className="scr">
       <div className="hero">
@@ -16,7 +19,12 @@ export default function SignIn() {
         </ul>
       </div>
       <h1>Sign in</h1>
-      <p className="sub">We&apos;ll send a one-time code. No password needed.</p>
+      {error && <p className="err" role="alert">Sign-in didn&apos;t complete. Please try again.</p>}
+      {google ? (<>
+        <p className="sub">No password needed.</p>
+        <GoogleButton />
+        <p className="sub" style={{ textAlign: "center" }}>or get a one-time code</p>
+      </>) : <p className="sub">We&apos;ll send a one-time code. No password needed.</p>}
       <SignInForm smsEnabled={process.env.NEXT_PUBLIC_SMS_ENABLED !== "false"} />
     </main>
   );
