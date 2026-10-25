@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { sendEmailCode } from "@/app/actions/auth";
 import { Seg } from "@/components/client";
 
 type Mode = "phone" | "email";
@@ -28,10 +29,14 @@ export function SignInForm({ smsEnabled }: { smsEnabled: boolean }) {
   async function send() {
     setErr("");
     setBusy(true);
-    const a = await auth();
-    const { error } = mode === "phone"
-      ? await a.signInWithOtp({ phone: toE164(id) })
-      : await a.signInWithOtp({ email: id.trim(), options: { shouldCreateUser: true, emailRedirectTo: `${location.origin}/auth/callback` } });
+    if (mode === "email") {
+      // Emailed by the app via Resend (see actions/auth.ts).
+      const r = await sendEmailCode(id);
+      setBusy(false);
+      if (!r.ok) return setErr(r.error);
+      return setSent(true);
+    }
+    const { error } = await (await auth()).signInWithOtp({ phone: toE164(id) });
     setBusy(false);
     if (error) return setErr(error.message);
     setSent(true);
@@ -44,7 +49,7 @@ export function SignInForm({ smsEnabled }: { smsEnabled: boolean }) {
     const a = await auth();
     const { error } = mode === "phone"
       ? await a.verifyOtp({ phone: toE164(id), token, type: "sms" })
-      : await a.verifyOtp({ email: id.trim(), token, type: "email" });
+      : await a.verifyOtp({ email: id.trim().toLowerCase(), token, type: "email" });
     if (error) {
       setBusy(false);
       return setErr(error.message);

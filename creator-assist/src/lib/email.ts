@@ -11,6 +11,7 @@ export async function sendEmail(msg: {
   attachments?: { filename: string; content: Buffer }[];
 }): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
+  if (!key && process.env.DEV_MAILPIT_URL) return sendToMailpit(msg);
   if (!key) return { sent: false, reason: "Email is not configured yet" };
   const to = (Array.isArray(msg.to) ? msg.to : [msg.to]).filter(Boolean);
   if (!to.length) return { sent: false, reason: "No email address" };
@@ -31,4 +32,14 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 export function textToHtml(text: string, extra = ""): string {
   const body = esc(text).replace(/\n/g, "<br>");
   return `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#0F172A">${body}${extra}</div>`;
+}
+
+/** Local development only: deliver to the Supabase CLI's Mailpit inbox instead of Resend. */
+async function sendToMailpit(msg: { to: string | string[]; subject: string; text: string; html?: string }): Promise<SendResult> {
+  const to = (Array.isArray(msg.to) ? msg.to : [msg.to]).filter(Boolean).map((Email) => ({ Email }));
+  const res = await fetch(`${process.env.DEV_MAILPIT_URL}/api/v1/send`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ From: { Email: "noreply@localhost", Name: "Creator Assist" }, To: to, Subject: msg.subject, Text: msg.text, HTML: msg.html ?? textToHtml(msg.text) }),
+  });
+  return res.ok ? { sent: true } : { sent: false, reason: `Mailpit ${res.status}` };
 }

@@ -5,6 +5,9 @@ const SHOTS = __dirname + "/.shots/";
 require("fs").mkdirSync(SHOTS, { recursive: true });
 const BASE = "http://localhost:3000";
 let failures = 0;
+// Seed dates are relative to today (IST), so expected labels are too.
+const day = (offset) => { const d = new Date(Date.now() + 5.5 * 3600e3 + offset * 864e5); return d.getUTCDate() + " " + d.toLocaleString("en-IN", { month: "short", timeZone: "UTC" }); };
+const DUE = day(-18), FIRM = day(-3), FINAL = day(12);
 const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if (!cond) failures++; };
 
 (async () => {
@@ -31,7 +34,7 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   ok(t.includes("₹47,200"), "due this week ₹47,200");
   ok(t.includes("₹8,500"), "TDS to be deducted ₹8,500");
   ok(t.includes("Overdue 18 days") && t.includes("Reminder sent") && t.includes("Due in 4 days") && t.includes("Awaiting sign"), "needs-attention chips match prototype");
-  ok(t.includes("Balance after ₹15,000 advance · due 7 Oct"), "Voltra sub line");
+  ok(t.includes(`Balance after ₹15,000 advance · due ${DUE}`), "Voltra sub line");
   await shot("02-home");
 
   console.log("Deals filters");
@@ -57,7 +60,7 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   ok(t.includes("₹33,600"), "balance to receive ₹33,600");
   ok(t.includes("MSME interest so far: ₹310 on the ₹38,100 unpaid, for 18 days."), "MSME interest ₹310");
   ok(t.includes("2 Reels · 3 Stories") && t.includes("3 months · included"), "deal facts");
-  ok(t.includes("3 reminders sent, read by brand · 7 Oct–22 Oct") && t.includes("Final notice scheduled · 6 Nov"), "timeline reminders");
+  ok(t.includes(`3 reminders sent, read by brand · ${DUE}–${FIRM}`) && t.includes(`Final notice scheduled · ${FINAL}`), "timeline reminders");
   await shot("04-deal");
   const dealUrl = page.url();
 
@@ -81,9 +84,9 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.goto(dealUrl + "/reminders");
   await page.waitForSelector(".bubble");
   t = await text();
-  ok(t.includes("Friendly · 7 Oct") && t.includes("Firm · 22 Oct") && t.includes("Final notice · 6 Nov") && t.includes("Sent · read"), "ladder rows");
+  ok(t.includes(`Friendly · ${DUE}`) && t.includes(`Firm · ${FIRM}`) && t.includes(`Final notice · ${FINAL}`) && t.includes("Sent · read"), "ladder rows");
   let bubble = await page.locator(".bubble").innerText();
-  ok(bubble.startsWith("Hi Arjun, hope you are well. The balance of ₹38,100 on invoice RTK/2026-27/014 was due on 7 Oct and is now 18 days overdue."), "English message");
+  ok(bubble.startsWith(`Hi Arjun, hope you are well. The balance of ₹38,100 on invoice RTK/2026-27/014 was due on ${DUE} and is now 18 days overdue.`), "English message");
   ok(bubble.includes("MSME-registered"), "MSME line on");
   await page.getByRole("radio", { name: "Telugu-Eng" }).click();
   bubble = await page.locator(".bubble").innerText();
