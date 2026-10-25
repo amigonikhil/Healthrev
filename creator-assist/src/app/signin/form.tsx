@@ -81,7 +81,7 @@ export function SignInForm({ smsEnabled }: { smsEnabled: boolean }) {
       )}
       {sent && (
         <label className="f">Enter OTP
-          <input value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit code" autoFocus required />
+          <input value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" placeholder="Code from the email" autoFocus required />
         </label>
       )}
       {err && <p className="err" role="alert">{err}</p>}

@@ -23,7 +23,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
         <p className="err" role="alert">
           {error === "link"
             ? "That sign-in link has expired or was already used. Ask for a new code below."
-            : "Sign-in didn't complete. Please try again, or use the 6-digit code from the email."}
+            : "Sign-in didn't complete. Please try again, or use the code from the email."}
         </p>
       )}
       {google ? (<>
