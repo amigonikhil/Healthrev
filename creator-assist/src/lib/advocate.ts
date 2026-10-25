@@ -9,9 +9,10 @@ export const ADVOCATE = {
   email: "sriharilegalchambers@gmail.com",
   phones: "+91 9030635050 / +91 8367464548",
   city: "Hyderabad",
-  fee: "₹1,499",
-  turnaround: "2 working days",
 };
+
+/** Call with the legal team after a notice. Beta: booking only, no payment taken. */
+export const LEGAL_CALL = { minutes: 15, feePaise: 59_900 };
 
 /** Days the brand is given to pay after receiving the notice. */
 export const NOTICE_DAYS = 7;

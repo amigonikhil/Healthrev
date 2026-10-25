@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const TABLES = ["brands", "deals", "deal_deliverables", "usage_rights", "agreements", "invoices", "payments", "reminders", "escalations", "ais_entries", "filings", "ai_call_bookings", "tax_config", "audit_log"] as const;
+const TABLES = ["brands", "deals", "deal_deliverables", "usage_rights", "agreements", "invoices", "payments", "reminders", "escalations", "ais_entries", "filings", "ai_call_bookings", "legal_call_bookings", "tax_config", "audit_log"] as const;
 
 // "Export my data": everything the user owns, as one JSON file. RLS scopes every query.
 export async function GET() {

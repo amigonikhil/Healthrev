@@ -137,6 +137,25 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await anon.close();
   await page.goto(dealUrl);
   ok((await text()).includes("Legal notice sent by email"), "timeline shows notice sent");
+
+  console.log("After the notice: wait, then legal team call");
+  await page.goto(dealUrl + "/escalate");
+  t = await text();
+  ok(t.includes("Legal notice sent") && t.includes("₹52,897") && t.includes("What happens next"), "escalate shows notice sent and total claimed");
+  ok(t.includes("1 · Wait for the notice period") && t.includes("7 days left"), "notice period countdown");
+  ok(t.includes("2 · Talk to the legal team") && t.includes("₹599 · 15 min") && !t.includes("Send final reminder"), "legal call option at ₹599");
+  await shot("08b-after-notice");
+  await page.getByRole("link", { name: /Talk to the legal team/ }).click();
+  await page.waitForURL("**/legal-call");
+  ok((await text()).includes("15-minute call with Sri Hari Legal Chambers"), "legal call page");
+  await page.getByLabel("Call me on").fill("98765 43210");
+  await page.getByLabel(/Share this deal/).check();
+  await page.getByRole("button", { name: "Pay ₹599 and book call" }).click();
+  await page.waitForURL("**/legal-call/booked**");
+  t = await text();
+  ok(t.includes("Call booked") && t.includes("Beta: no payment was taken"), "legal call booked with beta note");
+  await page.goto(dealUrl + "/escalate");
+  ok((await text()).includes("Call booked ·"), "escalate shows the booked call");
   await shot("08-notice-sent");
 
   console.log("Record payment");

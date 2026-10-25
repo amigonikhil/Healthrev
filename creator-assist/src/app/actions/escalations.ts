@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ADVOCATE, NOTICE_DAYS } from "@/lib/advocate";
+import { redirect } from "next/navigation";
+import { ADVOCATE, LEGAL_CALL, NOTICE_DAYS } from "@/lib/advocate";
 import { audit } from "@/lib/audit";
 import { getTax, loadDeal, requireProfile } from "@/lib/data";
 import { todayIST } from "@/lib/dates";
@@ -84,4 +85,25 @@ export async function startSamadhaan(dealId: string) {
   if (!deal) return;
   const { data } = await db.from("escalations").insert({ deal_id: deal.id, type: "msme_samadhaan", status: "draft", is_sample: deal.is_sample }).select("id").single();
   await audit(db, user.id, "escalation_created", "escalation", data?.id, { type: "msme_samadhaan" });
+}
+
+export type CallState = { error?: string } | undefined;
+
+/** Books a 15-minute call with the legal team about a deal. Beta: stored only, no payment. */
+export async function bookLegalCall(dealId: string, _: CallState, f: FormData): Promise<CallState> {
+  const { db, user } = await requireProfile();
+  const deal = await loadDeal(db, dealId);
+  if (!deal) return { error: "Deal not found" };
+  const slot = String(f.get("slot") ?? "");
+  const phone = String(f.get("phone") ?? "").trim();
+  if (!slot || Number.isNaN(Date.parse(slot)) || Date.parse(slot) < Date.now()) return { error: "Pick a time slot" };
+  if (phone.replace(/\D/g, "").length < 10) return { error: "Enter a phone number the team can call" };
+  if (f.get("consent") !== "on") return { error: "Please allow us to share this deal and the notice with the legal team" };
+  const note = String(f.get("note") ?? "").trim().slice(0, 1000) || null;
+  const { data, error } = await db.from("legal_call_bookings").insert({
+    deal_id: deal.id, slot, phone, note, fee_paise: LEGAL_CALL.feePaise, is_sample: deal.is_sample,
+  }).select("id").single();
+  if (error || !data) return { error: "Could not book: " + error?.message };
+  await audit(db, user.id, "legal_call_booked", "legal_call_booking", data.id, { slot, deal_id: deal.id });
+  redirect(`/deals/${deal.id}/legal-call/booked?b=${data.id}`);
 }
