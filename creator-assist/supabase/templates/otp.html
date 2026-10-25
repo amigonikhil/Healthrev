@@ -2,6 +2,6 @@
   <p style="font-weight:800;font-size:16px;margin:0 0 16px">Creator Assist</p>
   <p style="font-size:15px;margin:0 0 8px">Your sign-in code is</p>
   <p style="font-size:32px;font-weight:800;letter-spacing:6px;margin:0 0 16px">{{ .Token }}</p>
-  <p style="font-size:13px;color:#475569;margin:0 0 16px">Enter it in the app to continue. It expires in 1 hour. If you didn't ask for this, ignore this email.</p>
-  <p style="font-size:13px;color:#475569;margin:0">Or <a href="{{ .ConfirmationURL }}" style="color:#3730A3">sign in with this link</a>.</p>
+  <p style="font-size:13px;color:#475569;margin:0 0 16px">Type it in the app to continue. It expires in 1 hour. If you didn't ask for this, ignore this email.</p>
+  <p style="margin:0 0 16px"><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email" style="display:inline-block;background:#3730A3;color:#fff;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:12px">Or tap here to sign in</a></p>
 </div>
