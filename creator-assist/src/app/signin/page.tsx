@@ -9,8 +9,8 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
   return (
     <main className="scr">
       <div className="hero">
-        <p style={{ fontWeight: 800, fontSize: 16 }}>Creator Assist</p>
-        <p style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.2 }}>Get paid on time for every brand deal.</p>
+        <p className="brand-k">Creator Assist</p>
+        <p className="hero-title">Get paid on time for every brand deal.</p>
         <ul>
           <li>Agreements brands sign before you shoot</li>
           <li>GST invoices and auto reminders</li>

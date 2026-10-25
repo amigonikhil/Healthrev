@@ -42,7 +42,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         <Row strong k="Total" v={<span className="big">{inr(inv.total_paise)}</span>} />
         <p className="sub">{amountInWords(inv.total_paise)}</p>
         {inv.advance_deducted_paise > 0 && <Row k={`Less: advance received${d.advance_received_at ? ` ${fmtDay(d.advance_received_at)}` : ""}`} v={minus(inv.advance_deducted_paise)} />}
-        <Row strong k={`Balance due by ${fmtDay(inv.due_date)}`} v={<b style={{ fontSize: 18 }}>{inr(inv.balance_due_paise)}</b>} />
+        <Row strong k={`Balance due by ${fmtDay(inv.due_date)}`} v={<b className="amt">{inr(inv.balance_due_paise)}</b>} />
         <div className="hr" />
         <p className="sub">
           Pay to {profile.bank_name}{profile.bank_account_last4 ? ` · A/c ending ${profile.bank_account_last4}` : ""}{profile.ifsc ? ` · IFSC ${profile.ifsc}` : ""}{profile.upi ? ` · UPI ${profile.upi}` : ""}. If TDS is deducted, please share Form 16A.

@@ -41,7 +41,7 @@ export default async function Brands() {
       {[...groups.values()].map((vs) => {
         const r = behaviour(vs, today);
         const open = vs.find((v) => v.phase !== "paid") ?? vs[0];
-        return <Item key={vs[0].d.brand.id} href={rowHref(open)} title={vs[0].d.brand.name} sub={r.sub} chip={{ label: r.chip, tone: r.tone }} />;
+        return <Item key={vs[0].d.brand.id} avatar={vs[0].d.brand.name} href={rowHref(open)} title={vs[0].d.brand.name} sub={r.sub} chip={{ label: r.chip, tone: r.tone }} />;
       })}
     </main>
   );

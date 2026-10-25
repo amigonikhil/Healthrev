@@ -29,9 +29,17 @@ export function Row({ k, v, strong }: { k: ReactNode; v: ReactNode; strong?: boo
   );
 }
 
-export function Item({ href, title, sub, amount, chip }: { href: string; title: string; sub?: string; amount?: string; chip?: { label: string; tone: Tone } }) {
+/** Brand initials on a coloured tile; the colour is stable per name. */
+export function Avatar({ name }: { name: string }) {
+  const initials = name.split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w[0] ?? "")).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+  const hue = [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 6;
+  return <span className={`av av-${hue}`} aria-hidden>{initials}</span>;
+}
+
+export function Item({ href, title, sub, amount, chip, avatar }: { href: string; title: string; sub?: string; amount?: string; chip?: { label: string; tone: Tone }; avatar?: string }) {
   return (
     <Link className="item" href={href}>
+      {avatar && <Avatar name={avatar} />}
       <span className="l"><span className="t trunc">{title}</span>{sub && <span className="s">{sub}</span>}</span>
       <span className="r">
         {amount && <span className="amt">{amount}</span>}
@@ -44,7 +52,7 @@ export function Item({ href, title, sub, amount, chip }: { href: string; title: 
 export function Done({ icon, tone = "ok", title, children }: { icon: string; tone?: "ok" | "info"; title: string; children: ReactNode }) {
   return (
     <div className="center">
-      <div className="badge" style={{ background: `var(--${tone}-bg)`, color: `var(--${tone})` }} aria-hidden>{icon}</div>
+      <div className={`badge ${tone}`} aria-hidden>{icon}</div>
       <h1>{title}</h1>
       {children}
     </div>

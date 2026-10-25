@@ -13,7 +13,7 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
   const a = await byToken(token);
   if (!a) {
     return (
-      <main className="scr">
+      <main className="scr calm">
         <Done icon="?" tone="info" title="Link not found">
           <p className="sub">This signing link is invalid or has been withdrawn. Ask the creator to send it again.</p>
         </Done>
@@ -25,7 +25,7 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
 
   if (a.status === "signed") {
     return (
-      <main className="scr">
+      <main className="scr calm">
         <Done icon="✓" title="Agreement signed">
           <p className="sub">
             Signed by {a.signer_name} on {fmtDateLong(istDate(a.signed_at!))}, {fmtTimeIST(a.signed_at!)}.
@@ -39,7 +39,7 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
 
   await markViewed(a);
   return (
-    <main className="scr">
+    <main className="scr calm">
       <h1>{creatorName} sent you an agreement</h1>
       <p className="sub">Review the terms and sign. It takes about a minute.</p>
       <Doc body={a.body as AgreementBody} />

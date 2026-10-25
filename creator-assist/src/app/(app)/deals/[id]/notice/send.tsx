@@ -12,7 +12,7 @@ export function NoticeSend(p: { dealId: string; waHref: string | null; email: st
     <label className="tog"><span>I confirm the facts in this notice are correct</span><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} /></label>
     {p.waHref ? (
       <a className="btn" href={ok ? p.waHref : undefined} aria-disabled={!ok} target="_blank" rel="noopener"
-        style={ok ? undefined : { opacity: 0.55, pointerEvents: "none" }} onClick={() => { logNoticeWhatsApp(p.dealId); }}>
+        style={ok ? undefined : { pointerEvents: "none" }} onClick={() => { logNoticeWhatsApp(p.dealId); }}>
         Send via WhatsApp
       </a>
     ) : <p className="sub">Add a WhatsApp number for this brand to send on WhatsApp.</p>}

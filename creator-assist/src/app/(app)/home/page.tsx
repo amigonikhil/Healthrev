@@ -30,20 +30,21 @@ export default async function Home() {
     <main className="scr">
       <div className="top" style={{ justifyContent: "space-between" }}>
         <div><p className="sub">{fmtWeekday(today)}</p><h1>Hi, {first}</h1></div>
-        <Link className="btn" style={{ width: "auto" }} href="/deals/new">+ New deal</Link>
+        <Link className="btn sm" href="/deals/new">+ New deal</Link>
       </div>
 
       {views.length === 0 ? <Empty /> : (<>
-        <div className="card" style={{ background: "var(--dark)", color: "var(--dark-text)", borderColor: "var(--dark)" }}>
-          <p style={{ fontSize: 13, opacity: 0.8, fontWeight: 600 }}>Money owed to you</p>
-          <p className="big">{inr(owed)}</p>
-          <p style={{ fontSize: 13, opacity: 0.8 }}>
-            {open.length} open invoice{open.length === 1 ? "" : "s"}{overdue ? ` · ${inr(overdue)} overdue` : ""}
+        <section className="hero-y">
+          <p className="k">Money owed to you</p>
+          <p className="hero-amt">{inr(owed)}</p>
+          <p className="stickers">
+            <span className="sticker dark">{open.length} open invoice{open.length === 1 ? "" : "s"}</span>
+            {overdue ? <><span className="sr"> · </span><span className="sticker pop over">{inr(overdue)} overdue</span></> : null}
           </p>
-        </div>
+        </section>
         <div className="stats">
           <div className="stat"><span className="k">Due this week</span><span className="v">{inr(dueWeek)}</span></div>
-          <div className="stat"><span className="k">TDS to be deducted</span><span className="v">{inr(tdsPending)}</span></div>
+          <div className="stat hot"><span className="k">TDS to be deducted</span><span className="v">{inr(tdsPending)}</span></div>
         </div>
         <h2>Needs attention</h2>
         {attention.length === 0 && <p className="sub">Nothing pending. Nice work!</p>}
@@ -55,7 +56,7 @@ export default async function Home() {
 
 function AttentionItem({ v }: { v: DealView }) {
   const r = attentionRow(v);
-  return <Item href={rowHref(v)} title={brandLabel(v.d)} sub={r.sub} amount={inr(r.amount)} chip={{ label: r.chip, tone: r.tone }} />;
+  return <Item avatar={v.d.brand.name} href={rowHref(v)} title={brandLabel(v.d)} sub={r.sub} amount={inr(r.amount)} chip={{ label: r.chip, tone: r.tone }} />;
 }
 
 function Empty() {

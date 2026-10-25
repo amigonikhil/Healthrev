@@ -21,7 +21,7 @@ export default async function FileWithUs() {
             "A 10-minute AI call asks about other income: salary, interest, rent, capital gains, deductions.",
             "A registered CA reviews and files your ITR.",
             "You e-verify with Aadhaar OTP in the app. Done.",
-          ].map((t) => <li key={t}><span className="dot" style={{ background: "var(--acc)" }} /><span>{t}</span></li>)}
+          ].map((t) => <li key={t}><span className="dot" style={{ background: "var(--accent)" }} /><span>{t}</span></li>)}
         </ol>
       </div>
       <div className="card">

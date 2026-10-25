@@ -4,7 +4,8 @@ import { STAGE_LABEL } from "./messages";
 import { inr } from "./money";
 
 export type TimelineItem = { color: string; text: string; date: string };
-const GREEN = "#15803D", AMBER = "#B45309", BLUE = "#1D4ED8", GREY = "#94A3B8";
+// Dot colours are design tokens (see globals.css).
+const GREEN = "var(--dot-ok)", AMBER = "var(--dot-warn)", BLUE = "var(--dot-info)", GREY = "var(--dot-mute)";
 
 export function dealTimeline(v: DealView, today: string): TimelineItem[] {
   const d = v.d;

@@ -28,10 +28,10 @@ export default async function TaxPage() {
         <div className="stat"><span className="k">Income invoiced</span><span className="v">{inr(hub.income)}</span><span className="sub">{hub.brands} brand{hub.brands === 1 ? "" : "s"}</span></div>
         <div className="stat"><span className="k">GST collected</span><span className="v">{inr(hub.gst)}</span><span className="sub">{profile.gstin ? "On your invoices" : "Not GST-registered"}</span></div>
         <div className="stat"><span className="k">TDS by brands</span><span className="v">{inr(hub.tdsExpected)}</span><span className="sub">Per your invoices</span></div>
-        <div className="stat" style={hub.missingTotal ? { borderColor: "var(--warn)" } : undefined}>
+        <div className={`stat${hub.missingTotal ? " alert" : ""}`}>
           <span className="k">TDS in AIS</span><span className="v">{inr(hub.tdsInAis)}</span>
           {hub.missingTotal > 0
-            ? <span className="sub" style={{ color: "var(--warn)", fontWeight: 700 }}>{inr(hub.missingTotal)} missing</span>
+            ? <span className="sub" style={{ color: "var(--warn-text)", fontWeight: 700 }}>{inr(hub.missingTotal)} missing</span>
             : <span className="sub">{hub.tdsExpected ? "All matched" : "Nothing yet"}</span>}
         </div>
       </div>
@@ -68,7 +68,7 @@ export default async function TaxPage() {
             </div>
             {c.type === "itr" && profile.files_with === "creator_assist" && !c.filing?.data_sent_at ? (<>
               <div className="row"><span>Data goes to Creator Assist after your AI call</span><Chip tone="mute">Opens 1 Apr</Chip></div>
-              <Link className="btn sec" href="/tax/file" style={{ minHeight: 42, fontSize: 14 }}>Book AI call now</Link>
+              <Link className="btn sec sm" href="/tax/file">Book AI call now</Link>
             </>) : c.filing?.data_sent_at ? (
               <div className="row"><span>Data sent to {c.filing.handled_by === "own_ca" ? "your CA" : "Creator Assist"} · {fmtDay(istDate(c.filing.data_sent_at))}</span><Chip tone="ok">Ready</Chip></div>
             ) : (

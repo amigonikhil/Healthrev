@@ -18,7 +18,7 @@ export function FilingAction({ type, period, due, label }: { type: Filing["type"
   const [pending, start] = useTransition();
   const toast = useToast();
   return (
-    <button type="button" className="btn sec" style={{ minHeight: 42, fontSize: 14 }} disabled={pending}
+    <button type="button" className="btn sec sm" disabled={pending}
       onClick={() => start(async () => toast(await sendFilingData(type, period, due)))}>
       {pending ? "Sending…" : label}
     </button>

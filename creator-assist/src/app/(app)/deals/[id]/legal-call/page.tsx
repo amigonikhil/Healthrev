@@ -21,7 +21,7 @@ export default async function LegalCall({ params }: { params: Promise<{ id: stri
             `Go over ${v.d.brand.name}'s response, or silence, to the notice.`,
             "Decide the next step: MSME complaint, civil recovery suit, or settling for part payment.",
             "Get the documents you'll need ready: agreement, invoice, reminders, chats.",
-          ].map((t) => <li key={t}><span className="dot" style={{ background: "var(--acc)" }} /><span>{t}</span></li>)}
+          ].map((t) => <li key={t}><span className="dot" style={{ background: "var(--accent)" }} /><span>{t}</span></li>)}
         </ol>
       </div>
       <div className="card">

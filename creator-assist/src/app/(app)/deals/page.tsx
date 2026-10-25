@@ -36,7 +36,7 @@ export default async function Deals({ searchParams }: { searchParams: Promise<{ 
       </nav>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {shown.map(({ v, r }) => (
-          <Item key={v.d.id} href={rowHref(v)} title={brandWithAgency(v.d)} sub={r.sub} amount={inr(r.amount)} chip={{ label: r.chip, tone: r.tone }} />
+          <Item key={v.d.id} avatar={v.d.brand.name} href={rowHref(v)} title={brandWithAgency(v.d)} sub={r.sub} amount={inr(r.amount)} chip={{ label: r.chip, tone: r.tone }} />
         ))}
         {shown.length === 0 && (
           <div className="card empty">
