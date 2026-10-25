@@ -4,7 +4,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../env";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
-const PUBLIC = [/^\/signin$/, /^\/s\//, /^\/auth\//, /^\/api\/cron\//, /^\/api\/r\//, /^\/api\/s\//];
+const PUBLIC = [/^\/signin$/, /^\/s\//, /^\/auth\//, /^\/api\/cron\//, /^\/api\/r\//, /^\/api\/s\//, /^\/api\/n\//];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

@@ -41,7 +41,7 @@ export function dealTimeline(v: DealView, today: string): TimelineItem[] {
     });
   }
   for (const e of d.escalations) {
-    const label = e.type === "lawyer_notice" ? "Lawyer notice sent for review" : e.type === "msme_samadhaan" ? "MSME Samadhaan case started" : "Final reminder sent";
+    const label = e.type === "lawyer_notice" ? (e.channel ? `Legal notice sent by ${e.channel === "email" ? "email" : "WhatsApp"}` : "Lawyer notice sent for review") : e.type === "msme_samadhaan" ? "MSME Samadhaan case started" : "Final reminder sent";
     out.push({ color: AMBER, text: `${label} · ${fmtDay(istDate(e.created_at))}`, date: e.created_at });
   }
   if (v.phase === "paid") {

@@ -58,7 +58,7 @@ export async function getTax(db: DB): Promise<TaxConfig> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const toTax = (r: any): TaxConfig => ({
+export const toTax = (r: any): TaxConfig => ({
   gst_rate: Number(r?.gst_rate ?? 0),
   tds_rate: Number(r?.tds_rate ?? 0),
   late_interest_rate: Number(r?.late_interest_rate ?? 0),

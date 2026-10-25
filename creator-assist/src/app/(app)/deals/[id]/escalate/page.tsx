@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Chip, Top } from "@/components/ui";
+import { Top } from "@/components/ui";
 import { ADVOCATE } from "@/lib/advocate";
 import { msmeAnnualRate } from "@/lib/calc";
 import { loadDealView } from "@/lib/data";
@@ -32,15 +32,15 @@ export default async function EscalatePage({ params }: { params: Promise<{ id: s
         </div>
         <h2>Choose next step</h2>
         <Link className="item" href={`/deals/${d.id}/reminders`}>
-          <span className="l"><span className="t">1 · Final reminder</span><span className="s">Firm message quoting MSME interest</span></span>
-          <Chip tone="mute">Free</Chip>
+          <span className="l"><span className="t">1 · Send final reminder</span><span className="s">Firm message quoting MSME interest</span></span>
+          <span aria-hidden="true">›</span>
         </Link>
         <Link className="item" href={`/deals/${d.id}/notice`}>
-          <span className="l"><span className="t">2 · Lawyer notice</span><span className="s">An independent lawyer reviews and sends</span></span>
-          <Chip tone="info">{ADVOCATE.fee}</Chip>
+          <span className="l"><span className="t">2 · Send legal notice</span><span className="s">On {ADVOCATE.firm} letterhead, by WhatsApp or email</span></span>
+          <span aria-hidden="true">›</span>
         </Link>
         {profile.udyam_no && <SamadhaanItem dealId={d.id} />}
-        <div className="info">Nothing is sent to the brand without your approval.</div>
+        <div className="info">Nothing goes to the brand until you press send.</div>
       </>)}
     </main>
   );

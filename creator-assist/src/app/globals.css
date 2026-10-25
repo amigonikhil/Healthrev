@@ -123,3 +123,20 @@ details.pg summary .n{margin-left:auto;margin-right:10px;font-size:12px;font-wei
 /* nested platform groups: don't inherit the outer card's open/closed arrow */
 details.card details.pg summary::after{content:"▾"}
 details.card details.pg[open] summary::after{content:"▴"}
+/* legal notice preview: paper stays white in dark mode, like the PDF */
+.paper{background:#fff;color:#111;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.18);padding:14px 14px 18px;font-size:11.5px;line-height:1.5;border-bottom:3px solid #111}
+.paper p{margin:0 0 8px;text-align:justify}
+.paper p.r{text-align:right;margin-top:6px}
+.paper p.c{text-align:center}
+.paper h4{font-size:11.5px;font-weight:700;margin:12px 0 4px}
+.paper ul,.paper ol{margin:0 0 8px;padding-left:18px}
+.paper ul{list-style:disc}
+.paper ol{list-style:decimal}
+.paper li{display:list-item}
+.paper .lh{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-bottom:8px;border-bottom:3px solid #111}
+.paper .lh img{width:44px;height:44px;object-fit:contain}
+.paper .lh-box{flex:1;border:1px solid #111;border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;text-align:center;line-height:1.25}
+.paper .lh-box strong{font-size:13px;letter-spacing:.3px}
+.paper .lh-box u{font-size:11px}
+.paper .lh-box span{font-size:9.5px;margin-top:3px}
+.paper .sig{width:84px;display:block;margin:0 0 2px}

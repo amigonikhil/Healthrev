@@ -58,7 +58,7 @@ export type Reminder = {
 };
 export type Escalation = {
   id: string; deal_id: string; type: "final_reminder" | "lawyer_notice" | "msme_samadhaan";
-  draft: string | null; status: string; created_at: string;
+  draft: string | null; status: string; channel: "email" | "whatsapp" | null; created_at: string;
 };
 
 export type AisEntry = { id: string; fy: string; deductor_name: string; tan: string | null; amount_paise: number; source: string; is_sample: boolean };

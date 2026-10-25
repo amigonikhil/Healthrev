@@ -1,5 +1,5 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 // AES-256-GCM for PAN and bank account numbers. ENCRYPTION_KEY is 32 bytes,
 // base64 or hex. Ciphertext format: v1.<iv>.<tag>.<data> (base64url).
@@ -41,3 +41,6 @@ export function safeEqual(a: string, b: string): boolean {
   const x = Buffer.from(a), y = Buffer.from(b);
   return x.length === y.length && timingSafeEqual(x, y);
 }
+
+/** Short HMAC (keyed by ENCRYPTION_KEY) for links that must not be guessable. */
+export const hmac = (s: string) => createHmac("sha256", key()).update(s).digest("base64url").slice(0, 22);
