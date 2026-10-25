@@ -4,13 +4,13 @@ import { signOut } from "@/app/actions/settings";
 import { SubmitButton } from "@/components/client";
 import { Row } from "@/components/ui";
 import { getTax, requireProfile } from "@/lib/data";
-import { isOwnerPhone } from "@/lib/env";
+import { isOwner } from "@/lib/env";
 import { DeleteAccount, RatesForm, ReminderForm } from "./forms";
 
 export const metadata = { title: "Settings · Creator Assist" };
 
 export default async function Settings() {
-  const { db, profile } = await requireProfile();
+  const { db, profile, user } = await requireProfile();
   const tax = await getTax(db);
   const { count: sampleCount } = await db.from("deals").select("id", { count: "exact", head: true }).eq("is_sample", true);
 
@@ -45,7 +45,7 @@ export default async function Settings() {
         <a className="btn sec" href="/api/export" download>Export my data</a>
         <DeleteAccount />
       </div>
-      {isOwnerPhone(profile.phone) && <Link className="btn sec" href="/admin/feedback">Tester feedback (admin)</Link>}
+      {isOwner(user) && <Link className="btn sec" href="/admin/feedback">Tester feedback (admin)</Link>}
       <form action={signOut}><SubmitButton className="btn sec" pendingText="Logging out…">Log out</SubmitButton></form>
       <p className="sub" style={{ textAlign: "center" }}>Creator Assist beta · PAN and bank numbers are encrypted.</p>
     </main>

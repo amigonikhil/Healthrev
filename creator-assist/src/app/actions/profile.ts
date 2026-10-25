@@ -5,7 +5,7 @@ import { audit } from "@/lib/audit";
 import { encrypt, last4, maskPan } from "@/lib/crypto";
 import { getTax } from "@/lib/data";
 import { todayIST } from "@/lib/dates";
-import { demoOwner, isOwnerPhone, normPhone } from "@/lib/env";
+import { demoOwner, isOwner, normPhone } from "@/lib/env";
 import { defaultPrefix } from "@/lib/invoice";
 import { seedDemoData } from "@/lib/seed";
 import { stateByName } from "@/lib/states";
@@ -69,7 +69,7 @@ export async function createProfile(_: FormState, f: FormData): Promise<FormStat
   await db.from("tax_config").upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
 
   // The owner always gets the demo set, even if they onboard by hand.
-  if (isOwnerPhone(user.phone)) await seedFor(db, user.id, f.get("pan") ? up(f.get("pan")) : null);
+  if (isOwner(user)) await seedFor(db, user.id, f.get("pan") ? up(f.get("pan")) : null);
   redirect("/home");
 }
 
@@ -91,7 +91,7 @@ export async function provisionOwnerIfNeeded(): Promise<boolean> {
   const owner = demoOwner();
   const db = await createClient();
   const { data: { user } } = await db.auth.getUser();
-  if (!owner || !user || !isOwnerPhone(user.phone)) return false;
+  if (!owner || !user || !isOwner(user)) return false;
 
   const state = stateByName(owner.state) ?? stateByName("Telangana")!;
   const samplePan = "ABCDE1234F";
@@ -99,7 +99,7 @@ export async function provisionOwnerIfNeeded(): Promise<boolean> {
     id: user.id,
     name: owner.name,
     handle: owner.handle ? owner.handle.replace(/^@?/, "@") : null,
-    phone: "+" + normPhone(user.phone),
+    phone: "+" + normPhone(user.phone || owner.phone),
     email: owner.email || user.email || null,
     city: owner.city,
     address: null,

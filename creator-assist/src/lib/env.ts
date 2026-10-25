@@ -38,3 +38,15 @@ export function isOwnerPhone(phone: string | null | undefined): boolean {
   const o = process.env.DEMO_OWNER_PHONE;
   return !!o && !!phone && normPhone(o) === normPhone(phone);
 }
+
+/**
+ * The demo owner, by verified sign-in identity only (Supabase auth user, never
+ * editable profile fields): their phone, or DEMO_OWNER_EMAIL while phone
+ * sign-in is not live.
+ */
+export function isOwner(user: { phone?: string | null; email?: string | null; email_confirmed_at?: string | null } | null | undefined): boolean {
+  if (!user) return false;
+  if (isOwnerPhone(user.phone)) return true;
+  const e = process.env.DEMO_OWNER_EMAIL?.trim().toLowerCase();
+  return !!e && !!user.email_confirmed_at && user.email?.trim().toLowerCase() === e;
+}

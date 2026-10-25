@@ -1,15 +1,15 @@
 import { notFound } from "next/navigation";
 import { Top } from "@/components/ui";
 import { requireProfile } from "@/lib/data";
-import { isOwnerPhone } from "@/lib/env";
+import { isOwner } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata = { title: "Feedback · Creator Assist" };
 
 export default async function FeedbackAdmin() {
   const { user } = await requireProfile();
-  // Only the demo owner (by their verified auth phone) can see tester feedback.
-  if (!isOwnerPhone(user.phone)) notFound();
+  // Only the demo owner (by verified sign-in phone or email) can see tester feedback.
+  if (!isOwner(user)) notFound();
   const admin = createAdminClient();
   const { data: rows } = await admin.from("feedback").select("*").order("created_at", { ascending: false }).limit(500);
   const ids = [...new Set((rows ?? []).map((r) => r.user_id).filter(Boolean))];
