@@ -16,18 +16,19 @@ async function loadOverdue(dealId: string) {
   const { db, user, profile } = await requireProfile();
   const deal = await loadDeal(db, dealId);
   if (!deal?.invoice) return null;
-  const v = viewDeal(deal, profile, await getTax(db), todayIST());
-  return v.phase === "overdue" ? { db, user, profile, v } : null;
+  const tax = await getTax(db);
+  const v = viewDeal(deal, profile, tax, todayIST());
+  return v.phase === "overdue" ? { db, user, profile, tax, v } : null;
 }
 
 /** Records that the creator sent the legal notice, and marks the deal escalated. */
 async function recordSent(dealId: string, channel: "email" | "whatsapp") {
   const ctx = await loadOverdue(dealId);
   if (!ctx) return;
-  const { db, user, profile, v } = ctx;
+  const { db, user, profile, tax, v } = ctx;
   const { data } = await db.from("escalations").insert({
     deal_id: dealId, type: "lawyer_notice", channel, status: "sent", is_sample: v.d.is_sample,
-    draft: noticeText(noticeFor(v, profile, { fresh: true })),
+    draft: noticeText(noticeFor(v, profile, tax, { fresh: true })),
   }).select("id").single();
   await db.from("deals").update({ status: "escalated" }).eq("id", dealId);
   await audit(db, user.id, "legal_notice_sent", "escalation", data?.id, { channel });
@@ -43,12 +44,12 @@ export async function logNoticeWhatsApp(dealId: string) {
 export async function emailLegalNotice(dealId: string): Promise<string> {
   const ctx = await loadOverdue(dealId);
   if (!ctx) return "This deal has no overdue invoice to send a notice for";
-  const { profile, v } = ctx;
+  const { profile, tax, v } = ctx;
   const d = v.d;
   const to = d.is_sample ? profile.email : d.brand.contact_email;
   if (!to) return d.is_sample ? "Add your email in Settings to receive the sample notice" : "Add a contact email for this brand first";
 
-  const n = noticeFor(v, profile, { fresh: true });
+  const n = noticeFor(v, profile, tax, { fresh: true });
   const pdf = await noticePdf(n);
   const inv = d.invoice!;
   const r = await sendEmail({
@@ -60,9 +61,9 @@ export async function emailLegalNotice(dealId: string): Promise<string> {
       ...(d.is_sample ? ["(Sample deal: this copy came to you instead of the brand.)", ""] : []),
       `Dear ${d.brand.contact_name || "Sir/Madam"},`,
       "",
-      `Please find attached a legal notice issued on behalf of my client, ${profile.name}, for the unpaid balance of ${inr(v.remaining)} under Tax Invoice No. ${inv.number}.`,
+      `Please find attached a legal notice issued on behalf of my client, ${profile.name}, for the unpaid balance of ${inr(n.claim.principal)} under Tax Invoice No. ${inv.number}.`,
       "",
-      `You are called upon to make the payment within ${NOTICE_DAYS} days of receipt of this notice. Please reply to this email with the payment details.`,
+      `You are called upon to pay ${inr(n.claim.total)}${n.claim.interest || n.claim.legalFee ? ", including interest and legal costs as set out in the notice," : ""} within ${NOTICE_DAYS} days of receipt of this notice, failing which my client will lodge a complaint and initiate recovery proceedings without further notice. Please reply to this email with the payment details.`,
       "",
       "Regards,",
       `${ADVOCATE.name}, Advocate`,

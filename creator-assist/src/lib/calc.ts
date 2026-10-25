@@ -4,7 +4,9 @@
 export type TaxConfig = {
   gst_rate: number;      // %
   tds_rate: number;      // % — default for new deals; each deal stores its own
-  late_interest_rate: number; // % a year, contractual late-payment interest in agreements
+  late_interest_rate: number; // %, contractual late-payment interest in agreements, per late_interest_period
+  late_interest_period: "week" | "year";
+  notice_legal_fee_paise: number; // legal fee claimed in the lawyer notice
   rbi_bank_rate: number; // % a year
   msme_multiple: number; // × RBI bank rate
 };
@@ -124,6 +126,22 @@ export function msmeInterest(unpaidPaise: number, daysOverdue: number, tax: TaxC
   const compounded = unpaidPaise * Math.pow(1 + annual / 12, months);
   const withRest = compounded * (1 + (annual * rest) / 365);
   return Math.round(withRest - unpaidPaise);
+}
+
+/** Contractual late-payment interest: a % rate per week or per year. VERIFY WITH LAWYER. */
+export type LateInterest = { rate: number; period: "week" | "year" };
+export const lateTerms = (tax: TaxConfig): LateInterest => ({ rate: tax.late_interest_rate, period: tax.late_interest_period });
+
+/** Simple interest on the unpaid amount from the due date, pro rata for part weeks/years. */
+export function lateInterest(unpaidPaise: number, daysOverdue: number, li: LateInterest): number {
+  if (unpaidPaise <= 0 || daysOverdue <= 0 || li.rate <= 0) return 0;
+  return Math.round((unpaidPaise * li.rate * daysOverdue) / 100 / (li.period === "week" ? 7 : 365));
+}
+
+/** Reads the rate back out of a signed agreement's late-payment clause. */
+export function parseLateClause(text: string | null | undefined): LateInterest | null {
+  const m = text?.match(/interest at ([\d.]+)% (a year|per week)/);
+  return m ? { rate: Number(m[1]), period: m[2] === "per week" ? "week" : "year" } : null;
 }
 
 /**

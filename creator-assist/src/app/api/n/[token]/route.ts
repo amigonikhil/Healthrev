@@ -22,7 +22,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ token: str
     db.from("tax_config").select("*").eq("user_id", deal.user_id).maybeSingle(),
   ]);
   if (!profile) return new Response("Not found", { status: 404 });
-  const pdf = await noticePdf(noticeFor(viewDeal(deal, profile, toTax(tax), todayIST()), profile));
+  const pdf = await noticePdf(noticeFor(viewDeal(deal, profile, toTax(tax), todayIST()), profile, toTax(tax)));
   return new Response(new Uint8Array(pdf), {
     headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="Legal-notice-${deal.invoice.number.replace(/\//g, "-")}.pdf"`, "Cache-Control": "private, no-store" },
   });

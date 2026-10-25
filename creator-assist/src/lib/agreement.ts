@@ -1,3 +1,4 @@
+import type { LateInterest } from "./calc";
 import { fmtDate, fmtDateLong } from "./dates";
 import { deliverablesProse, usageDurationProse, USAGE_SCOPES } from "./deliverables";
 import { inr } from "./money";
@@ -12,8 +13,8 @@ const fmtRate = (r: number) => (Number.isInteger(r) ? String(r) : r.toFixed(2).r
 export function buildAgreement(args: {
   profile: Profile; pan: string | null; brand: Brand; deal: Deal;
   deliverables: DealDeliverable[]; usage: UsageRights | null; date: string;
-  /** % a year, from tax_config.late_interest_rate. VERIFY WITH LAWYER/CA. */
-  lateInterestRate: number;
+  /** From tax_config (rate and period). VERIFY WITH LAWYER/CA. */
+  lateInterest: LateInterest;
 }): AgreementBody {
   const { profile: p, brand: b, deal: d } = args;
   const creatorIds = [args.pan && `PAN ${args.pan}`, p.gstin && `GSTIN ${p.gstin}`].filter(Boolean).join(", ");
@@ -43,8 +44,8 @@ export function buildAgreement(args: {
   ];
   // Contractual interest applies to everyone; MSME-registered creators also keep their statutory rights.
   const late = [
-    args.lateInterestRate > 0
-      ? `Any amount not paid by its due date carries interest at ${fmtRate(args.lateInterestRate)}% a year on the unpaid amount, from the due date until it is paid.`
+    args.lateInterest.rate > 0
+      ? `Any amount not paid by its due date carries interest at ${fmtRate(args.lateInterest.rate)}% ${args.lateInterest.period === "week" ? "per week" : "a year"} on the unpaid amount${args.lateInterest.period === "week" ? " (pro rata for part of a week)" : ""}, from the due date until it is paid, together with any legal costs of recovering it.`
       : "",
     p.udyam_no ? `Creator is registered under the MSMED Act, 2006 (${p.udyam_no}) and keeps all rights under that Act, including interest on delayed payment.` : "",
   ].filter(Boolean).join(" ");

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { audit } from "@/lib/audit";
 import { requireProfile } from "@/lib/data";
+import { parseRupees } from "@/lib/money";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,9 +20,13 @@ export async function saveRates(_: SetState, f: FormData): Promise<SetState> {
   for (const [k, v] of Object.entries(rates)) {
     if (!Number.isFinite(v) || v < 0 || v > (k === "msme_multiple" ? 10 : 100)) return { error: `Check the ${k.replace(/_/g, " ")}` };
   }
-  const { error } = await db.from("tax_config").upsert({ user_id: user.id, ...rates }, { onConflict: "user_id" });
+  const period = f.get("late_interest_period") === "year" ? "year" : "week";
+  const fee = parseRupees(String(f.get("notice_legal_fee") ?? "0"));
+  if (!Number.isFinite(fee) || fee < 0 || fee > 100_000_000) return { error: "Check the legal fee" };
+  const row = { ...rates, late_interest_period: period, notice_legal_fee_paise: fee };
+  const { error } = await db.from("tax_config").upsert({ user_id: user.id, ...row }, { onConflict: "user_id" });
   if (error) return { error: error.message };
-  await audit(db, user.id, "settings_updated", "tax_config", null, rates);
+  await audit(db, user.id, "settings_updated", "tax_config", null, row);
   return { ok: "Rates saved. New deals, agreements and invoices use them; ones already sent keep their rates." };
 }
 

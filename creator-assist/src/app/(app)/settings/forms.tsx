@@ -34,7 +34,14 @@ export function RatesForm({ tax }: { tax: TaxConfig }) {
       <label className="f">RBI bank rate for MSME interest (%)<input name="rbi_bank_rate" defaultValue={tax.rbi_bank_rate.toFixed(2)} inputMode="decimal" /></label>
       <label className="f">MSME interest multiple (× RBI bank rate)<input name="msme_multiple" defaultValue={String(tax.msme_multiple)} inputMode="decimal" /></label>
       <label className="f">Default TDS on fees (%)<input name="tds_rate" defaultValue={String(tax.tds_rate)} inputMode="decimal" /></label>
-      <label className="f">Late payment interest in agreements (% a year)<input name="late_interest_rate" defaultValue={String(tax.late_interest_rate)} inputMode="decimal" /></label>
+      <label className="f">Late payment interest in agreements (%)<input name="late_interest_rate" defaultValue={String(tax.late_interest_rate)} inputMode="decimal" /></label>
+      <label className="f">Charged
+        <select name="late_interest_period" defaultValue={tax.late_interest_period}>
+          <option value="week">Per week</option>
+          <option value="year">Per year</option>
+        </select>
+      </label>
+      <label className="f">Legal fee claimed in lawyer notices (₹)<input name="notice_legal_fee" defaultValue={String(tax.notice_legal_fee_paise / 100)} inputMode="decimal" /></label>
       <label className="f">GST rate (%)<input name="gst_rate" defaultValue={String(tax.gst_rate)} inputMode="decimal" /></label>
       <p className="sub">Confirm these with your CA. Very high late-payment rates can be challenged as a penalty; check with a lawyer.</p>
       {state?.error && <p className="err" role="alert">{state.error}</p>}

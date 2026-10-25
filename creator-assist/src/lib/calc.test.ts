@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { allocate, dealSummary, feeBreakdown, gstSplit, msmeInterest, type TaxConfig } from "./calc.ts";
+import { allocate, dealSummary, feeBreakdown, gstSplit, lateInterest, msmeInterest, parseLateClause, type TaxConfig } from "./calc.ts";
 import { amountInWords, inr, parseRupees } from "./money.ts";
 import { addDays, daysBetween, fyOf, todayIST } from "./dates.ts";
 
-const tax: TaxConfig = { gst_rate: 18, tds_rate: 10, rbi_bank_rate: 5.5, msme_multiple: 3, late_interest_rate: 36 };
+const tax: TaxConfig = { gst_rate: 18, tds_rate: 10, rbi_bank_rate: 5.5, msme_multiple: 3, late_interest_rate: 10, late_interest_period: "week", notice_legal_fee_paise: 500000 };
 
 test("Voltra: IGST deal with advance matches the prototype", () => {
   const s = dealSummary({ feePaise: 4_500_000, gstMode: "add", tdsRate: 10, advancePaise: 1_500_000, creatorStateCode: "36", brandStateCode: "29", creatorRegistered: true, tax });
@@ -80,4 +80,14 @@ test("no GST mode and unregistered creators charge nothing; TDS can be off", () 
   const u = dealSummary({ feePaise: 6_000_000, gstMode: "add", tdsRate: 2, advancePaise: 0, creatorStateCode: "36", brandStateCode: "29", creatorRegistered: false, tax });
   assert.equal(u.gst.total, 0);
   assert.equal(u.tds, 120_000);
+});
+
+test("late interest: 10% a week, pro rata by day; parsed back from the agreement clause", () => {
+  assert.equal(lateInterest(3_810_000, 18, { rate: 10, period: "week" }), 979_714);
+  assert.equal(lateInterest(3_810_000, 7, { rate: 10, period: "week" }), 381_000);
+  assert.equal(lateInterest(3_650_000, 10, { rate: 36, period: "year" }), 36_000);
+  assert.equal(lateInterest(3_810_000, 0, { rate: 10, period: "week" }), 0);
+  assert.deepEqual(parseLateClause("carries interest at 10% per week on the unpaid amount"), { rate: 10, period: "week" });
+  assert.deepEqual(parseLateClause("carries interest at 36% a year on the unpaid amount"), { rate: 36, period: "year" });
+  assert.equal(parseLateClause("no clause"), null);
 });

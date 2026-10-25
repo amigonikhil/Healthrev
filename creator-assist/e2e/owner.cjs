@@ -108,7 +108,12 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.waitForURL("**/notice");
   await page.waitForSelector(".paper");
   t = await text();
-  for (const k of ["RTK/2026-27/014", "₹38,100", "within 7 days", "Authorised Representative for RAVI TEJA K"]) ok(t.includes(k), "notice preview: " + k);
+  for (const k of [
+    "RTK/2026-27/014", "within 7 days", "Authorised Representative for RAVI TEJA K",
+    "Principal amount outstanding under Tax Invoice No. RTK/2026-27/014: ₹38,100",
+    "Interest @ 10% per week", "(18 days): ₹9,797", "Legal fee towards this notice: ₹5,000", "Total payable as on", "₹52,897",
+    "lodge a complaint against you",
+  ]) ok(t.includes(k), "notice preview: " + k);
   const noticeRes = await page.request.get(dealUrl.replace("/deals/", "/api/deals/") + "/notice");
   const buf = await noticeRes.body();
   ok(noticeRes.ok() && noticeRes.headers()["content-type"] === "application/pdf" && buf.subarray(0, 4).toString() === "%PDF", "notice PDF renders");

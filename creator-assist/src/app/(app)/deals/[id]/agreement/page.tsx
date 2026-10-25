@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Chip, Doc, Row, Top } from "@/components/ui";
 import { buildAgreement } from "@/lib/agreement";
+import { lateTerms } from "@/lib/calc";
 import { decrypt } from "@/lib/crypto";
 import { fmtDateLong, fmtDay, fmtTimeIST, todayIST, istDate } from "@/lib/dates";
 import { loadDealView } from "@/lib/data";
@@ -12,7 +13,7 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
   const { v, profile, tax } = await loadDealView(id);
   const d = v.d;
   const a = d.agreement;
-  const body = a?.body ?? buildAgreement({ profile, pan: decrypt(profile.pan_enc), brand: d.brand, deal: d, deliverables: d.deliverables, usage: d.usage, date: todayIST(), lateInterestRate: tax.late_interest_rate });
+  const body = a?.body ?? buildAgreement({ profile, pan: decrypt(profile.pan_enc), brand: d.brand, deal: d, deliverables: d.deliverables, usage: d.usage, date: todayIST(), lateInterest: lateTerms(tax) });
   const contact = d.brand.contact_name || d.brand.name;
 
   return (

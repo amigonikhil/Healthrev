@@ -84,12 +84,12 @@ export async function noticePdf(n: Notice) {
 
         {n.sections.map((sec, i) => (
           <View key={sec.title}>
-            <Text style={s.h} minPresenceAhead={40}>{i + 1}. {sec.title}</Text>
+            <Text style={s.h} minPresenceAhead={80}>{i + 1}. {sec.title}</Text>
             {sec.body.map((x, j) => <P key={j} x={x} />)}
           </View>
         ))}
 
-        <Text style={s.h} minPresenceAhead={40}>CONCLUSION</Text>
+        <Text style={s.h} minPresenceAhead={80}>CONCLUSION</Text>
         {n.conclusion.map((x, i) => <P key={i} x={x} />)}
         <Text style={[s.just, s.block]}>{n.withoutPrejudice}</Text>
 

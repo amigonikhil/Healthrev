@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { buildAgreement } from "./agreement";
-import type { TaxConfig } from "./calc";
+import { lateTerms, type TaxConfig } from "./calc";
 import { randomToken } from "./crypto";
 import { addDays, fyOf, nineAmIST } from "./dates";
 import { buildInvoice, invoiceNumber } from "./invoice";
@@ -115,7 +115,7 @@ export function buildSamplePayload(args: { userId: string; profile: Profile; pan
 
     if (s.agreement) {
       const sentDate = day(s.agreement.sentAt);
-      const body = buildAgreement({ profile, pan: args.pan, brand, deal, deliverables, usage, date: sentDate, lateInterestRate: tax.late_interest_rate });
+      const body = buildAgreement({ profile, pan: args.pan, brand, deal, deliverables, usage, date: sentDate, lateInterest: lateTerms(tax) });
       const signed = s.agreement.signedAt != null;
       p.agreements.push({
         id: randomUUID(), user_id, deal_id: deal.id, body, sign_token: randomToken(), status: signed ? "signed" : "sent",

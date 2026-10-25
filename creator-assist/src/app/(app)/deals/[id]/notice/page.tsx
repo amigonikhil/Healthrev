@@ -11,12 +11,12 @@ import { NoticeSend } from "./send";
 
 export default async function NoticePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, profile } = await loadDealView(id);
+  const { v, profile, tax } = await loadDealView(id);
   if (v.phase !== "overdue") redirect(`/deals/${id}/escalate`);
   const d = v.d;
-  const n = noticeFor(v, profile, { fresh: true });
+  const n = noticeFor(v, profile, tax, { fresh: true });
   const link = `${siteUrl()}/api/n/${noticeToken(id)}`;
-  const wa = `Dear ${d.brand.contact_name?.split(" ")[0] || "Sir/Madam"}, please find the legal notice issued on behalf of ${profile.name} by ${ADVOCATE.name}, Advocate, ${ADVOCATE.firm}, for the unpaid balance of ${inr(v.remaining)} under invoice ${d.invoice!.number}.\n\nNotice: ${link}\n\nPlease make the payment within ${NOTICE_DAYS} days of receipt.`;
+  const wa = `Dear ${d.brand.contact_name?.split(" ")[0] || "Sir/Madam"}, please find the legal notice issued on behalf of ${profile.name} by ${ADVOCATE.name}, Advocate, ${ADVOCATE.firm}, for the unpaid balance of ${inr(n.claim.principal)} under invoice ${d.invoice!.number}.\n\nNotice: ${link}\n\nPlease pay ${inr(n.claim.total)}${n.claim.interest || n.claim.legalFee ? " (including interest and legal costs)" : ""} within ${NOTICE_DAYS} days of receipt, failing which a complaint will be lodged and recovery proceedings started without further notice.`;
   return (
     <main className="scr">
       <Top title="Legal notice" fallback={`/deals/${id}/escalate`} />

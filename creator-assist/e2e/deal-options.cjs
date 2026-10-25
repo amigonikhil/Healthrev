@@ -77,7 +77,7 @@ async function otpFor(email) {
   ok(t.includes("2 Instagram Reels and 1 YouTube Short"), "deliverables in agreement");
   ok(t.includes("₹59,000 inclusive of GST") && t.includes("payable within 50 days") && !t.includes("TDS deducted"), "fee clause: incl. GST, 50 days, no TDS line");
   ok(t.includes("use the content for 7 months"), "usage rights 7 months");
-  ok(t.includes("Late payment Any amount not paid by its due date carries interest at 36% a year"), "late payment clause at 36% for a non-MSME creator");
+  ok(t.includes("Late payment Any amount not paid by its due date carries interest at 10% per week on the unpaid amount"), "late payment clause at 10% per week for a non-MSME creator");
 
   const dealUrl = page.url().replace("/agreement", "");
   await page.goto(dealUrl);
@@ -93,11 +93,15 @@ async function otpFor(email) {
 
   console.log("Settings: late interest rate is editable");
   await page.goto("http://localhost:3000/settings");
-  await page.getByLabel("Late payment interest in agreements (% a year)").fill("24");
+  await page.getByLabel("Late payment interest in agreements (%)").fill("24");
+  await page.getByLabel("Charged").selectOption("year");
+  await page.getByLabel("Legal fee claimed in lawyer notices (₹)").fill("7500");
   await page.getByRole("button", { name: "Save rates" }).click();
   await page.waitForSelector("text=Rates saved");
   await page.reload();
-  ok((await page.getByLabel("Late payment interest in agreements (% a year)").inputValue()) === "24", "late interest saved");
+  ok((await page.getByLabel("Late payment interest in agreements (%)").inputValue()) === "24", "late interest saved");
+  ok((await page.getByLabel("Charged").inputValue()) === "year", "interest period saved");
+  ok((await page.getByLabel("Legal fee claimed in lawyer notices (₹)").inputValue()) === "7500", "legal fee saved");
 
   await browser.close();
   console.log(failures ? `\n${failures} FAILURE(S)` : "\nALL DEAL-OPTION CHECKS PASSED");
