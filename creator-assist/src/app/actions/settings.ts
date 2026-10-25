@@ -12,14 +12,17 @@ const num = (v: FormDataEntryValue | null) => parseFloat(String(v ?? "").trim())
 
 export async function saveRates(_: SetState, f: FormData): Promise<SetState> {
   const { db, user } = await requireProfile();
-  const rates = { gst_rate: num(f.get("gst_rate")), tds_rate: num(f.get("tds_rate")), rbi_bank_rate: num(f.get("rbi_bank_rate")), msme_multiple: num(f.get("msme_multiple")) };
+  const rates = {
+    gst_rate: num(f.get("gst_rate")), tds_rate: num(f.get("tds_rate")), rbi_bank_rate: num(f.get("rbi_bank_rate")),
+    msme_multiple: num(f.get("msme_multiple")), late_interest_rate: num(f.get("late_interest_rate")),
+  };
   for (const [k, v] of Object.entries(rates)) {
     if (!Number.isFinite(v) || v < 0 || v > (k === "msme_multiple" ? 10 : 100)) return { error: `Check the ${k.replace(/_/g, " ")}` };
   }
   const { error } = await db.from("tax_config").upsert({ user_id: user.id, ...rates }, { onConflict: "user_id" });
   if (error) return { error: error.message };
   await audit(db, user.id, "settings_updated", "tax_config", null, rates);
-  return { ok: "Rates saved. New deals and invoices use them; existing invoices keep their rates." };
+  return { ok: "Rates saved. New deals, agreements and invoices use them; ones already sent keep their rates." };
 }
 
 export async function saveReminderSettings(_: SetState, f: FormData): Promise<SetState> {

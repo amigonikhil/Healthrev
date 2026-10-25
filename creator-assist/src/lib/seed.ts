@@ -104,6 +104,7 @@ export function buildSamplePayload(args: { userId: string; profile: Profile; pan
       id: randomUUID(), user_id, brand_id: brand.id, paid_by: s.paidBy, fee_paise: rupees(s.fee), advance_paise: rupees(s.advance),
       advance_received_at: s.advanceAt != null ? day(s.advanceAt) : null, go_live_date: day(s.goLive), terms_days: s.terms,
       status: s.status, is_sample: true, created_at: ts(today, s.createdAt), updated_at: ts(today, s.createdAt),
+      gst_mode: "add", tds_rate: tax.tds_rate,
     };
     p.deals.push(deal);
 
@@ -114,7 +115,7 @@ export function buildSamplePayload(args: { userId: string; profile: Profile; pan
 
     if (s.agreement) {
       const sentDate = day(s.agreement.sentAt);
-      const body = buildAgreement({ profile, pan: args.pan, brand, deal, deliverables, usage, date: sentDate });
+      const body = buildAgreement({ profile, pan: args.pan, brand, deal, deliverables, usage, date: sentDate, lateInterestRate: tax.late_interest_rate });
       const signed = s.agreement.signedAt != null;
       p.agreements.push({
         id: randomUUID(), user_id, deal_id: deal.id, body, sign_token: randomToken(), status: signed ? "signed" : "sent",
@@ -127,7 +128,7 @@ export function buildSamplePayload(args: { userId: string; profile: Profile; pan
 
     if (s.invoice) {
       const draft = buildInvoice({
-        profile, tax, brandStateCode: brand.state_code, fee: deal.fee_paise,
+        profile, tax, brandStateCode: brand.state_code, fee: deal.fee_paise, gstMode: deal.gst_mode, tdsRate: deal.tds_rate,
         advanceReceived: deal.advance_received_at ? deal.advance_paise : 0, termsDays: s.terms,
         invoiceDate: day(s.invoice.at), deliverables, usage,
       });

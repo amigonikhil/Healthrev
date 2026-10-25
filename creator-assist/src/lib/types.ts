@@ -26,6 +26,7 @@ export type Deal = {
   id: string; user_id: string; brand_id: string; paid_by: "brand" | "agency"; fee_paise: number;
   advance_paise: number; advance_received_at: string | null; go_live_date: string | null; terms_days: number;
   status: DealStatus; is_sample: boolean; created_at: string; updated_at: string;
+  gst_mode: "add" | "incl" | "none"; tds_rate: number;
 };
 
 export type DealDeliverable = { id: string; deal_id: string; platform: string; type: string; quantity: number };

@@ -9,10 +9,10 @@ import { SendPanel } from "./send";
 
 export default async function AgreementPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, profile } = await loadDealView(id);
+  const { v, profile, tax } = await loadDealView(id);
   const d = v.d;
   const a = d.agreement;
-  const body = a?.body ?? buildAgreement({ profile, pan: decrypt(profile.pan_enc), brand: d.brand, deal: d, deliverables: d.deliverables, usage: d.usage, date: todayIST() });
+  const body = a?.body ?? buildAgreement({ profile, pan: decrypt(profile.pan_enc), brand: d.brand, deal: d, deliverables: d.deliverables, usage: d.usage, date: todayIST(), lateInterestRate: tax.late_interest_rate });
   const contact = d.brand.contact_name || d.brand.name;
 
   return (

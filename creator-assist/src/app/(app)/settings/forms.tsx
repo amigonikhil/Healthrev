@@ -33,9 +33,10 @@ export function RatesForm({ tax }: { tax: TaxConfig }) {
       <h2>Rates</h2>
       <label className="f">RBI bank rate for MSME interest (%)<input name="rbi_bank_rate" defaultValue={tax.rbi_bank_rate.toFixed(2)} inputMode="decimal" /></label>
       <label className="f">MSME interest multiple (× RBI bank rate)<input name="msme_multiple" defaultValue={String(tax.msme_multiple)} inputMode="decimal" /></label>
-      <label className="f">Expected TDS on fees (%)<input name="tds_rate" defaultValue={String(tax.tds_rate)} inputMode="decimal" /></label>
+      <label className="f">Default TDS on fees (%)<input name="tds_rate" defaultValue={String(tax.tds_rate)} inputMode="decimal" /></label>
+      <label className="f">Late payment interest in agreements (% a year)<input name="late_interest_rate" defaultValue={String(tax.late_interest_rate)} inputMode="decimal" /></label>
       <label className="f">GST rate (%)<input name="gst_rate" defaultValue={String(tax.gst_rate)} inputMode="decimal" /></label>
-      <p className="sub">Confirm these with your CA.</p>
+      <p className="sub">Confirm these with your CA. Very high late-payment rates can be challenged as a penalty; check with a lawyer.</p>
       {state?.error && <p className="err" role="alert">{state.error}</p>}
       {state?.ok && <p className="info" role="status">{state.ok}</p>}
       <SubmitButton className="btn sec">Save rates</SubmitButton>

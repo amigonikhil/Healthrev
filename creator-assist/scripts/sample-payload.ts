@@ -11,6 +11,6 @@ const profile = {
 } as unknown as Profile;
 const payload = buildSamplePayload({
   userId, profile, pan: "ABCDE1234F", today, maxSeqByFy: {},
-  tax: { gst_rate: 18, tds_rate: 10, rbi_bank_rate: 5.5, msme_multiple: 3 },
+  tax: { gst_rate: 18, tds_rate: 10, rbi_bank_rate: 5.5, msme_multiple: 3, late_interest_rate: 36 },
 });
 process.stdout.write(JSON.stringify(payload));

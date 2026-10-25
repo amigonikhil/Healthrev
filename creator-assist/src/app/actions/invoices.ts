@@ -23,7 +23,7 @@ export async function generateInvoice(dealId: string, _: InvState, f: FormData):
 
   const tax = await getTax(db);
   const draft = buildInvoice({
-    profile, tax, brandStateCode: deal.brand.state_code, fee: deal.fee_paise,
+    profile, tax, brandStateCode: deal.brand.state_code, fee: deal.fee_paise, gstMode: deal.gst_mode, tdsRate: Number(deal.tds_rate),
     advanceReceived: deal.advance_received_at ? deal.advance_paise : 0, termsDays: deal.terms_days,
     invoiceDate: date, deliverables: deal.deliverables, usage: deal.usage,
   });

@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { allocate, dealSummary, gstSplit, msmeInterest, type TaxConfig } from "./calc.ts";
+import { allocate, dealSummary, feeBreakdown, gstSplit, msmeInterest, type TaxConfig } from "./calc.ts";
 import { amountInWords, inr, parseRupees } from "./money.ts";
 import { addDays, daysBetween, fyOf, todayIST } from "./dates.ts";
 
-const tax: TaxConfig = { gst_rate: 18, tds_rate: 10, rbi_bank_rate: 5.5, msme_multiple: 3 };
+const tax: TaxConfig = { gst_rate: 18, tds_rate: 10, rbi_bank_rate: 5.5, msme_multiple: 3, late_interest_rate: 36 };
 
 test("Voltra: IGST deal with advance matches the prototype", () => {
-  const s = dealSummary({ feePaise: 4_500_000, advancePaise: 1_500_000, creatorStateCode: "36", brandStateCode: "29", creatorRegistered: true, tax });
+  const s = dealSummary({ feePaise: 4_500_000, gstMode: "add", tdsRate: 10, advancePaise: 1_500_000, creatorStateCode: "36", brandStateCode: "29", creatorRegistered: true, tax });
   assert.equal(s.gst.kind, "igst");
   assert.equal(s.gst.igst, 810_000);
   assert.equal(s.total, 5_310_000);
@@ -55,4 +55,29 @@ test("dates", () => {
   assert.equal(addDays("2026-10-25", -18), "2026-10-07");
   assert.equal(daysBetween("2026-10-07", "2026-10-25"), 18);
   assert.equal(todayIST(new Date("2026-10-24T19:00:00Z")), "2026-10-25");
+});
+
+test("incl. GST: typed amount is the invoice total; GST backed out", () => {
+  const s = dealSummary({ feePaise: 5_310_000, gstMode: "incl", tdsRate: 10, advancePaise: 0, creatorStateCode: "36", brandStateCode: "29", creatorRegistered: true, tax });
+  assert.equal(s.taxable, 4_500_000);
+  assert.equal(s.gst.igst, 810_000);
+  assert.equal(s.total, 5_310_000);
+  assert.equal(s.tds, 450_000); // TDS on the taxable value, not the gross
+});
+
+test("incl. GST with odd amounts still totals exactly (CGST + SGST)", () => {
+  const { taxable, gst } = feeBreakdown({ feePaise: 1_000_000, mode: "incl", creatorStateCode: "36", brandStateCode: "36", rate: 18, creatorRegistered: true });
+  assert.equal(taxable + gst.total, 1_000_000);
+  assert.equal(gst.cgst + gst.sgst, gst.total);
+  assert.ok(Math.abs(gst.cgst - gst.sgst) <= 1);
+});
+
+test("no GST mode and unregistered creators charge nothing; TDS can be off", () => {
+  const s = dealSummary({ feePaise: 6_000_000, gstMode: "none", tdsRate: 0, advancePaise: 0, creatorStateCode: "36", brandStateCode: "29", creatorRegistered: true, tax });
+  assert.equal(s.gst.total, 0);
+  assert.equal(s.tds, 0);
+  assert.equal(s.receive, 6_000_000);
+  const u = dealSummary({ feePaise: 6_000_000, gstMode: "add", tdsRate: 2, advancePaise: 0, creatorStateCode: "36", brandStateCode: "29", creatorRegistered: false, tax });
+  assert.equal(u.gst.total, 0);
+  assert.equal(u.tds, 120_000);
 });

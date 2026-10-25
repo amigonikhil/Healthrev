@@ -11,7 +11,7 @@ import { dealTimeline } from "@/lib/timeline";
 
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, today } = await loadDealView(id);
+  const { v, today, profile } = await loadDealView(id);
   const d = v.d;
   const inv = d.invoice;
   const chip = detailChip(v);
@@ -50,6 +50,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         <Row k="Deliverables" v={deliverablesSummary(d.deliverables)} />
         <Row k="Usage rights" v={d.usage?.enabled ? `${usageDurationLabel(d.usage.duration)} · included` : "None"} />
         <Row k="Paid by" v={d.paid_by === "agency" ? d.brand.agency_name ?? "Agency" : "Brand directly"} />
+        <Row k="GST" v={d.gst_mode === "incl" ? "Included in fee" : d.gst_mode === "add" && profile.gstin ? "Added on top" : "None"} />
+        <Row k="TDS" v={Number(d.tds_rate) > 0 ? `${Number(d.tds_rate)}% by brand` : "Not deducted"} />
         {d.go_live_date && <Row k="Go-live" v={fmtDate(d.go_live_date)} />}
         <Row k="Terms" v={`${d.terms_days} days after invoice`} />
       </div>

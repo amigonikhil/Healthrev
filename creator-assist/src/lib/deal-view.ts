@@ -42,6 +42,8 @@ export function viewDeal(d: DealFull, profile: Profile, tax: TaxConfig, today: s
   } else {
     const s = dealSummary({
       feePaise: d.fee_paise,
+      gstMode: d.gst_mode,
+      tdsRate: Number(d.tds_rate),
       advancePaise: d.advance_received_at ? d.advance_paise : 0,
       creatorStateCode: profile.state_code,
       brandStateCode: d.brand.state_code,

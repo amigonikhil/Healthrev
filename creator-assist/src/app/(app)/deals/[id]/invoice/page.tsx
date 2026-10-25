@@ -14,7 +14,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const today = todayIST();
   const inv = d.invoice ?? {
     ...buildInvoice({
-      profile, tax: await getTax(db), brandStateCode: d.brand.state_code, fee: d.fee_paise,
+      profile, tax: await getTax(db), brandStateCode: d.brand.state_code, fee: d.fee_paise, gstMode: d.gst_mode, tdsRate: Number(d.tds_rate),
       advanceReceived: d.advance_received_at ? d.advance_paise : 0, termsDays: d.terms_days,
       invoiceDate: d.go_live_date && d.go_live_date <= today ? d.go_live_date : today, deliverables: d.deliverables, usage: d.usage,
     }),

@@ -104,3 +104,22 @@ a.btn{display:flex;align-items:center;justify-content:center}
 .item .l{min-width:0}
 input[type=file]{height:auto;padding:10px}
 .hero ul{list-style:disc}
+
+/* stepper + per-platform deliverable groups (feedback round 1) */
+.stepper{display:flex;align-items:center;flex-shrink:0;height:40px;border:1px solid var(--field);border-radius:12px;overflow:hidden;background:var(--card)}
+.stepper button{width:40px;height:100%;border:0;background:transparent;color:var(--text);font:inherit;font-size:20px;font-weight:700;cursor:pointer}
+.stepper button:disabled{color:var(--field);cursor:default}
+.stepper input{width:44px;height:100%;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:0;padding:0;text-align:center;font-weight:700}
+.drow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:0 4px}
+.drow label{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600;flex:1;min-height:44px;cursor:pointer}
+.drow input[type=checkbox]{width:22px;height:22px;flex-shrink:0}
+details.pg{border-top:1px solid var(--line)}
+details.pg:first-of-type{border-top:0}
+details.pg summary{list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 4px;font-size:14px;font-weight:800;cursor:pointer}
+details.pg summary::-webkit-details-marker{display:none}
+details.pg summary::after{content:"▾";color:var(--muted)}
+details.pg[open] summary::after{content:"▴"}
+details.pg summary .n{margin-left:auto;margin-right:10px;font-size:12px;font-weight:700;color:var(--acc)}
+/* nested platform groups: don't inherit the outer card's open/closed arrow */
+details.card details.pg summary::after{content:"▾"}
+details.card details.pg[open] summary::after{content:"▴"}

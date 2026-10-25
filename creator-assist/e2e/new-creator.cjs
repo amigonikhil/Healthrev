@@ -73,18 +73,18 @@ async function otpFor(email) {
   await page.getByLabel("Contact email").fill("rahul@nimbus.example");
   await page.getByLabel("Contact WhatsApp").fill("+91 90000 55555");
   await page.locator("select[name=brand_state]").selectOption("Maharashtra");
-  await page.locator("label", { hasText: /^ Reel/ }).first().locator("input[type=checkbox]").check();
-  await page.getByLabel("Reel quantity", { exact: true }).fill("2");
-  await page.locator("label", { hasText: /^ Story/ }).first().locator("input[type=checkbox]").check();
+  await page.getByRole("checkbox", { name: "Reel", exact: true }).check();
+  await page.getByRole("button", { name: "More Reel quantity" }).click();
+  await page.getByRole("checkbox", { name: "Story", exact: true }).check();
   await page.getByLabel("Story quantity", { exact: true }).fill("3");
   await page.getByLabel("Usage rights for the brand").check();
-  await page.locator("select[name=usage_duration]").selectOption("6m");
+  for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "More usage months" }).click(); // 3 → 6
   await page.getByLabel("Total fee, before GST (₹)").fill("60000");
   await page.getByLabel("Brand pays an advance").check();
   await page.getByLabel("Advance amount (₹)").fill("20000");
   await page.getByLabel("Advance already received").check();
   t = await text();
-  ok(t.includes("IGST 18% (Maharashtra) ₹10,800") && t.includes("Invoice total ₹70,800") && t.includes("Advance received − ₹20,000") && t.includes("− ₹6,000"), "live summary");
+  ok(t.includes("IGST 18% (Maharashtra) ₹10,800") && t.includes("Invoice total ₹70,800") && t.includes("Advance received − ₹20,000") && t.includes("TDS brand deducts (10%, est.) − ₹6,000"), "live summary");
   ok(t.includes("Balance you receive ₹44,800"), "balance you receive 70,800 − 20,000 − 6,000 = 44,800");
   ok(t.includes("Deliverables · 2 Reels, 3 Stories"), "deliverables summary in collapsible header");
   await shot("22-new-deal-dark");

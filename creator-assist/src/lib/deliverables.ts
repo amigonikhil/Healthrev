@@ -92,16 +92,22 @@ export function invoiceLineLabel(d: Deliverable): string {
   return d.type === "Link in bio" ? `Link in bio, ${d.quantity} days` : `${name} × ${d.quantity}`;
 }
 
-export const USAGE_DURATIONS: { value: string; label: string; prose: string }[] = [
-  { value: "1m", label: "1 month", prose: "1 month" },
-  { value: "3m", label: "3 months", prose: "3 months" },
-  { value: "6m", label: "6 months", prose: "6 months" },
-  { value: "12m", label: "12 months", prose: "12 months" },
-  { value: "perpetual", label: "Perpetual", prose: "perpetuity" },
-];
+/** Usage duration is stored as "<n>m" (1–60 months) or "perpetual". */
+export const USAGE_MAX_MONTHS = 60;
+export const usageMonths = (v: string | null | undefined): number | null => {
+  const m = v?.match(/^(\d{1,2})m$/);
+  return m ? Number(m[1]) : null;
+};
+export function usageDurationLabel(v: string | null | undefined): string {
+  if (v === "perpetual") return "Perpetual";
+  const n = usageMonths(v);
+  return n ? `${n} month${n === 1 ? "" : "s"}` : "";
+}
+/** Agreement wording: "3 months" / "perpetuity". */
+export const usageDurationProse = (v: string | null | undefined) => (v === "perpetual" ? "perpetuity" : usageDurationLabel(v));
+
 export const USAGE_SCOPES: { value: string; label: string; prose: string }[] = [
   { value: "organic_paid", label: "Organic reshare + paid ads", prose: "including organic reshares and paid ads" },
   { value: "organic", label: "Organic reshare only", prose: "for organic reshares only" },
   { value: "paid", label: "Paid ads / whitelisting only", prose: "for paid ads and whitelisting only" },
 ];
-export const usageDurationLabel = (v: string | null | undefined) => USAGE_DURATIONS.find((d) => d.value === v)?.label ?? "";

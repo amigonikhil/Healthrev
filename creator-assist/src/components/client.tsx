@@ -113,3 +113,23 @@ export function Seg<T extends string>({ options, value, onChange, name, label }:
     </div>
   );
 }
+
+/** − [n] + quantity control. Typing is allowed; the value is clamped on blur. */
+export function Stepper({ value, onChange, min = 1, max = 999, label, name, disabled }: {
+  value: number; onChange: (n: number) => void; min?: number; max?: number; label: string; name?: string; disabled?: boolean;
+}) {
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+  const clamp = (n: number) => Math.min(max, Math.max(min, Number.isFinite(n) ? n : min));
+  return (
+    <div className="stepper" aria-disabled={disabled}>
+      <button type="button" aria-label={`Fewer ${label}`} disabled={disabled || value <= min} onClick={() => onChange(clamp(value - 1))}>−</button>
+      <input
+        aria-label={label} name={name} inputMode="numeric" value={text} disabled={disabled}
+        onChange={(e) => { const t = e.target.value.replace(/\D/g, "").slice(0, 3); setText(t); if (t) onChange(clamp(parseInt(t, 10))); }}
+        onBlur={() => setText(String(clamp(parseInt(text, 10))))}
+      />
+      <button type="button" aria-label={`More ${label}`} disabled={disabled || value >= max} onClick={() => onChange(clamp(value + 1))}>+</button>
+    </div>
+  );
+}

@@ -61,6 +61,7 @@ export async function getTax(db: DB): Promise<TaxConfig> {
 const toTax = (r: any): TaxConfig => ({
   gst_rate: Number(r?.gst_rate ?? 0),
   tds_rate: Number(r?.tds_rate ?? 0),
+  late_interest_rate: Number(r?.late_interest_rate ?? 0),
   rbi_bank_rate: Number(r?.rbi_bank_rate ?? 0),
   msme_multiple: Number(r?.msme_multiple ?? 0),
 });

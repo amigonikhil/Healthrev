@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { buildAgreement } from "@/lib/agreement";
 import { audit } from "@/lib/audit";
 import { decrypt, randomToken, sha256 } from "@/lib/crypto";
-import { loadDeal, requireProfile } from "@/lib/data";
+import { getTax, loadDeal, requireProfile } from "@/lib/data";
 import { sendEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/env";
 import { todayIST } from "@/lib/dates";
@@ -29,6 +29,7 @@ export async function sendAgreement(dealId: string, opts: { email: boolean; what
   if (!agreement) {
     const body = buildAgreement({
       profile, pan: decrypt(profile.pan_enc), brand: deal.brand, deal, deliverables: deal.deliverables, usage: deal.usage, date: todayIST(),
+      lateInterestRate: (await getTax(db)).late_interest_rate,
     });
     const { data, error } = await db.from("agreements")
       .insert({ deal_id: deal.id, body, sign_token: randomToken(), is_sample: deal.is_sample })

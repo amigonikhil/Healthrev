@@ -3,7 +3,8 @@
 
 export type TaxConfig = {
   gst_rate: number;      // %
-  tds_rate: number;      // %
+  tds_rate: number;      // % — default for new deals; each deal stores its own
+  late_interest_rate: number; // % a year, contractual late-payment interest in agreements
   rbi_bank_rate: number; // % a year
   msme_multiple: number; // × RBI bank rate
 };
@@ -46,8 +47,38 @@ export function gstSplit(
 /** TDS a brand is expected to deduct: on the fee, not on the GST. VERIFY WITH CA. */
 export const tdsEstimate = (feePaise: number, tdsRate: number) => pct(feePaise, tdsRate);
 
+export type GstMode = "add" | "incl" | "none";
+
+/**
+ * Splits the fee the creator typed into taxable value + GST.
+ * - add:  fee is before GST; GST goes on top.
+ * - incl: fee already includes GST; taxable = fee ÷ (1 + rate), GST = the rest,
+ *         so the invoice total equals exactly what was typed.
+ * - none: no GST (also forced when the creator isn't registered).
+ * VERIFY WITH CA.
+ */
+export function feeBreakdown(args: {
+  feePaise: number; mode: GstMode; creatorStateCode: string; brandStateCode: string | null | undefined;
+  rate: number; creatorRegistered: boolean;
+}): { taxable: number; gst: GstSplit } {
+  const { feePaise, rate } = args;
+  if (!args.creatorRegistered || args.mode === "none" || rate <= 0) {
+    return { taxable: feePaise, gst: gstSplit(feePaise, args.creatorStateCode, args.brandStateCode, rate, false) };
+  }
+  if (args.mode === "add") {
+    return { taxable: feePaise, gst: gstSplit(feePaise, args.creatorStateCode, args.brandStateCode, rate, true) };
+  }
+  const taxable = Math.round((feePaise * 100) / (100 + rate));
+  const total = feePaise - taxable;
+  if (args.brandStateCode && args.brandStateCode !== args.creatorStateCode) {
+    return { taxable, gst: { kind: "igst", rate, cgst: 0, sgst: 0, igst: total, total } };
+  }
+  const cgst = Math.floor(total / 2);
+  return { taxable, gst: { kind: "cgst_sgst", rate, cgst, sgst: total - cgst, igst: 0, total } };
+}
+
 export type DealSummary = {
-  fee: number;
+  taxable: number;
   gst: GstSplit;
   total: number;
   advance: number;
@@ -58,17 +89,22 @@ export type DealSummary = {
 
 export function dealSummary(args: {
   feePaise: number;
+  gstMode: GstMode;
+  tdsRate: number;    // 0 = brand doesn't deduct TDS
   advancePaise: number;
   creatorStateCode: string;
   brandStateCode: string | null | undefined;
   creatorRegistered: boolean;
   tax: TaxConfig;
 }): DealSummary {
-  const gst = gstSplit(args.feePaise, args.creatorStateCode, args.brandStateCode, args.tax.gst_rate, args.creatorRegistered);
-  const total = args.feePaise + gst.total;
-  const tds = tdsEstimate(args.feePaise, args.tax.tds_rate);
+  const { taxable, gst } = feeBreakdown({
+    feePaise: args.feePaise, mode: args.gstMode, creatorStateCode: args.creatorStateCode,
+    brandStateCode: args.brandStateCode, rate: args.tax.gst_rate, creatorRegistered: args.creatorRegistered,
+  });
+  const total = taxable + gst.total;
+  const tds = tdsEstimate(taxable, args.tdsRate);
   const balanceDue = total - args.advancePaise;
-  return { fee: args.feePaise, gst, total, advance: args.advancePaise, tds, balanceDue, receive: balanceDue - tds };
+  return { taxable, gst, total, advance: args.advancePaise, tds, balanceDue, receive: balanceDue - tds };
 }
 
 /** Annual MSME interest rate in % (multiple × RBI bank rate). VERIFY WITH CA. */
