@@ -1,12 +1,9 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import { ToastFromQuery, ToastProvider } from "@/components/client";
 import { FeedbackButton } from "@/components/feedback";
 import "./globals.css";
-
-const space = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-space", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Creator Assist",
@@ -26,7 +23,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={space.variable}>
+    <html lang="en">
+      <head>
+        <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossOrigin="" />
+      </head>
       <body>
         <ToastProvider>
           <div className="phone">
