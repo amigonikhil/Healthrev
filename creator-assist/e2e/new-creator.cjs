@@ -172,6 +172,8 @@ async function otpFor(email) {
   ok(!t.includes("Tester feedback"), "admin link hidden for non-owner");
   const adm = await page.goto(BASE + "/admin/feedback");
   ok(adm.status() === 404, "non-owner gets 404 on /admin/feedback");
+  ok((await page.goto(BASE + "/admin")).status() === 404, "non-owner gets 404 on /admin");
+  ok((await page.request.get(BASE + "/api/admin/notice/00000000-0000-0000-0000-000000000000")).status() === 404, "non-owner gets 404 on admin notice PDF");
   await page.goto(BASE + "/settings");
   await page.getByRole("button", { name: "Delete my account" }).click();
   await page.getByLabel("Type DELETE to confirm").fill("DELETE");

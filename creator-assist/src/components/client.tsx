@@ -133,3 +133,19 @@ export function Stepper({ value, onChange, min = 1, max = 999, label, name, disa
     </div>
   );
 }
+
+// ---------------------------------------------------------------- appearance
+type Theme = "system" | "light" | "dark";
+const THEMES: { value: Theme; label: string }[] = [{ value: "system", label: "System" }, { value: "light", label: "Light" }, { value: "dark", label: "Dark" }];
+
+/** Light / dark / follow-the-phone switch. Saved in a cookie so the server renders the same theme. */
+export function ThemeSwitch({ initial }: { initial: Theme }) {
+  const [theme, setTheme] = useState<Theme>(initial);
+  const choose = (t: Theme) => {
+    setTheme(t);
+    if (t === "system") delete document.documentElement.dataset.theme;
+    else document.documentElement.dataset.theme = t;
+    document.cookie = `theme=${t}; path=/; max-age=${60 * 60 * 24 * 400}; samesite=lax`;
+  };
+  return <Seg label="Appearance" value={theme} onChange={choose} options={THEMES} />;
+}

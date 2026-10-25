@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { ToastFromQuery, ToastProvider } from "@/components/client";
 import { FeedbackButton } from "@/components/feedback";
@@ -21,9 +22,11 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Appearance chosen in Settings; "system" (no attribute) follows the phone.
+  const theme = (await cookies()).get("theme")?.value;
   return (
-    <html lang="en">
+    <html lang="en" data-theme={theme === "light" || theme === "dark" ? theme : undefined}>
       <head>
         <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
