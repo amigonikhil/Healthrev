@@ -53,7 +53,9 @@ For local `.env.local` use `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`, th
 ```bash
 pnpm typecheck && pnpm lint && pnpm test   # unit tests: GST/TDS/MSME maths, money, dates, AIS parser
 pnpm build && pnpm start                   # then, against a fresh `pnpm exec supabase db reset`:
-pnpm e2e                                   # Playwright: owner demo (62 checks) + new creator (28 checks)
+pnpm e2e                                   # Playwright: owner demo, new creator, deal options
+# To test exactly what Vercel ships (only traced files): STANDALONE=1 pnpm build, then
+# run .next/standalone/server.js (copy .next/static and .env.local next to it first).
 ```
 
 The owner suite checks the prototype's numbers (₹85,300 owed, ₹47,200 due this week, Voltra ₹33,600 / ₹310 MSME interest, Tax hub ₹1,10,000 / ₹19,800 / ₹11,000 / ₹5,700 missing), the deal filters, three reminder languages, the brand signing link, payment settlement, sample clear/reload without duplicates and feedback reaching the admin page. The new-creator suite covers email sign-up, onboarding validation, a deal with deliverables + usage rights + advance, signing, invoicing, partial and full payment, AIS upload matching and account deletion, in dark mode at 375px.
