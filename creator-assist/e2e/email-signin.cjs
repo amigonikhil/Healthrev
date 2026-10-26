@@ -14,7 +14,7 @@ async function lastMail(email) {
 }
 async function request(page, email) {
   await page.goto("http://localhost:3000/signin");
-  await page.getByRole("radio", { name: "Email" }).click();
+  if (await page.getByRole("radio", { name: "Email" }).count()) await page.getByRole("radio", { name: "Email" }).click(); // hidden when SMS is off
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByRole("button", { name: "Send OTP" }).click();
 }

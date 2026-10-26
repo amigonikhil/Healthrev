@@ -65,11 +65,14 @@ export function SignInForm({ smsEnabled }: { smsEnabled: boolean }) {
       style={{ display: "flex", flexDirection: "column", gap: 14 }}
       onSubmit={(e) => { e.preventDefault(); if (sent) verify(); else send(); }}
     >
-      <Seg
-        label="Sign in with" value={mode}
-        options={[{ value: "phone", label: "Mobile" }, { value: "email", label: "Email" }]}
-        onChange={(m) => { setMode(m); setSent(false); setId(""); setCode(""); setErr(""); }}
-      />
+      {/* Mobile sign-in needs a paid SMS provider + DLT; hidden until NEXT_PUBLIC_SMS_ENABLED is on. */}
+      {smsEnabled && (
+        <Seg
+          label="Sign in with" value={mode}
+          options={[{ value: "phone", label: "Mobile" }, { value: "email", label: "Email" }]}
+          onChange={(m) => { setMode(m); setSent(false); setId(""); setCode(""); setErr(""); }}
+        />
+      )}
       {mode === "phone" ? (
         <label className="f">Mobile number
           <input value={id} onChange={(e) => setId(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="+91 98765 43210" disabled={sent} required />

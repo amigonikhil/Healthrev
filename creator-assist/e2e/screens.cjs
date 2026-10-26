@@ -48,7 +48,7 @@ const sql = (q) => execSync(`docker exec supabase_db_creator-assist psql -U post
     const page = await ctx.newPage();
     const email = `shots-${scheme}-${Date.now()}@example.com`;
     await page.goto(BASE + "/signin");
-    await page.getByRole("radio", { name: "Email" }).click();
+    if (await page.getByRole("radio", { name: "Email" }).count()) await page.getByRole("radio", { name: "Email" }).click(); // hidden when SMS is off
     await page.getByLabel("Email", { exact: true }).fill(email);
     await page.getByRole("button", { name: "Send OTP" }).click();
     await page.getByLabel("Enter OTP").waitFor();
