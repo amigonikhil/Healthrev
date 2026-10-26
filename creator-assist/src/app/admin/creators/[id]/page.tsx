@@ -2,10 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminLog, requireAdmin } from "@/lib/admin/auth";
 import { EVENT_LABEL, FEATURES, loadEvents, loadQueues, QUEUE_TABS, waitingLabel } from "@/lib/admin/data";
-import { amountBand, maskPhone } from "@/lib/admin/privacy";
+import { amountBand, maskEmail, maskPhone } from "@/lib/admin/privacy";
 import { qs, type SP } from "@/lib/admin/range";
 import { fmtDate, fmtTimeIST, istDate } from "@/lib/dates";
-import { ContactButtons, PhoneReveal } from "../../controls";
+import { ContactButtons, ContactReveal } from "../../controls";
 
 const MILESTONES = ["signed_up", "onboarding_completed", "sample_loaded", "deal_created", "agreement_sent", "agreement_signed", "invoice_generated", "reminder_sent", "payment_recorded", "escalation_opened", "ais_uploaded", "feedback_sent"];
 
@@ -21,7 +21,9 @@ export default async function CreatorDetail({ params, searchParams }: { params: 
     db.from("feedback").select("id, screen, message, status, tags, created_at").eq("user_id", id).order("created_at", { ascending: false }),
     db.from("deals").select("id, fee_paise, is_sample").eq("user_id", id),
   ]);
-  const { data: authUser } = await (db as unknown as { auth: { admin: { getUserById: (i: string) => Promise<{ data: { user: { created_at: string } | null } }> } } }).auth.admin.getUserById(id);
+  const { data: authUser } = await (db as unknown as { auth: { admin: { getUserById: (i: string) => Promise<{ data: { user: { created_at: string; email?: string; phone?: string } | null } }> } } }).auth.admin.getUserById(id);
+  const email = authUser?.user?.email ?? null;
+  const phone = p?.phone ?? (authUser?.user?.phone ? `+${authUser.user.phone}` : null);
   if (!p && !authUser?.user) notFound();
   await adminLog(a, "view_creator", "creator", id);
 
@@ -36,20 +38,21 @@ export default async function CreatorDetail({ params, searchParams }: { params: 
 
   return (
     <main className="ad-page">
-      <header className="ad-head"><h1><Link href={`/admin/creators${qs(sp)}`} className="ad-back" aria-label="Back to creators">←</Link> {p?.name ?? "Not onboarded yet"}</h1></header>
+      <header className="ad-head"><h1><Link href={`/admin/creators${qs(sp)}`} className="ad-back" aria-label="Back to creators">←</Link> {p?.name ?? maskEmail(email)} {!p && <small>not onboarded yet</small>}</h1></header>
       <div className="ad-cols">
         <section className="ad-card">
           <h2>Profile</h2>
           <dl className="ad-dl">
             <dt>Handle</dt><dd>{p?.handle ?? "—"}</dd>
             <dt>City</dt><dd>{[p?.city, p?.state].filter(Boolean).join(", ") || "—"}</dd>
-            <dt>Phone</dt><dd><PhoneReveal userId={id} masked={maskPhone(p?.phone)} canReveal={a.role === "owner" && !!p?.phone} /></dd>
+            <dt>Email</dt><dd><ContactReveal userId={id} what="email" masked={maskEmail(email)} canReveal={a.role === "owner" && !!email} /></dd>
+            <dt>Phone</dt><dd><ContactReveal userId={id} what="phone" masked={maskPhone(phone)} canReveal={a.role === "owner" && !!phone} /></dd>
             <dt>Signed up</dt><dd>{authUser?.user ? fmtDate(istDate(authUser.user.created_at)) : "—"}</dd>
             <dt>Onboarded</dt><dd>{p?.consent_at ? fmtDate(istDate(p.consent_at)) : "No"}</dd>
             <dt>Sample data</dt><dd>{p?.sample_seeded_at ? "Loaded" : "No"}</dd>
             <dt>Real deals</dt><dd>{realDeals.length} · total fees {amountBand(total)}</dd>
           </dl>
-          <ContactButtons userId={id} canWhatsApp={a.role === "owner" && !!p?.phone} />
+          <ContactButtons userId={id} canWhatsApp={a.role === "owner" && !!phone} />
           <p className="sub">PAN, bank and brand details are never shown in admin. Phone reveals and contact actions are logged.</p>
         </section>
         <section className="ad-card">

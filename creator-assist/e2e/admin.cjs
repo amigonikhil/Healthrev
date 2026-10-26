@@ -71,9 +71,24 @@ async function emailSignIn(b, email) {
   await p.goto(`${BASE}/admin/creators/${owner}?admins=1`);
   t = await text(p);
   ok(t.includes("+91 98•••••210") && !t.includes("9876543210"), "phone masked on creator page");
-  await p.getByRole("button", { name: "Reveal" }).click();
+  await p.getByRole("button", { name: "Reveal phone" }).click();
   await p.waitForSelector("text=+919876543210");
   ok(true, "owner can reveal the phone");
+
+  console.log("Signed in but not onboarded: identified by masked email");
+  const supEmail = sql("select email from auth.users where email like 'support%' limit 1");
+  const supId = sql(`select id from auth.users where email='${supEmail}'`);
+  const masked = supEmail[0] + "•••@example.com";
+  await p.goto(BASE + "/admin/creators?range=all");
+  t = await text(p);
+  ok(t.includes("Not onboarded yet") && t.includes(masked) && !t.includes(supEmail), "creators table shows the masked email for a not-onboarded sign-up");
+  await p.goto(BASE + "/admin/creators?range=all&q=" + encodeURIComponent(supEmail));
+  ok((await text(p)).includes(masked), "search by email finds them");
+  await p.goto(`${BASE}/admin/creators/${supId}`);
+  ok((await text(p)).includes(masked), "creator page shows the masked email");
+  await p.getByRole("button", { name: "Reveal email" }).click();
+  await p.waitForSelector(`text=${supEmail}`);
+  ok(Number(sql("select count(*) from admin_audit_log where action='reveal_email'")) === 1, "owner reveals the email (logged)");
   ok(Number(sql("select count(*) from admin_audit_log where action='reveal_phone'")) === 1 && Number(sql("select count(*) from admin_audit_log where action='view_creator'")) >= 1, "view and reveal are logged");
 
   console.log("Queues: status change notifies the creator");

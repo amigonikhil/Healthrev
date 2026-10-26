@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/client";
-import { addAdmin, creatorContact, revealPhone, saveTaxDefaults, saveTemplates, setFeedback, setQueueStatus, updateAdmin } from "./actions";
+import { addAdmin, creatorContact, revealContact, saveTaxDefaults, saveTemplates, setFeedback, setQueueStatus, updateAdmin } from "./actions";
 import type { QueueKind, QueueStatus } from "@/lib/admin/data";
 import type { ReminderTemplates } from "@/lib/messages";
 import type { TaxDefaults } from "@/lib/app-settings";
@@ -90,12 +90,13 @@ export function FeedbackControls({ id, status, tags }: { id: string; status: str
   );
 }
 
-export function PhoneReveal({ userId, masked, canReveal }: { userId: string; masked: string; canReveal: boolean }) {
+/** Masked phone or email with an owner-only Reveal (logged). */
+export function ContactReveal({ userId, what, masked, canReveal }: { userId: string; what: "phone" | "email"; masked: string; canReveal: boolean }) {
   const { pending, run } = useRun();
   const [shown, setShown] = useState<string | null>(null);
   return (
     <span className="ad-phone">{shown ?? masked}
-      {canReveal && !shown && <button type="button" className="linkbtn" disabled={pending} onClick={() => run(() => revealPhone(userId), setShown)}>Reveal</button>}
+      {canReveal && !shown && <button type="button" className="linkbtn" aria-label={`Reveal ${what}`} disabled={pending} onClick={() => run(() => revealContact(userId, what), setShown)}>Reveal</button>}
     </span>
   );
 }

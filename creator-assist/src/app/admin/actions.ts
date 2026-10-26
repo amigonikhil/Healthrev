@@ -62,18 +62,28 @@ export async function setFeedback(id: string, patch: { status?: string; tags?: s
   return { ok: true, message: "Saved" };
 }
 
-/** Owner only: unmask a creator's phone (logged). */
-export async function revealPhone(userId: string): Promise<Res> {
+/** A creator's phone/email: from their profile, else from the account they signed in with (not onboarded yet). */
+async function contactOf(a: Awaited<ReturnType<typeof requireAdmin>>, userId: string) {
+  const { data: p } = await a.db.from("profiles").select("name, email, phone").eq("id", userId).maybeSingle();
+  const { data: u } = await (a.db as unknown as { auth: { admin: { getUserById: (i: string) => Promise<{ data: { user: { email?: string; phone?: string } | null } }> } } }).auth.admin.getUserById(userId);
+  return { name: p?.name ?? null, email: p?.email ?? u?.user?.email ?? null, phone: p?.phone ?? (u?.user?.phone ? `+${u.user.phone}` : null) };
+}
+
+/** Owner only: unmask a creator's phone or email (logged). */
+export async function revealContact(userId: string, what: "phone" | "email"): Promise<Res> {
   const a = await requireOwner();
-  const { data } = await a.db.from("profiles").select("phone").eq("id", userId).maybeSingle();
-  await adminLog(a, "reveal_phone", "creator", userId);
-  return data?.phone ? { ok: true, message: data.phone } : { ok: false, message: "No phone on file" };
+  if (!UUID.test(userId)) return { ok: false, message: "Bad id" };
+  const c = await contactOf(a, userId);
+  await adminLog(a, what === "phone" ? "reveal_phone" : "reveal_email", "creator", userId);
+  const v = what === "phone" ? c.phone : c.email;
+  return v ? { ok: true, message: v } : { ok: false, message: `No ${what} on file` };
 }
 
 /** Copy email (any admin) or open a WhatsApp check-in (owner only, since it exposes the number). Logged. */
 export async function creatorContact(userId: string, what: "email" | "whatsapp"): Promise<Res> {
   const a = what === "whatsapp" ? await requireOwner() : await requireAdmin();
-  const { data } = await a.db.from("profiles").select("name, email, phone").eq("id", userId).maybeSingle();
+  if (!UUID.test(userId)) return { ok: false, message: "Bad id" };
+  const data = await contactOf(a, userId);
   await adminLog(a, what === "email" ? "copy_email" : "whatsapp_creator", "creator", userId);
   if (what === "email") return data?.email ? { ok: true, message: data.email } : { ok: false, message: "No email on file" };
   if (!data?.phone) return { ok: false, message: "No phone on file" };
