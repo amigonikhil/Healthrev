@@ -5,12 +5,22 @@ import { deleteAccount, saveRates, saveReminderSettings } from "@/app/actions/se
 import { ActionForm, SubmitButton } from "@/components/client";
 import type { TaxConfig } from "@/lib/calc";
 
-export function ReminderForm(p: { ladder: string; whatsapp: boolean; email: boolean; language: string; terms: number }) {
+const LADDER_BOXES = ["1st reminder · Friendly", "2nd reminder · Follow-up", "3rd reminder · Firm", "4th reminder · Final notice"];
+
+export function ReminderForm(p: { ladder: number[]; whatsapp: boolean; email: boolean; language: string; terms: number }) {
   const [state, action, actionPending] = useActionState(saveReminderSettings, undefined);
   return (
     <ActionForm action={action} pending={actionPending} className="card">
       <h2>Reminders</h2>
-      <label className="f">Ladder (days after due)<input name="ladder" defaultValue={p.ladder} inputMode="numeric" /></label>
+      <fieldset className="ladder">
+        <legend>Days after the due date</legend>
+        {LADDER_BOXES.map((label, i) => (
+          <label className="f" key={label}>{label}
+            <input name={`ladder_${i + 1}`} type="number" inputMode="numeric" min={0} max={120} step={1} defaultValue={p.ladder[i] ?? ""} placeholder={i ? "Optional" : "0"} />
+          </label>
+        ))}
+        <p className="sub">0 means on the due date. Leave the last boxes empty for fewer reminders.</p>
+      </fieldset>
       <label className="tog"><span>WhatsApp from my number</span><input type="checkbox" name="whatsapp" defaultChecked={p.whatsapp} /></label>
       <label className="tog"><span>Email automatically</span><input type="checkbox" name="email" defaultChecked={p.email} /></label>
       <label className="f">Default message language

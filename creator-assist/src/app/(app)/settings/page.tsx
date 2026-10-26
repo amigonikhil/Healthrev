@@ -39,7 +39,7 @@ export default async function Settings() {
         <ThemeSwitch initial={theme === "light" || theme === "dark" ? theme : "system"} />
         <p className="sub">System follows your phone&apos;s light or dark setting.</p>
       </div>
-      <ReminderForm ladder={profile.reminder_ladder.join(", ")} whatsapp={profile.remind_whatsapp} email={profile.remind_email} language={profile.language} terms={profile.default_terms_days} />
+      <ReminderForm ladder={profile.reminder_ladder} whatsapp={profile.remind_whatsapp} email={profile.remind_email} language={profile.language} terms={profile.default_terms_days} />
       <RatesForm tax={tax} />
 
       <div className="card">

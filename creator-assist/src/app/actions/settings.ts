@@ -32,10 +32,14 @@ export async function saveRates(_: SetState, f: FormData): Promise<SetState> {
 
 export async function saveReminderSettings(_: SetState, f: FormData): Promise<SetState> {
   const { db, user } = await requireProfile();
-  const ladder = String(f.get("ladder") ?? "").split(/[^\d]+/).filter(Boolean).map(Number);
-  if (!ladder.length || ladder.length > 6 || ladder.some((d) => d > 120) || ladder.some((d, i) => i && d <= ladder[i - 1])) {
-    return { error: "Ladder should be up to 6 increasing day counts, e.g. 0, 7, 15, 30" };
-  }
+  // Four boxes (1st–4th reminder). Empty boxes at the end mean fewer reminders.
+  const boxes = [1, 2, 3, 4].map((i) => String(f.get(`ladder_${i}`) ?? "").trim());
+  while (boxes.length && boxes.at(-1) === "") boxes.pop();
+  if (!boxes.length) return { error: "Set at least the 1st reminder (0 = on the due date)" };
+  if (boxes.some((b) => !/^\d{1,3}$/.test(b))) return { error: "Fill the reminders in order, using whole days" };
+  const ladder = boxes.map(Number);
+  if (ladder.some((d) => d > 120)) return { error: "Reminders can be up to 120 days after the due date" };
+  if (ladder.some((d, i) => i && d <= ladder[i - 1])) return { error: "Each reminder should come after the one before it" };
   const terms = Number(f.get("terms"));
   const { error } = await db.from("profiles").update({
     reminder_ladder: ladder, remind_whatsapp: f.get("whatsapp") === "on", remind_email: f.get("email") === "on",
