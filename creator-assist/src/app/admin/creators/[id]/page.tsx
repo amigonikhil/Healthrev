@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminLog, requireAdmin } from "@/lib/admin/auth";
 import { EVENT_LABEL, FEATURES, loadEvents, loadQueues, QUEUE_TABS, waitingLabel } from "@/lib/admin/data";
-import { amountBand, maskEmail, maskPhone } from "@/lib/admin/privacy";
+import { amountBand, maskPhone } from "@/lib/admin/privacy";
 import { qs, type SP } from "@/lib/admin/range";
 import { fmtDate, fmtTimeIST, istDate } from "@/lib/dates";
 import { ContactButtons, ContactReveal } from "../../controls";
@@ -38,14 +38,14 @@ export default async function CreatorDetail({ params, searchParams }: { params: 
 
   return (
     <main className="ad-page">
-      <header className="ad-head"><h1><Link href={`/admin/creators${qs(sp)}`} className="ad-back" aria-label="Back to creators">←</Link> {p?.name ?? maskEmail(email)} {!p && <small>not onboarded yet</small>}</h1></header>
+      <header className="ad-head"><h1><Link href={`/admin/creators${qs(sp)}`} className="ad-back" aria-label="Back to creators">←</Link> {p?.name ?? email ?? "Unknown"} {!p && <small>not onboarded yet</small>}</h1></header>
       <div className="ad-cols">
         <section className="ad-card">
           <h2>Profile</h2>
           <dl className="ad-dl">
             <dt>Handle</dt><dd>{p?.handle ?? "—"}</dd>
             <dt>City</dt><dd>{[p?.city, p?.state].filter(Boolean).join(", ") || "—"}</dd>
-            <dt>Email</dt><dd><ContactReveal userId={id} what="email" masked={maskEmail(email)} canReveal={a.role === "owner" && !!email} /></dd>
+            <dt>Email</dt><dd>{email ?? "—"}</dd>
             <dt>Phone</dt><dd><ContactReveal userId={id} what="phone" masked={maskPhone(phone)} canReveal={a.role === "owner" && !!phone} /></dd>
             <dt>Signed up</dt><dd>{authUser?.user ? fmtDate(istDate(authUser.user.created_at)) : "—"}</dd>
             <dt>Onboarded</dt><dd>{p?.consent_at ? fmtDate(istDate(p.consent_at)) : "No"}</dd>
@@ -53,7 +53,7 @@ export default async function CreatorDetail({ params, searchParams }: { params: 
             <dt>Real deals</dt><dd>{realDeals.length} · total fees {amountBand(total)}</dd>
           </dl>
           <ContactButtons userId={id} canWhatsApp={a.role === "owner" && !!phone} />
-          <p className="sub">PAN, bank and brand details are never shown in admin. Phone reveals and contact actions are logged.</p>
+          <p className="sub">PAN, bank and brand details are never shown in admin. Opening this page, phone reveals and contact actions are logged.</p>
         </section>
         <section className="ad-card">
           <h2>Features tried</h2>

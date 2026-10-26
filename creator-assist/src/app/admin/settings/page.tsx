@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/admin/auth";
-import { maskEmail, maskPhone } from "@/lib/admin/privacy";
+import { maskPhone } from "@/lib/admin/privacy";
 import { inRange, parseRange, type SP } from "@/lib/admin/range";
 import { getSetting, reminderTemplates, type TaxDefaults } from "@/lib/app-settings";
 import { fmtDate, fmtTimeIST, istDate } from "@/lib/dates";
@@ -34,7 +34,7 @@ export default async function AdminSettings({ searchParams }: { searchParams: Pr
         <div className="ad-table-wrap"><table className="ad-table">
           <thead><tr><th>Name</th><th>Contact</th><th>Role</th><th>Since</th><th /></tr></thead>
           <tbody>{(admins ?? []).map((ad) => { const p = who.get(ad.user_id); return (
-            <tr key={ad.user_id}><td>{p?.name ?? "—"}</td><td>{p?.phone ? maskPhone(p.phone) : maskEmail(p?.email)}</td><td>{ad.role}</td><td>{fmtDate(istDate(ad.created_at))}</td>
+            <tr key={ad.user_id}><td>{p?.name ?? "—"}</td><td>{p?.email ?? (p?.phone ? maskPhone(p.phone) : "—")}</td><td>{ad.role}</td><td>{fmtDate(istDate(ad.created_at))}</td>
               <td>{owner ? <AdminRow userId={ad.user_id} role={ad.role} self={ad.user_id === a.userId} /> : null}</td></tr>); })}</tbody>
         </table></div>
         {owner && <AddAdmin />}

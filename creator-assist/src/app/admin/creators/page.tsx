@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { filtersOf, isActiveEvent, loadEvents, loadPeople } from "@/lib/admin/data";
-import { maskEmail } from "@/lib/admin/privacy";
 import { inRange, one, parseRange, qs, type SP } from "@/lib/admin/range";
 import { addDays, fmtDate, istDate, todayIST } from "@/lib/dates";
 import { RangePicker } from "../controls";
@@ -59,7 +58,7 @@ export default async function Creators({ searchParams }: { searchParams: Promise
             {rows.map((p) => (
               <tr key={p.id}>
                 <td><Link href={`/admin/creators/${p.id}${qs(sp)}`}>{p.name ?? <em>Not onboarded yet</em>}</Link></td>
-                <td>{maskEmail(p.email)}</td>
+                <td>{p.email ?? "—"}</td>
                 <td>{p.handle ?? "—"}</td>
                 <td>{fmtDate(istDate(p.created_at))}</td>
                 <td>{p.onboarded_at ? "Yes" : "No"}</td>
