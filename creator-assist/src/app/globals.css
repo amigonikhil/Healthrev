@@ -252,6 +252,12 @@ details.card details.pg[open] summary::after{content:"▴"}
 .toast.on{opacity:1}
 .fab{position:fixed;right:max(12px,calc(50% - 215px + 12px));bottom:calc(94px + env(safe-area-inset-bottom,0px));z-index:6;min-height:44px;padding:0 16px;border-radius:var(--r-pill);border:2px solid var(--text);background:var(--surface);color:var(--text);font:inherit;font-size:14px;font-weight:700;cursor:pointer;transform:rotate(-2deg);box-shadow:2px 3px 0 var(--text)}
 .fab.low{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.fab.left{right:auto;left:max(12px,calc(50% - 215px + 12px));transform:rotate(2deg);display:inline-flex;align-items:center;gap:8px;padding:0 14px 0 8px}
+.fab:disabled{opacity:.7;cursor:progress}
+.mini-switch{position:relative;width:34px;height:20px;border-radius:var(--r-pill);background:var(--surface-3);flex-shrink:0;transition:background .15s}
+.mini-switch::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:left .15s,background .15s}
+.mini-switch.on{background:var(--accent)}
+.mini-switch.on::after{left:17px;background:#111111}
 .sheet-bg{position:fixed;inset:0;background:var(--scrim);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{width:100%;max-width:430px;background:var(--surface);border-radius:var(--r-card) var(--r-card) 0 0;padding:24px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
 
