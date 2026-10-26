@@ -1,6 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { sameHost } from "@/lib/redirect";
+import { track } from "@/lib/events";
 import { createClient } from "@/lib/supabase/server";
 
 // Email sign-in link. Uses the token hash from the email, so it works in any
@@ -11,6 +12,7 @@ export async function GET(req: NextRequest) {
   const type = (req.nextUrl.searchParams.get("type") ?? "email") as EmailOtpType;
   if (!tokenHash) return NextResponse.redirect(sameHost(req, "/signin?error=1"));
   const db = await createClient();
-  const { error } = await db.auth.verifyOtp({ token_hash: tokenHash, type });
+  const { data, error } = await db.auth.verifyOtp({ token_hash: tokenHash, type });
+  if (data.user) await track(data.user.id, "signed_in", { props: { method: "email_link" } });
   return NextResponse.redirect(sameHost(req, error ? "/signin?error=link" : "/home"));
 }

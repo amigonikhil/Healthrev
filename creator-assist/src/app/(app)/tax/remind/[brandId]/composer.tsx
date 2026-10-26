@@ -1,5 +1,6 @@
 "use client";
 
+import { trackClient } from "@/components/track";
 import { useState, useTransition } from "react";
 import { logWhatsAppReminder, scheduleTdsLadder, sendReminderEmail } from "@/app/actions/reminders";
 import { Seg, useToast } from "@/components/client";
@@ -34,6 +35,7 @@ export function TdsComposer(p: {
     {p.phone ? (
       <a className="btn" href={waLink(p.phone, text)} target="_blank" rel="noopener"
         onClick={() => start(async () => {
+          trackClient("whatsapp_clicked", { kind: "tds_reminder" });
           await logWhatsAppReminder(target);
           if (alsoEmail) toast(await email());
           else { await scheduleTdsLadder(p.brandId, lang); toast("Follow-ups scheduled"); }

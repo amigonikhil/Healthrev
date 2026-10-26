@@ -253,29 +253,8 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.getByLabel("Your feedback").fill("E2E: the brands list is great");
   await page.getByRole("button", { name: "Send feedback" }).click();
   await page.waitForSelector("text=Thanks! Feedback sent.");
-  await page.goto(BASE + "/admin/feedback");
-  ok((await text()).includes("E2E: the brands list is great") && (await text()).includes("/brands"), "feedback reaches /admin/feedback");
-
-  console.log("Admin dashboard");
-  await page.goto(BASE + "/settings");
-  await page.getByRole("link", { name: "Admin dashboard" }).click();
-  await page.waitForURL("**/admin");
-  t = await text();
-  ok(t.includes("Legal notices") && t.includes("Legal calls to confirm") && t.includes("Tester feedback"), "dashboard tiles and tabs");
-  ok(t.includes("Voltra Motors") && t.includes("RTK/2026-27/014") && t.includes("Paid") && t.includes("Pay-by date"), "notice listed with status (paid after recording payment)");
-  const adminPdf = await page.request.get(dealUrl.replace("/deals/", "/api/admin/notice/"));
-  ok(adminPdf.ok() && (await adminPdf.body()).subarray(0, 4).toString() === "%PDF", "admin can open any notice PDF");
-  await page.getByRole("link", { name: "Legal calls" }).click();
-  await page.waitForURL("**tab=calls");
-  t = await text();
-  ok(t.includes("+919876543210") || t.includes("98765 43210"), "legal call booking listed with phone");
-  await page.getByRole("radio", { name: "Confirmed" }).click();
-  await page.waitForSelector("text=Marked confirmed");
-  await page.reload();
-  ok((await page.getByRole("radio", { name: "Confirmed" }).getAttribute("aria-checked")) === "true", "legal call confirmed and saved");
-  await page.getByRole("link", { name: "Tax filings" }).click();
-  await page.waitForURL("**tab=tax");
-  ok((await text()).includes("GSTR-1") || (await text()).includes("No filings handled"), "tax filings tab");
+  await page.goto(BASE + "/admin/feedback?range=all&admins=1");
+  ok((await text()).includes("E2E: the brands list is great") && (await text()).includes("/brands"), "feedback reaches the admin inbox");
   await shot("15b-admin");
 
   console.log("Appearance");

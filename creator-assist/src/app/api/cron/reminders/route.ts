@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { audit } from "@/lib/audit";
+import { reminderTemplates } from "@/lib/app-settings";
+import { track } from "@/lib/events";
 import { safeEqual } from "@/lib/crypto";
 import { normalizeDeal } from "@/lib/data";
 import { daysBetween, fmtDay, todayIST } from "@/lib/dates";
@@ -53,6 +55,7 @@ export async function GET(req: NextRequest) {
     for (const d of data ?? []) deals.set(d.id, normalizeDeal(d));
   }
 
+  const templates = await reminderTemplates();
   const digest = new Map<string, string[]>();
   let sent = 0, cancelled = 0;
   for (const r of reminders) {
@@ -82,7 +85,7 @@ export async function GET(req: NextRequest) {
       text = paymentMessage({
         lang: r.language, contact: (brand.contact_name ?? "").split(" ")[0], invoiceNo: inv.number, balance: remaining,
         dueDate: inv.due_date, daysToDue, stage: r.stage, msme: !!p.udyam_no && daysToDue < 0, creator: p.name,
-      });
+      }, templates);
       subject = `Payment reminder: invoice ${inv.number} (${inr(remaining)})`;
       waHref = `/deals/${deal.id}/reminders`;
     } else if (r.kind === "tds" && !text) {
@@ -104,6 +107,7 @@ export async function GET(req: NextRequest) {
       if (res.sent) {
         await db.from("reminders").update({ sent_at: now.toISOString(), message: text }).eq("id", r.id);
         await audit(db, r.user_id, "reminder_sent", "reminder", r.id, { channel: "email", kind: r.kind, stage: r.stage, auto: true });
+        await track(r.user_id, "reminder_sent", { props: { channel: "email", kind: r.kind, auto: "true", deal_id: r.deal_id } });
         sent++;
       }
     }

@@ -16,6 +16,7 @@ import { byToken } from "@/lib/sign";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Agreement, AgreementBody, Profile } from "@/lib/types";
 import { EMAIL_RE } from "@/lib/validate";
+import { track } from "@/lib/events";
 
 export type SendResult = { ok: true; link: string; wa: string | null; emailed: boolean; note?: string } | { ok: false; error: string };
 
@@ -59,6 +60,7 @@ export async function sendAgreement(dealId: string, opts: { email: boolean; what
     }
   }
   await audit(db, user.id, "agreement_sent", "agreement", agreement.id, { email: emailed, whatsapp: opts.whatsapp });
+  await track(user.id, "agreement_sent", { sample: deal.is_sample, props: { deal_id: deal.id } });
   revalidatePath(`/deals/${deal.id}`);
   return { ok: true, link, emailed, note, wa: opts.whatsapp ? waLink(deal.brand.contact_whatsapp, text) : null };
 }
@@ -127,6 +129,7 @@ export async function signAgreement(token: string, _: SignState, f: FormData): P
     await admin.from("deals").update({ status: "agreed" }).eq("id", a.deal.id);
   }
   await audit(admin, a.user_id, "agreement_signed", "agreement", a.id, { signer: name, ip });
+  await track(a.user_id, "agreement_signed", { sample: a.is_sample, props: { deal_id: a.deal_id } });
 
   // Email a PDF copy to both parties (never for sample deals).
   if (!a.is_sample) {

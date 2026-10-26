@@ -30,26 +30,33 @@ export type PaymentMsgInput = {
   creator: string;
 };
 
-export function paymentMessage(m: PaymentMsgInput): string {
+/** Editable in admin Settings. Placeholders: {contact} {amount} {invoice} {due} {days} {days_label} {when}. */
+export type ReminderTemplates = Record<Lang, { upcoming: string; overdue: string }>;
+export const DEFAULT_TEMPLATES: ReminderTemplates = {
+  en: {
+    overdue: "Hi {contact}, hope you are well. The balance of {amount} on invoice {invoice} was due on {due} and is now {days_label} overdue. Could you share an update on the payment date?",
+    upcoming: "Hi {contact}, hope you are well. A gentle reminder that the balance of {amount} on invoice {invoice} is due {when}. Payment details are on the invoice. Thank you!",
+  },
+  te: {
+    overdue: "Hi {contact} garu, invoice {invoice} balance {amount}, {due} ki due undi, ippudu {days} days overdue ayyindi. Payment eppudu vasthundo konchem update ivvagalara?",
+    upcoming: "Hi {contact} garu, invoice {invoice} balance {amount}, {when} due undi. Payment details invoice lo unnayi. Thank you!",
+  },
+  hi: {
+    overdue: "Hi {contact}, invoice {invoice} ka balance {amount}, {due} ko due tha, ab {days} din overdue hai. Payment kab tak ho jayega, please update kar dijiye?",
+    upcoming: "Hi {contact}, invoice {invoice} ka balance {amount} {when} due hai. Payment details invoice mein hain. Thank you!",
+  },
+};
+const fill = (t: string, v: Record<string, string>) => t.replace(/\{(\w+)\}/g, (m, k: string) => v[k] ?? m);
+
+export function paymentMessage(m: PaymentMsgInput, templates: ReminderTemplates = DEFAULT_TEMPLATES): string {
   const c = m.contact || "there";
-  const amt = inr(m.balance);
   const due = fmtDay(m.dueDate);
   const d = Math.max(0, -m.daysToDue);
-  let body: string;
-  if (d > 0) {
-    body = {
-      en: `Hi ${c}, hope you are well. The balance of ${amt} on invoice ${m.invoiceNo} was due on ${due} and is now ${d} day${d === 1 ? "" : "s"} overdue. Could you share an update on the payment date?`,
-      te: `Hi ${c} garu, invoice ${m.invoiceNo} balance ${amt}, ${due} ki due undi, ippudu ${d} days overdue ayyindi. Payment eppudu vasthundo konchem update ivvagalara?`,
-      hi: `Hi ${c}, invoice ${m.invoiceNo} ka balance ${amt}, ${due} ko due tha, ab ${d} din overdue hai. Payment kab tak ho jayega, please update kar dijiye?`,
-    }[m.lang];
-  } else {
-    const today = m.daysToDue === 0;
-    body = {
-      en: `Hi ${c}, hope you are well. A gentle reminder that the balance of ${amt} on invoice ${m.invoiceNo} is due ${today ? "today" : `on ${due}`}. Payment details are on the invoice. Thank you!`,
-      te: `Hi ${c} garu, invoice ${m.invoiceNo} balance ${amt}, ${today ? "ivala" : `${due} ki`} due undi. Payment details invoice lo unnayi. Thank you!`,
-      hi: `Hi ${c}, invoice ${m.invoiceNo} ka balance ${amt} ${today ? "aaj" : `${due} ko`} due hai. Payment details invoice mein hain. Thank you!`,
-    }[m.lang];
-  }
+  const today = m.daysToDue === 0;
+  const when = { en: today ? "today" : `on ${due}`, te: today ? "ivala" : `${due} ki`, hi: today ? "aaj" : `${due} ko` }[m.lang];
+  const vars = { contact: c, amount: inr(m.balance), invoice: m.invoiceNo, due, days: String(d), days_label: `${d} day${d === 1 ? "" : "s"}`, when };
+  const t = templates[m.lang] ?? DEFAULT_TEMPLATES[m.lang];
+  let body = fill(d > 0 ? t.overdue : t.upcoming, vars);
   if (m.stage === "final") {
     body += {
       en: " This is a final reminder before I escalate the matter.",

@@ -8,6 +8,7 @@ import { ALL_DELIVERABLES, deliverableKey, USAGE_MAX_MONTHS, usageMonths } from 
 import { parseRupees } from "@/lib/money";
 import { stateByName } from "@/lib/states";
 import { EMAIL_RE, GSTIN_RE, str, up } from "@/lib/validate";
+import { track } from "@/lib/events";
 
 export type DealFormState = { error?: string } | undefined;
 
@@ -96,6 +97,7 @@ export async function createDeal(_: DealFormState, f: FormData): Promise<DealFor
     return { error: "Could not save deliverables: " + (r1.error ?? r2.error)?.message };
   }
   if (advReceived) await audit(db, user.id, "advance_recorded", "deal", deal.id, { amount_paise: advance });
+  await track(user.id, "deal_created", { props: { deal_id: deal.id } });
 
   redirect(f.get("intent") === "agreement" ? `/deals/${deal.id}/agreement` : `/deals/${deal.id}?t=${encodeURIComponent("Deal saved")}`);
 }

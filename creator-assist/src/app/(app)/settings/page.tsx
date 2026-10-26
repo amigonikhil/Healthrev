@@ -6,6 +6,7 @@ import { SubmitButton, ThemeSwitch } from "@/components/client";
 import { Row } from "@/components/ui";
 import { getTax, requireProfile } from "@/lib/data";
 import { isOwner } from "@/lib/env";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { everyHours } from "@/lib/reminder-schedule";
 import { DeleteAccount, RatesForm, ReminderForm } from "./forms";
 
@@ -16,6 +17,8 @@ export default async function Settings() {
   const tax = await getTax(db);
   const { count: sampleCount } = await db.from("deals").select("id", { count: "exact", head: true }).eq("is_sample", true);
   const theme = (await cookies()).get("theme")?.value;
+  const { data: adminRow } = await createAdminClient().from("admins").select("role").eq("user_id", user.id).maybeSingle();
+  const isAdmin = !!adminRow;
 
   return (
     <main className="scr">
@@ -53,7 +56,7 @@ export default async function Settings() {
         <a className="btn sec" href="/api/export" download>Export my data</a>
         <DeleteAccount />
       </div>
-      {isOwner(user) && <Link className="btn sec" href="/admin">Admin dashboard</Link>}
+      {(isOwner(user) || isAdmin) && <Link className="btn sec" href="/admin">Admin dashboard</Link>}
       <form action={signOut}><SubmitButton className="btn sec" pendingText="Logging out…">Log out</SubmitButton></form>
       <p className="sub" style={{ textAlign: "center" }}>Creator Assist beta · PAN and bank numbers are encrypted.</p>
     </main>

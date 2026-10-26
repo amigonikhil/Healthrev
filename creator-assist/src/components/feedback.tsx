@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { submitFeedback } from "@/app/actions/feedback";
 import { useToast } from "./client";
 
-const HIDDEN = [/^\/s\//]; // the brand's signing page is not for testers
+const HIDDEN = [/^\/s\//, /^\/admin/]; // the brand's signing page is not for testers; admin has its own
 const NO_NAV = [/^\/signin/, /^\/onboarding/];
 
 export function FeedbackButton() {

@@ -4,7 +4,9 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../env";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
-const PUBLIC = [/^\/signin$/, /^\/s\//, /^\/auth\//, /^\/api\/cron\//, /^\/api\/r\//, /^\/api\/s\//, /^\/api\/n\//];
+const PUBLIC = [/^\/signin$/, /^\/s\//, /^\/auth\//, /^\/api\/cron\//, /^\/api\/r\//, /^\/api\/s\//, /^\/api\/n\//, /^\/api\/events$/,
+  // /admin checks access itself and answers 404 to anyone who isn't an admin, signed in or not.
+  /^\/admin(\/|$)/];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

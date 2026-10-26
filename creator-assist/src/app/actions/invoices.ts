@@ -10,6 +10,7 @@ import { billToName, nextInvoiceSeq, renderInvoicePdf } from "@/lib/invoice-data
 import { inr } from "@/lib/money";
 import { everyHours, reminderSlots } from "@/lib/reminder-schedule";
 import type { Invoice } from "@/lib/types";
+import { track } from "@/lib/events";
 
 export type InvState = { error?: string } | undefined;
 
@@ -47,6 +48,7 @@ export async function generateInvoice(dealId: string, _: InvState, f: FormData):
     scheduled_at: s.at, is_sample: deal.is_sample,
   })));
   await audit(db, user.id, "invoice_generated", "invoice", invoice.id, { number: invoice.number, total_paise: invoice.total_paise });
+  await track(user.id, "invoice_generated", { sample: deal.is_sample, props: { deal_id: deal.id } });
 
   let toast = `Invoice ${invoice.number} created`;
   if (f.get("email") === "on") {
@@ -73,6 +75,6 @@ export async function emailInvoice(invoiceId: string): Promise<string> {
     text: `Hi ${deal.brand.contact_name || "there"},\n\nPlease find attached invoice ${inv.number} for ${billToName(deal)}: ${inr(inv.total_paise)}${inv.advance_deducted_paise ? `, less the ${inr(inv.advance_deducted_paise)} advance received` : ""}. Balance due ${inr(inv.balance_due_paise)} by ${fmtDate(inv.due_date)}.\n\nThank you!\n– ${profile.name}`,
     attachments: [{ filename: `${inv.number.replace(/\//g, "-")}.pdf`, content: pdf }],
   });
-  if (r.sent) await audit(db, user.id, "invoice_sent", "invoice", inv.id);
+  if (r.sent) { await audit(db, user.id, "invoice_sent", "invoice", inv.id); await track(user.id, "invoice_sent", { props: { deal_id: deal.id } }); }
   return r.sent ? `Invoice emailed to ${deal.brand.contact_email}` : `Email not sent: ${r.reason}`;
 }

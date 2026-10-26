@@ -7,6 +7,7 @@ import { addDays, nineAmIST, todayIST } from "@/lib/dates";
 import { form16aMessage } from "@/lib/messages";
 import { parseRupees } from "@/lib/money";
 import { str } from "@/lib/validate";
+import { track } from "@/lib/events";
 
 export type PayState = { error?: string } | undefined;
 
@@ -47,5 +48,6 @@ export async function recordPayment(dealId: string, _: PayState, f: FormData): P
     });
   }
   await audit(db, user.id, "payment_recorded", "payment", pay.id, { amount_paise: amount, tds_paise: tds, settled });
+  await track(user.id, "payment_recorded", { sample: deal.is_sample, props: { deal_id: deal.id, settled } });
   redirect(`/deals/${deal.id}/paid?amt=${tds}&s=${settled ? 1 : 0}`);
 }

@@ -1,4 +1,4 @@
-import { noticePdfForDeal } from "@/lib/admin";
+import { noticePdfForDeal } from "@/lib/notice-render";
 import { loadDeal } from "@/lib/data";
 import { dealFromNoticeToken } from "@/lib/notice-data";
 import { createAdminClient } from "@/lib/supabase/admin";

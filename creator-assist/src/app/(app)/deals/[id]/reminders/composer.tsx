@@ -1,14 +1,15 @@
 "use client";
 
+import { trackClient } from "@/components/track";
 import { useState, useTransition } from "react";
 import { logWhatsAppReminder, sendReminderEmail } from "@/app/actions/reminders";
 import { Seg, useToast } from "@/components/client";
-import { LANGS, paymentMessage, waLink } from "@/lib/messages";
+import { LANGS, paymentMessage, waLink, type ReminderTemplates } from "@/lib/messages";
 import type { Lang } from "@/lib/types";
 
 export function Composer(p: {
   dealId: string; stage: string; defaultLang: Lang; contact: string; phone: string | null; email: string | null; ccEmail: string | null;
-  invoiceNo: string; balance: number; dueDate: string; daysToDue: number; msmeAvailable: boolean; creator: string;
+  invoiceNo: string; balance: number; dueDate: string; daysToDue: number; msmeAvailable: boolean; creator: string; templates: ReminderTemplates;
 }) {
   const [lang, setLang] = useState<Lang>(p.defaultLang);
   const [msme, setMsme] = useState(p.msmeAvailable && p.daysToDue < 0);
@@ -18,7 +19,7 @@ export function Composer(p: {
   const text = paymentMessage({
     lang, contact: p.contact.split(" ")[0], invoiceNo: p.invoiceNo, balance: p.balance, dueDate: p.dueDate,
     daysToDue: p.daysToDue, stage: p.stage, msme, creator: p.creator,
-  });
+  }, p.templates);
   const target = { dealId: p.dealId, kind: "payment" as const, stage: p.stage, lang, message: text };
 
   return (<>
@@ -33,7 +34,7 @@ export function Composer(p: {
       <input type="checkbox" checked={cc} disabled={!p.ccEmail} onChange={(e) => setCc(e.target.checked)} />
     </label>
     {p.phone ? (
-      <a className="btn" href={waLink(p.phone, text)} target="_blank" rel="noopener" onClick={() => { logWhatsAppReminder(target); }}>
+      <a className="btn" href={waLink(p.phone, text)} target="_blank" rel="noopener" onClick={() => { trackClient("whatsapp_clicked", { kind: "payment_reminder" }); logWhatsAppReminder(target); }}>
         Send now on WhatsApp
       </a>
     ) : <p className="sub">Add a WhatsApp number for this brand to send on WhatsApp.</p>}

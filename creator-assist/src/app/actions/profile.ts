@@ -12,6 +12,8 @@ import { stateByName } from "@/lib/states";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 import { ACCT_RE, bankFromIfsc, EMAIL_RE, GSTIN_RE, IFSC_RE, PAN_RE, str, UDYAM_RE, up, UPI_RE } from "@/lib/validate";
+import { track } from "@/lib/events";
+import { getSetting, type TaxDefaults } from "@/lib/app-settings";
 
 export type FormState = { error?: string } | undefined;
 
@@ -66,7 +68,10 @@ export async function createProfile(_: FormState, f: FormData): Promise<FormStat
     invoice_prefix: defaultPrefix(fields.name!), consent_at: new Date().toISOString(),
   });
   if (e1 && e1.code !== "23505") return { error: "Could not save your details: " + e1.message };
-  await db.from("tax_config").upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+  // New creators start from the admin-set default rates (if any); they can change them in Settings.
+  const defaults = await getSetting<TaxDefaults>("tax_defaults");
+  await db.from("tax_config").upsert({ user_id: user.id, ...(defaults ?? {}) }, { onConflict: "user_id", ignoreDuplicates: true });
+  if (!e1) await track(user.id, "onboarding_completed");
 
   // The owner always gets the demo set, even if they onboard by hand.
   if (isOwner(user)) await seedFor(db, user.id, f.get("pan") ? up(f.get("pan")) : null);

@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/data";
 import { sendEmail, textToHtml } from "@/lib/email";
 import { siteUrl } from "@/lib/env";
 import type { Lang } from "@/lib/types";
+import { track } from "@/lib/events";
 
 type Target = { dealId?: string; brandId?: string; kind: "payment" | "tds"; stage: string; lang: Lang; message: string };
 
@@ -21,6 +22,8 @@ export async function logWhatsAppReminder(t: Target) {
   }).select("id").single();
   await markLadderStageSent(t);
   await audit(db, user.id, "reminder_sent", "reminder", data?.id, { channel: "whatsapp", kind: t.kind, stage: t.stage });
+  const { data: owner } = t.dealId ? await db.from("deals").select("is_sample").eq("id", t.dealId).maybeSingle() : await db.from("brands").select("is_sample").eq("id", t.brandId!).maybeSingle();
+  await track(user.id, "reminder_sent", { sample: !!owner?.is_sample, props: { channel: "whatsapp", kind: t.kind, deal_id: t.dealId ?? null } });
   if (t.dealId) revalidatePath(`/deals/${t.dealId}`);
 }
 
@@ -35,6 +38,7 @@ export async function sendReminderEmail(t: Target & { cc: boolean }): Promise<st
   if (!data || !brand) return "Not found";
   if (data.is_sample) {
     await audit(db, user.id, "reminder_sent", "reminder", null, { channel: "email", kind: t.kind, stage: t.stage, sample: true });
+    await track(user.id, "reminder_sent", { sample: true, props: { channel: "email", kind: t.kind } });
     return "Sample deal: email not actually sent";
   }
   if (!brand.contact_email) return "Add a contact email for this brand first";
@@ -56,6 +60,7 @@ export async function sendReminderEmail(t: Target & { cc: boolean }): Promise<st
   if (row) await db.from("reminders").update({ sent_at: new Date().toISOString() }).eq("id", row.id);
   await markLadderStageSent(t);
   await audit(db, user.id, "reminder_sent", "reminder", row?.id, { channel: "email", kind: t.kind, stage: t.stage });
+  await track(user.id, "reminder_sent", { props: { channel: "email", kind: t.kind, deal_id: t.dealId ?? null } });
   if (t.dealId) revalidatePath(`/deals/${t.dealId}`);
   return `Email sent to ${brand.contact_email}`;
 }

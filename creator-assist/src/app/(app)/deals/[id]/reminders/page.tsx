@@ -5,11 +5,12 @@ import { loadDealView } from "@/lib/data";
 import { STAGE_LABEL } from "@/lib/messages";
 import { inr } from "@/lib/money";
 import { everyHours, REMINDER_COUNT } from "@/lib/reminder-schedule";
+import { reminderTemplates } from "@/lib/app-settings";
 import { Composer } from "./composer";
 
 export default async function RemindersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, profile } = await loadDealView(id);
+  const [{ v, profile }, templates] = await Promise.all([loadDealView(id), reminderTemplates()]);
   const d = v.d;
   const inv = d.invoice;
   const ladder = d.reminders.filter((r) => r.kind === "payment" && r.channel === "email").sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
@@ -49,7 +50,7 @@ export default async function RemindersPage({ params }: { params: Promise<{ id: 
             dealId={d.id} stage={stage} defaultLang={profile.language}
             contact={d.brand.contact_name ?? ""} phone={d.brand.contact_whatsapp} email={d.brand.contact_email}
             ccEmail={d.brand.cc_email} invoiceNo={inv.number} balance={v.remaining} dueDate={inv.due_date}
-            daysToDue={v.daysToDue ?? 0} msmeAvailable={!!profile.udyam_no} creator={profile.name}
+            daysToDue={v.daysToDue ?? 0} msmeAvailable={!!profile.udyam_no} creator={profile.name} templates={templates}
           />
         )}
       </>)}

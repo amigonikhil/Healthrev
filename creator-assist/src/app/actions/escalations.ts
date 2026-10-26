@@ -12,6 +12,7 @@ import { inr } from "@/lib/money";
 import { noticeText } from "@/lib/notice";
 import { noticeFor } from "@/lib/notice-data";
 import { noticePdf } from "@/lib/notice-pdf";
+import { track } from "@/lib/events";
 
 async function loadOverdue(dealId: string) {
   const { db, user, profile } = await requireProfile();
@@ -33,6 +34,7 @@ async function recordSent(dealId: string, channel: "email" | "whatsapp") {
   }).select("id").single();
   await db.from("deals").update({ status: "escalated" }).eq("id", dealId);
   await audit(db, user.id, "legal_notice_sent", "escalation", data?.id, { channel });
+  await track(user.id, "escalation_opened", { sample: v.d.is_sample, props: { type: "lawyer_notice", channel, deal_id: dealId } });
   revalidatePath(`/deals/${dealId}`);
 }
 
@@ -85,6 +87,7 @@ export async function startSamadhaan(dealId: string) {
   if (!deal) return;
   const { data } = await db.from("escalations").insert({ deal_id: deal.id, type: "msme_samadhaan", status: "draft", is_sample: deal.is_sample }).select("id").single();
   await audit(db, user.id, "escalation_created", "escalation", data?.id, { type: "msme_samadhaan" });
+  await track(user.id, "escalation_opened", { sample: deal.is_sample, props: { type: "msme_samadhaan", deal_id: deal.id } });
 }
 
 export type CallState = { error?: string } | undefined;
@@ -105,5 +108,6 @@ export async function bookLegalCall(dealId: string, _: CallState, f: FormData): 
   }).select("id").single();
   if (error || !data) return { error: "Could not book: " + error?.message };
   await audit(db, user.id, "legal_call_booked", "legal_call_booking", data.id, { slot, deal_id: deal.id });
+  await track(user.id, "legal_call_booked", { sample: deal.is_sample, props: { deal_id: deal.id } });
   redirect(`/deals/${deal.id}/legal-call/booked?b=${data.id}`);
 }

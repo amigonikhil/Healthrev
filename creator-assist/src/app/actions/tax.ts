@@ -10,11 +10,13 @@ import { parseRupees } from "@/lib/money";
 import { taxHub } from "@/lib/tax";
 import type { AisEntry, Filing } from "@/lib/types";
 import { str, TAN_RE, up } from "@/lib/validate";
+import { track } from "@/lib/events";
 
 export async function setFiler(who: "creator_assist" | "own_ca") {
   const { db, user } = await requireProfile();
   await db.from("profiles").update({ files_with: who }).eq("id", user.id);
   await db.from("filings").update({ handled_by: who }).is("data_sent_at", null);
+  await track(user.id, "filing_option_chosen", { props: { who } });
   revalidatePath("/tax");
 }
 
@@ -26,6 +28,7 @@ export async function sendFilingData(type: Filing["type"], period: string, due: 
   }, { onConflict: "user_id,type,period" });
   if (error) return "Could not save: " + error.message;
   await audit(db, user.id, "filing_data_sent", "filing", null, { type, period, to: profile.files_with });
+  await track(user.id, "filing_data_sent", { props: { type, period } });
   revalidatePath("/tax");
   return `Beta: marked as sent to ${profile.files_with === "own_ca" ? "your CA" : "Creator Assist"}. Nothing was actually filed.`;
 }
@@ -52,13 +55,18 @@ export async function uploadAis(_: AisState, f: FormData): Promise<AisState> {
   }
   await db.from("profiles").update({ ais_updated_at: new Date().toISOString() }).eq("id", user.id);
   await audit(db, user.id, "ais_uploaded", "ais", null, { fy, entries: lines.length });
+  await track(user.id, "ais_uploaded", { props: { fy, entries: lines.length } });
   revalidatePath("/tax");
-  if (!lines.length) return { message: "File saved, but we couldn't read TDS lines from it. Add them by hand below." };
+  if (!lines.length) {
+    await db.from("ais_uploads").insert({ fy, file_path: path, parsed: false });
+    return { message: "File saved, but we couldn't read TDS lines from it. Add them by hand below." };
+  }
 
   const { views, today } = await loadViews();
   const { data: ais } = await db.from("ais_entries").select("*");
   const hub = taxHub(views, (ais ?? []) as AisEntry[], today);
   const missing = hub.payers.filter((p) => p.missing > 0).length;
+  await db.from("ais_uploads").insert({ fy, file_path: path, parsed: true, entries: lines.length, mismatches: missing });
   return { message: `AIS updated · ${lines.length} deductor${lines.length === 1 ? "" : "s"} read · ${hub.payers.length - missing} matched, ${missing} missing` };
 }
 
@@ -88,5 +96,6 @@ export async function bookAiCall(_: BookState, f: FormData): Promise<BookState> 
   const { data, error } = await db.from("ai_call_bookings").insert({ slot, language: str(f.get("language")) || "English", phone, consent: true }).select("id").single();
   if (error || !data) return { error: "Could not book: " + error?.message };
   await audit(db, user.id, "ai_call_booked", "ai_call_booking", data.id, { slot });
+  await track(user.id, "ai_call_booked");
   redirect(`/tax/file/booked?id=${data.id}`);
 }

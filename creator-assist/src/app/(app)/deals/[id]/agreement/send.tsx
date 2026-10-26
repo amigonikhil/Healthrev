@@ -1,5 +1,6 @@
 "use client";
 
+import { trackClient } from "@/components/track";
 import { useState, useTransition } from "react";
 import { sendAgreement } from "@/app/actions/agreements";
 import { useToast } from "@/components/client";
@@ -27,7 +28,7 @@ export function SendPanel({ dealId, contact, email, whatsapp, existingLink }: {
       <label className="tog"><span>Email · {email ?? "no email on file"}</span><input type="checkbox" checked={byEmail} disabled={!email} onChange={(e) => setByEmail(e.target.checked)} /></label>
       <label className="tog"><span>WhatsApp · {whatsapp ?? "no number on file"}</span><input type="checkbox" checked={byWa} disabled={!whatsapp} onChange={(e) => setByWa(e.target.checked)} /></label>
     </div>
-    {done?.wa && <a className="btn" href={done.wa} target="_blank" rel="noopener">Open WhatsApp to send</a>}
+    {done?.wa && <a className="btn" href={done.wa} target="_blank" rel="noopener" onClick={() => trackClient("whatsapp_clicked", { kind: "agreement" })}>Open WhatsApp to send</a>}
     <button type="button" className={done?.wa ? "btn sec" : "btn"} onClick={send} disabled={pending}>
       {pending ? "Sending…" : existingLink || done ? "Send again" : "Send for e-sign"}
     </button>

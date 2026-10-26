@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { sendEmailCode } from "@/app/actions/auth";
+import { trackClient } from "@/components/track";
 import { Seg } from "@/components/client";
 
 type Mode = "phone" | "email";
@@ -34,11 +35,13 @@ export function SignInForm({ smsEnabled }: { smsEnabled: boolean }) {
       const r = await sendEmailCode(id);
       setBusy(false);
       if (!r.ok) return setErr(r.error);
+      trackClient("otp_requested", { method: "email" });
       return setSent(true);
     }
     const { error } = await (await auth()).signInWithOtp({ phone: toE164(id) });
     setBusy(false);
     if (error) return setErr(error.message);
+    trackClient("otp_requested", { method: "sms" });
     setSent(true);
   }
 
@@ -54,6 +57,7 @@ export function SignInForm({ smsEnabled }: { smsEnabled: boolean }) {
       setBusy(false);
       return setErr(error.message);
     }
+    trackClient("otp_verified", { method: mode === "phone" ? "sms" : "email" });
     router.replace("/home");
     router.refresh();
   }

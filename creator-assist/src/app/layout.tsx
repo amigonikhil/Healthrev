@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { ToastFromQuery, ToastProvider } from "@/components/client";
 import { FeedbackButton } from "@/components/feedback";
+import { PageTracker } from "@/components/track";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <FeedbackButton />
           </div>
           <Suspense><ToastFromQuery /></Suspense>
+          <PageTracker />
         </ToastProvider>
         <Analytics />
       </body>
