@@ -3,12 +3,12 @@
 import { redirect } from "next/navigation";
 import { audit } from "@/lib/audit";
 import { getTax, loadDeal, requireProfile } from "@/lib/data";
-import { addDays, fmtDate, nineAmIST, todayIST } from "@/lib/dates";
+import { fmtDate, todayIST } from "@/lib/dates";
 import { sendEmail } from "@/lib/email";
 import { buildInvoice, invoiceNumber } from "@/lib/invoice";
 import { billToName, nextInvoiceSeq, renderInvoicePdf } from "@/lib/invoice-data";
-import { stageAt } from "@/lib/messages";
 import { inr } from "@/lib/money";
+import { everyHours, reminderSlots } from "@/lib/reminder-schedule";
 import type { Invoice } from "@/lib/types";
 
 export type InvState = { error?: string } | undefined;
@@ -41,11 +41,10 @@ export async function generateInvoice(dealId: string, _: InvState, f: FormData):
   if (!invoice) return { error: "Could not number the invoice. Try again." };
 
   await db.from("deals").update({ status: "invoiced" }).eq("id", deal.id);
-  // Payment reminder ladder, from the creator's settings (days after due date).
-  const ladder = profile.reminder_ladder?.length ? profile.reminder_ladder : [0];
-  await db.from("reminders").insert(ladder.map((offset, i) => ({
-    deal_id: deal.id, kind: "payment", stage: stageAt(i, ladder.length), channel: "email", language: profile.language,
-    scheduled_at: nineAmIST(addDays(invoice!.due_date, offset)), is_sample: deal.is_sample,
+  // Payment reminders: 3, every N hours (Settings) from the due date, 9:00 IST.
+  await db.from("reminders").insert(reminderSlots(invoice.due_date, everyHours(profile.remind_every_hours)).map((s) => ({
+    deal_id: deal.id, kind: "payment", stage: s.stage, channel: "email", language: profile.language,
+    scheduled_at: s.at, is_sample: deal.is_sample,
   })));
   await audit(db, user.id, "invoice_generated", "invoice", invoice.id, { number: invoice.number, total_paise: invoice.total_paise });
 

@@ -50,6 +50,9 @@ export function dealTimeline(v: DealView, today: string): TimelineItem[] {
   } else {
     const next = pay.filter((r) => !r.sent_at && !r.cancelled_at).sort((x, y) => x.scheduled_at.localeCompare(y.scheduled_at))[0];
     if (next) out.push({ color: GREY, text: `${STAGE_LABEL[next.stage] ?? "Reminder"} scheduled · ${fmtDay(istDate(next.scheduled_at))}`, date: next.scheduled_at });
+    else if (v.noticeDueAt && !d.escalations.some((e) => e.type === "lawyer_notice" && e.status === "sent")) {
+      out.push({ color: v.noticeReady ? AMBER : GREY, text: `${v.noticeReady ? "Legal notice due" : "Legal notice"} · ${fmtDay(istDate(v.noticeDueAt))}`, date: v.noticeDueAt });
+    }
     else if (inv && v.phase === "due") out.push({ color: GREY, text: `Balance due · ${fmtDay(inv.due_date)}`, date: inv.due_date + "T09:00" });
   }
   return out.sort((x, y) => x.date.localeCompare(y.date));

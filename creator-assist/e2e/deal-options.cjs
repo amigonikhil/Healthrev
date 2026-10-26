@@ -103,19 +103,16 @@ async function otpFor(email) {
   ok((await page.getByLabel("Charged").inputValue()) === "year", "interest period saved");
   ok((await page.getByLabel("Legal fee claimed in lawyer notices (₹)").inputValue()) === "7500", "legal fee saved");
 
-  console.log("Settings: reminder ladder boxes");
-  const box = (n) => page.getByLabel(new RegExp(`^${n} reminder`));
-  ok((await box("1st").inputValue()) === "0" && (await box("4th").inputValue()) === "30", "ladder boxes show the saved days (0, 7, 15, 30)");
-  ok((await box("2nd").getAttribute("inputmode")) === "numeric", "number keypad on phones");
-  await box("1st").fill("0"); await box("2nd").fill("5"); await box("3rd").fill("12"); await box("4th").fill("");
+  console.log("Settings: remind every N hours");
+  const every = page.getByLabel("Remind brands every");
+  ok((await every.inputValue()) === "8", "default: every 8 hours");
+  ok(JSON.stringify(await every.locator("option").allTextContents()) === JSON.stringify(["8 hours", "12 hours", "18 hours", "24 hours", "36 hours", "48 hours"]), "choices 8/12/18/24/36/48 hours");
+  ok((await text()).includes("3 reminders from the due date (9:00 AM), then we prompt you to send the legal notice."), "explains 3 reminders then legal notice");
+  await every.selectOption("24");
   await page.getByRole("button", { name: "Save reminders" }).click();
   await page.waitForSelector("text=Reminder settings saved");
   await page.reload();
-  ok((await box("2nd").inputValue()) === "5" && (await box("3rd").inputValue()) === "12" && (await box("4th").inputValue()) === "", "3-step ladder saved, 4th left empty");
-  await box("2nd").fill("20");
-  await page.getByRole("button", { name: "Save reminders" }).click();
-  await page.waitForSelector("text=Each reminder should come after the one before it");
-  ok(true, "out-of-order ladder rejected");
+  ok((await page.getByLabel("Remind brands every").inputValue()) === "24", "interval saved");
 
   await browser.close();
   console.log(failures ? `\n${failures} FAILURE(S)` : "\nALL DEAL-OPTION CHECKS PASSED");

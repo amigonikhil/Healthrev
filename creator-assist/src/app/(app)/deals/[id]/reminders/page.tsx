@@ -1,8 +1,10 @@
 import { Chip, Top } from "@/components/ui";
-import { fmtDay, istDate } from "@/lib/dates";
+import Link from "next/link";
+import { fmtDay, fmtTimeIST, istDate } from "@/lib/dates";
 import { loadDealView } from "@/lib/data";
 import { STAGE_LABEL } from "@/lib/messages";
 import { inr } from "@/lib/money";
+import { everyHours, REMINDER_COUNT } from "@/lib/reminder-schedule";
 import { Composer } from "./composer";
 
 export default async function RemindersPage({ params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +25,7 @@ export default async function RemindersPage({ params }: { params: Promise<{ id: 
       <Top title="Reminders" fallback={`/deals/${d.id}`} />
       <p className="sub">{d.brand.name} · {status}</p>
       {!inv ? (
-        <div className="info">Reminders start once the invoice is generated. They go out at 0, 7, 15 and 30 days after the due date (change this in Settings).</div>
+        <div className="info">Reminders start once the invoice is generated: {REMINDER_COUNT} reminders every {everyHours(profile.remind_every_hours)} hours from the due date, then the legal notice (change this in Settings).</div>
       ) : (<>
         <div className="card">
           <h2>Ladder</h2>
@@ -31,13 +33,17 @@ export default async function RemindersPage({ params }: { params: Promise<{ id: 
             const [label, tone] = r.cancelled_at ? ["Cancelled", "mute"] : r.sent_at ? [r.read_at ? "Sent · read" : "Sent", "ok"] : ["Scheduled", "mute"];
             return (
               <div className="row" key={r.id}>
-                <span>{STAGE_LABEL[r.stage] ?? r.stage} · {fmtDay(istDate(r.scheduled_at))}</span>
+                <span>{STAGE_LABEL[r.stage] ?? r.stage} · {fmtDay(istDate(r.scheduled_at))}, {fmtTimeIST(r.scheduled_at)}</span>
                 <Chip tone={tone as "ok" | "mute"}>{label}</Chip>
               </div>
             );
           })}
+          {v.noticeDueAt && v.phase !== "paid" && (
+            <div className="row"><span>Legal notice · {fmtDay(istDate(v.noticeDueAt))}, {fmtTimeIST(v.noticeDueAt)}</span><Chip tone={v.noticeReady ? "over" : "mute"}>{v.noticeReady ? "Due now" : "Next"}</Chip></div>
+          )}
           {manual.length > 0 && <p className="sub">{manual.length} sent by you on WhatsApp</p>}
         </div>
+        {v.noticeReady && <Link className="btn" href={`/deals/${d.id}/notice`}>Send legal notice</Link>}
         {v.phase !== "paid" && (
           <Composer
             dealId={d.id} stage={stage} defaultLang={profile.language}

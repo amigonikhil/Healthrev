@@ -1,6 +1,7 @@
 import { dealSummary, msmeInterest, tdsEstimate, type TaxConfig } from "./calc";
 import { daysBetween, fmtDay, istDate } from "./dates";
 import { deliverablesSummary } from "./deliverables";
+import { everyHours, noticeDueAt } from "./reminder-schedule";
 import { inr } from "./money";
 import type { DealFull, Profile } from "./types";
 
@@ -25,6 +26,10 @@ export type DealView = {
   interest: number;
   remindersSent: number;
   paidOn: string | null;
+  /** When the creator should send the legal notice (one interval after the last reminder). */
+  noticeDueAt: string | null;
+  /** Overdue, every reminder has gone out, and no legal notice has been sent yet. */
+  noticeReady: boolean;
 };
 
 export function viewDeal(d: DealFull, profile: Profile, tax: TaxConfig, today: string): DealView {
@@ -70,8 +75,13 @@ export function viewDeal(d: DealFull, profile: Profile, tax: TaxConfig, today: s
   const paidOn = phase === "paid" && payments.length ? payments.map((p) => p.received_on).sort().at(-1)! : null;
   const interest = phase === "overdue" && profile.udyam_no ? msmeInterest(remaining, daysOverdue, tax) : 0;
 
+  const ladder = d.reminders.filter((r) => r.kind === "payment" && r.channel === "email" && !r.cancelled_at).map((r) => r.scheduled_at).sort();
+  const noticeAt = inv && ladder.length ? noticeDueAt(ladder.at(-1)!, everyHours(profile.remind_every_hours)) : null;
+  const noticeSent = d.escalations.some((e) => e.type === "lawyer_notice" && e.status === "sent");
+  const noticeReady = phase === "overdue" && !!noticeAt && Date.parse(noticeAt) <= Date.now() && !noticeSent;
+
   return {
-    d, phase, remaining: Math.max(0, remaining), tdsExpected, tdsRecorded, tdsRemaining,
+    d, phase, remaining: Math.max(0, remaining), noticeDueAt: noticeAt, noticeReady, tdsExpected, tdsRecorded, tdsRemaining,
     receive: Math.max(0, remaining - tdsRemaining), received, total, dueDate, daysToDue, daysOverdue,
     interest, remindersSent, paidOn,
   };

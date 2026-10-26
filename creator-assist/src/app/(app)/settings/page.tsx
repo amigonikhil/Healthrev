@@ -6,6 +6,7 @@ import { SubmitButton, ThemeSwitch } from "@/components/client";
 import { Row } from "@/components/ui";
 import { getTax, requireProfile } from "@/lib/data";
 import { isOwner } from "@/lib/env";
+import { everyHours } from "@/lib/reminder-schedule";
 import { DeleteAccount, RatesForm, ReminderForm } from "./forms";
 
 export const metadata = { title: "Settings · Creator Assist" };
@@ -39,7 +40,7 @@ export default async function Settings() {
         <ThemeSwitch initial={theme === "light" || theme === "dark" ? theme : "system"} />
         <p className="sub">System follows your phone&apos;s light or dark setting.</p>
       </div>
-      <ReminderForm ladder={profile.reminder_ladder} whatsapp={profile.remind_whatsapp} email={profile.remind_email} language={profile.language} terms={profile.default_terms_days} />
+      <ReminderForm every={everyHours(profile.remind_every_hours)} whatsapp={profile.remind_whatsapp} email={profile.remind_email} language={profile.language} terms={profile.default_terms_days} />
       <RatesForm tax={tax} />
 
       <div className="card">

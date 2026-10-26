@@ -5,7 +5,7 @@ import { lateTerms, type TaxConfig } from "./calc";
 import { randomToken } from "./crypto";
 import { addDays, fyOf, nineAmIST } from "./dates";
 import { buildInvoice, invoiceNumber } from "./invoice";
-import { stageAt } from "./messages";
+import { everyHours, reminderSlots } from "./reminder-schedule";
 import { rupees } from "./money";
 import type { DB } from "./supabase/server";
 import type { Brand, Deal, DealDeliverable, Profile, UsageRights } from "./types";
@@ -148,17 +148,17 @@ export function buildSamplePayload(args: { userId: string; profile: Profile; pan
         });
       }
 
-      // Payment reminder ladder from the user's own settings.
-      const ladder = profile.reminder_ladder?.length ? profile.reminder_ladder : [0];
-      ladder.forEach((offsetDays, i) => {
-        const when = addDays(draft.due_date, offsetDays);
+      // Payment reminders from the user's own "remind every" setting.
+      const now = Date.now();
+      reminderSlots(draft.due_date, everyHours(profile.remind_every_hours)).forEach((slot) => {
         const isPaid = s.status === "paid";
-        const sent = !isPaid && when <= today;
+        const sent = !isPaid && Date.parse(slot.at) <= now;
+        const readAt = Date.parse(slot.at) + 280 * 60_000;
         p.reminders.push({
-          id: randomUUID(), user_id, deal_id: deal.id, brand_id: null, kind: "payment", stage: stageAt(i, ladder.length),
-          channel: "email", language: profile.language, message: null, scheduled_at: nineAmIST(when),
-          sent_at: sent ? nineAmIST(when) : null,
-          read_at: sent && when < today ? new Date(Date.parse(nineAmIST(when)) + 280 * 60_000).toISOString() : null,
+          id: randomUUID(), user_id, deal_id: deal.id, brand_id: null, kind: "payment", stage: slot.stage,
+          channel: "email", language: profile.language, message: null, scheduled_at: slot.at,
+          sent_at: sent ? slot.at : null,
+          read_at: sent && readAt < now ? new Date(readAt).toISOString() : null,
           cancelled_at: isPaid ? ts(today, s.payment!.at, "12:00") : null, is_sample: true, created_at: ts(today, s.invoice!.at, "18:00"),
         });
       });

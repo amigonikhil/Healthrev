@@ -46,6 +46,14 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         )}
       </div>
 
+      {v.noticeReady && (
+        <div className="card" style={{ boxShadow: "inset 0 0 0 2px var(--primary)" }}>
+          <h2>Time for the legal notice</h2>
+          <p className="sub">{v.remindersSent || "All"} reminder{v.remindersSent === 1 ? "" : "s"} sent and {d.brand.name} still hasn&apos;t paid. Send the legal notice on your lawyer&apos;s letterhead.</p>
+          <Link className="btn" href={`/deals/${d.id}/notice`}>Send legal notice</Link>
+        </div>
+      )}
+
       <div className="card">
         <Row k="Deliverables" v={deliverablesSummary(d.deliverables)} />
         <Row k="Usage rights" v={d.usage?.enabled ? `${usageDurationLabel(d.usage.duration)} · included` : "None"} />

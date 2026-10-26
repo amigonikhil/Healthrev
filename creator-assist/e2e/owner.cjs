@@ -7,7 +7,8 @@ const BASE = "http://localhost:3000";
 let failures = 0;
 // Seed dates are relative to today (IST), so expected labels are too.
 const day = (offset) => { const d = new Date(Date.now() + 5.5 * 3600e3 + offset * 864e5); return d.getUTCDate() + " " + d.toLocaleString("en-IN", { month: "short", timeZone: "UTC" }); };
-const DUE = day(-18), FIRM = day(-3), FINAL = day(12);
+// Reminders: 9:00 am, 5:00 pm on the due date, 1:00 am the next day (every 8 hours); legal notice due 9:00 am that day.
+const DUE = day(-18), DUE1 = day(-17);
 const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if (!cond) failures++; };
 
 (async () => {
@@ -60,7 +61,8 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   ok(t.includes("₹33,600"), "balance to receive ₹33,600");
   ok(t.includes("MSME interest so far: ₹310 on the ₹38,100 unpaid, for 18 days."), "MSME interest ₹310");
   ok(t.includes("2 Reels · 3 Stories") && t.includes("3 months · included"), "deal facts");
-  ok(t.includes(`3 reminders sent, read by brand · ${DUE}–${FIRM}`) && t.includes(`Final notice scheduled · ${FINAL}`), "timeline reminders");
+  ok(t.includes(`3 reminders sent, read by brand · ${DUE}–${DUE1}`) && t.includes(`Legal notice due · ${DUE1}`), "timeline reminders then legal notice due");
+  ok(t.includes("Time for the legal notice") && t.includes("3 reminders sent and Voltra Motors still hasn't paid"), "deal prompts the legal notice after 3 reminders");
   await shot("04-deal");
   const dealUrl = page.url();
 
@@ -84,7 +86,8 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.goto(dealUrl + "/reminders");
   await page.waitForSelector(".bubble");
   t = await text();
-  ok(t.includes(`Friendly · ${DUE}`) && t.includes(`Firm · ${FIRM}`) && t.includes(`Final notice · ${FINAL}`) && t.includes("Sent · read"), "ladder rows");
+  ok(t.includes(`Friendly · ${DUE}, 9:00 am`) && t.includes(`Follow-up · ${DUE}, 5:00 pm`) && t.includes(`Final notice · ${DUE1}, 1:00 am`) && t.includes("Sent · read"), "3 reminders, 8 hours apart");
+  ok(t.includes(`Legal notice · ${DUE1}, 9:00 am`) && t.includes("Due now") && !!(await page.getByRole("link", { name: "Send legal notice" }).count()), "legal notice step after the reminders");
   let bubble = await page.locator(".bubble").innerText();
   ok(bubble.startsWith(`Hi Arjun, hope you are well. The balance of ₹38,100 on invoice RTK/2026-27/014 was due on ${DUE} and is now 18 days overdue.`), "English message");
   ok(bubble.includes("MSME-registered"), "MSME line on");
@@ -168,7 +171,8 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.waitForURL("**/paid**");
   ok((await text()).includes("Voltra Motors is marked paid. Pending reminders were cancelled and ₹4,500 TDS was added to your Tax hub."), "paid confirmation copy");
   await page.goto(dealUrl + "/reminders");
-  ok((await text()).includes("Cancelled"), "final notice cancelled after payment");
+  t = await text();
+  ok(!t.includes("Due now") && !(await page.getByRole("link", { name: "Send legal notice" }).count()), "no legal-notice prompt once paid");
 
   console.log("Tax hub");
   await page.goto(BASE + "/tax");

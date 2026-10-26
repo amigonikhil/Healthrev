@@ -10,7 +10,7 @@ export type Profile = {
   address: string | null; city: string | null; state: string; state_code: string;
   pan_enc: string | null; pan_masked: string | null; gstin: string | null; udyam_no: string | null;
   bank_name: string | null; bank_account_enc: string | null; bank_account_last4: string | null; ifsc: string | null;
-  upi: string | null; invoice_prefix: string; default_terms_days: number; reminder_ladder: number[];
+  upi: string | null; invoice_prefix: string; default_terms_days: number; reminder_ladder: number[]; remind_every_hours: number;
   remind_whatsapp: boolean; remind_email: boolean; language: Lang; files_with: "creator_assist" | "own_ca";
   consent_at: string; sample_seeded_at: string | null; ais_updated_at: string | null;
 };
@@ -26,7 +26,7 @@ export type Deal = {
   id: string; user_id: string; brand_id: string; paid_by: "brand" | "agency"; fee_paise: number;
   advance_paise: number; advance_received_at: string | null; go_live_date: string | null; terms_days: number;
   status: DealStatus; is_sample: boolean; created_at: string; updated_at: string;
-  gst_mode: "add" | "incl" | "none"; tds_rate: number;
+  gst_mode: "add" | "incl" | "none"; tds_rate: number; notice_prompted_at?: string | null;
 };
 
 export type DealDeliverable = { id: string; deal_id: string; platform: string; type: string; quantity: number };
