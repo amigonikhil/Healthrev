@@ -69,6 +69,7 @@ The owner suite checks the prototype's numbers (₹85,300 owed, ₹47,200 due th
 3. **Email OTP template**: Auth → Email Templates → *Magic Link* and *Confirm signup*. Paste `supabase/templates/otp.html`, which includes the 6-digit `{{ .Token }}` the sign-in screen asks for. Under URL Configuration, set the Site URL to your Vercel URL and add `<url>/auth/callback` to the redirect URLs.
 3a. **Google sign-in (free, no SMS/email limits)**: in Google Cloud Console create an OAuth client (type *Web application*) with authorised redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`. Paste its Client ID and secret into Supabase → Auth → Sign In / Providers → Google and enable it. Then set `NEXT_PUBLIC_GOOGLE_AUTH=true` in Vercel and redeploy to show the button.
 4. **Resend**: verify a sending domain; set `RESEND_API_KEY` and `RESEND_FROM`.
+4a. **Claude (Paste deal)**: create an API key at platform.claude.com and set `ANTHROPIC_API_KEY`. Without it, "Paste deal" shows a "not switched on yet" message and creators fill the form by hand.
 5. **Vercel**: import the repo with **Root Directory = `creator-assist`**. Set every variable from `.env.example` (generate `ENCRYPTION_KEY` and `CRON_SECRET` with `openssl rand -base64 32`). The cron in `vercel.json` runs daily at 09:00 IST. Enable Vercel Analytics in the project.
 6. Sign in with the owner number to check the demo, then share the URL.
 
@@ -76,5 +77,6 @@ The owner suite checks the prototype's numbers (₹85,300 owed, ₹47,200 due th
 
 - AIS JSON parsing is best-effort (the portal format isn't documented). Unreadable files are still stored, and creators can add entries by hand.
 - Email "read" status uses a tracking pixel, so it's only as reliable as the recipient's image loading.
+- "Paste deal" sends the pasted message or screenshot to Claude (`src/lib/deal-extract.ts`) and keeps nothing: no database row, no log line, only a count-only `deal_pasted` event (also used for the 20-per-hour limit). Every field is reviewed by the creator before saving. The e2e suite (`e2e/paste-deal.cjs`) runs against a local mock of the Claude API: start the app with `ANTHROPIC_API_KEY=test ANTHROPIC_BASE_URL=http://127.0.0.1:4010`.
 - Advance tax shows the income base only. No tax amount is computed, because that would need slab rates in code.
 - The lawyer (Adv. S. Lakshmi), fees (₹1,499 / ₹1,999) and ITR-4 label are prototype placeholders.

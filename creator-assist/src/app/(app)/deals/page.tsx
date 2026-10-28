@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NewDealButton } from "@/components/new-deal";
 import { Head, Item } from "@/components/ui";
 import { brandWithAgency, dealAmounts, listRow, rowHref } from "@/lib/deal-view";
 import { loadViews } from "@/lib/data";
@@ -23,7 +24,7 @@ export default async function Deals({ searchParams }: { searchParams: Promise<{ 
   return (
     <main className="scr">
       <Head title="Deals">
-        <Link className="btn sm" href="/deals/new">+ New</Link>
+        <NewDealButton />
       </Head>
       <nav className="chips" aria-label="Filter deals">
         {FILTERS.map((x) => (

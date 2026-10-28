@@ -51,7 +51,9 @@ async function otpFor(email) {
   await page.getByRole("button", { name: "More Reel quantity" }).click();
   await page.getByRole("button", { name: "More Reel quantity" }).click();
   await page.getByRole("button", { name: "Fewer Reel quantity" }).click();
-  ok((await page.getByLabel("Reel quantity", { exact: true }).inputValue()) === "2", "stepper +/− works (Reel = 2)");
+  // The box shows the stepper's value one render after the click, so wait for it rather than read it once.
+  const reelIs2 = await page.waitForFunction(() => document.querySelector("input[aria-label='Reel quantity']")?.value === "2", null, { timeout: 3000 }).then(() => true, () => false);
+  ok(reelIs2, "stepper +/− works (Reel = 2)");
   // Per-platform groups: open YouTube and pick a Short.
   await page.locator("details.pg summary", { hasText: "YouTube" }).click();
   await page.getByRole("checkbox", { name: "Short", exact: true }).check();

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { trySampleData } from "@/app/actions/sample";
 import { SubmitButton } from "@/components/client";
 import { Help } from "@/components/help";
+import { NewDealButton } from "@/components/new-deal";
 import { Head, Item } from "@/components/ui";
 import { addDays, fmtWeekday } from "@/lib/dates";
 import { attentionRow, brandLabel, dealAmounts, rowHref, sumAmounts, type DealView } from "@/lib/deal-view";
@@ -30,7 +31,7 @@ export default async function Home() {
   return (
     <main className="scr">
       <Head eyebrow={fmtWeekday(today)} title={`Hi, ${first}`}>
-        <Link className="btn sm" href="/deals/new">+ New deal</Link>
+        <NewDealButton />
       </Head>
 
       {views.length === 0 ? <Empty /> : (<>

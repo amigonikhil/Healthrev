@@ -29,6 +29,7 @@ export default async function About({ searchParams }: { searchParams: Promise<{ 
           <li><b>PAN, GSTIN, Udyam, bank and UPI</b>: invoices must show them so brands can pay you and deduct TDS correctly.</li>
           <li><b>Your deals and brand contacts</b>: to create agreements, invoices and payment reminders.</li>
           <li><b>Payments and TDS you record, and AIS files you upload</b>: to show what you&apos;re owed and match TDS for your return.</li>
+          <li><b>Messages you paste into &ldquo;Paste deal&rdquo;</b>: sent to Claude, Anthropic&apos;s AI, only to read the deal terms into the form. We don&apos;t save the message or screenshot.</li>
           <li><b>How you use the app</b> (screens opened, buttons tapped, feedback): to find what&apos;s confusing and fix it during the beta.</li>
         </ul>
       </div>

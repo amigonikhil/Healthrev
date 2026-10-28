@@ -50,7 +50,7 @@ export const EVENT_LABEL: Record<string, string> = {
   deal_created: "Deal created", agreement_sent: "Agreement sent", agreement_signed: "Agreement signed", invoice_generated: "Invoice generated",
   invoice_sent: "Invoice sent", reminder_sent: "Reminder sent", payment_recorded: "Payment recorded", escalation_opened: "Escalation opened",
   legal_call_booked: "Legal call booked", ais_uploaded: "AIS uploaded", filing_option_chosen: "Filing option chosen", filing_data_sent: "Filing data sent",
-  ai_call_booked: "AI call booked", feedback_sent: "Feedback sent", page_view: "Screen view", signin_opened: "Sign-in opened",
+  ai_call_booked: "AI call booked", feedback_sent: "Feedback sent", deal_pasted: "Deal pasted (AI)", page_view: "Screen view", signin_opened: "Sign-in opened",
   otp_requested: "OTP requested", otp_verified: "OTP verified", whatsapp_clicked: "WhatsApp link clicked",
 };
 
