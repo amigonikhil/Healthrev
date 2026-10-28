@@ -35,7 +35,7 @@ export default async function About({ searchParams }: { searchParams: Promise<{ 
 
       <div className="card">
         <h2>How we protect it</h2>
-        <p className="row" style={{ justifyContent: "flex-start", gap: 8 }}><Lock /> <span>Your PAN and bank account number are encrypted before they&apos;re saved, and only shown masked (ABCDE••••F, ••4417).</span></p>
+        <p className="sub"><Lock /> Your PAN and bank account number are encrypted before they&apos;re saved, and only shown masked (ABCDE••••F, ••4417).</p>
         <p className="sub">Every account can only read its own data. Brands only see what you send them: the agreement, the invoice and your reminders.</p>
         <p className="sub"><b>We never share or sell your data to brands</b> or anyone else.</p>
       </div>
