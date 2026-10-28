@@ -15,6 +15,9 @@ export type Stage = (typeof STAGES)[number];
 export const STAGE_LABEL: Record<string, string> = {
   friendly: "Friendly", follow_up: "Follow-up", firm: "Firm", final: "Final notice", form16a: "Form 16A",
 };
+/** MSME interest is never part of a friendly or follow-up reminder; it's only offered from the Firm stage on. */
+export const msmeOffered = (stage: string) => stage === "firm" || stage === "final";
+
 /** Ladder stage for the n-th configured offset (0, 7, 15, 30 …). */
 export const stageAt = (i: number, n: number): Stage => (i >= n - 1 && n > 1 ? "final" : STAGES[Math.min(i, 2)]);
 
@@ -34,16 +37,16 @@ export type PaymentMsgInput = {
 export type ReminderTemplates = Record<Lang, { upcoming: string; overdue: string }>;
 export const DEFAULT_TEMPLATES: ReminderTemplates = {
   en: {
-    overdue: "Hi {contact}, hope you are well. The balance of {amount} on invoice {invoice} was due on {due} and is now {days_label} overdue. Could you share an update on the payment date?",
-    upcoming: "Hi {contact}, hope you are well. A gentle reminder that the balance of {amount} on invoice {invoice} is due {when}. Payment details are on the invoice. Thank you!",
+    overdue: "Hi {contact}, hope you're doing well! Just a gentle nudge about invoice {invoice}: the balance of {amount} was due on {due}. Whenever you get a moment, could you let me know when the payment is planned? Thanks so much for your help.",
+    upcoming: "Hi {contact}, hope you're doing well! A friendly reminder that the balance of {amount} on invoice {invoice} is due {when}. The payment details are on the invoice. Thank you, it's been lovely working with you!",
   },
   te: {
-    overdue: "Hi {contact} garu, invoice {invoice} balance {amount}, {due} ki due undi, ippudu {days} days overdue ayyindi. Payment eppudu vasthundo konchem update ivvagalara?",
-    upcoming: "Hi {contact} garu, invoice {invoice} balance {amount}, {when} due undi. Payment details invoice lo unnayi. Thank you!",
+    overdue: "Hi {contact} garu, bagunnara? Invoice {invoice} balance {amount} gurinchi chinna reminder, idi {due} ki due ayyindi. Mee convenience lo payment eppudu plan chesaro cheppagalara? Chala thanks!",
+    upcoming: "Hi {contact} garu, bagunnara? Invoice {invoice} balance {amount} {when} due undi ani chinna friendly reminder. Payment details invoice lo unnayi. Mee tho work cheyadam chala bagundi, thank you!",
   },
   hi: {
-    overdue: "Hi {contact}, invoice {invoice} ka balance {amount}, {due} ko due tha, ab {days} din overdue hai. Payment kab tak ho jayega, please update kar dijiye?",
-    upcoming: "Hi {contact}, invoice {invoice} ka balance {amount} {when} due hai. Payment details invoice mein hain. Thank you!",
+    overdue: "Hi {contact}, kaise hain aap? Invoice {invoice} ke {amount} balance ke baare mein ek chhota sa reminder, yeh {due} ko due tha. Jab time mile, bata dijiye payment kab tak plan hai? Bahut shukriya!",
+    upcoming: "Hi {contact}, kaise hain aap? Ek friendly reminder ki invoice {invoice} ka {amount} balance {when} due hai. Payment details invoice mein hain. Aapke saath kaam karke bahut achha laga, thank you!",
   },
 };
 const fill = (t: string, v: Record<string, string>) => t.replace(/\{(\w+)\}/g, (m, k: string) => v[k] ?? m);
@@ -64,7 +67,7 @@ export function paymentMessage(m: PaymentMsgInput, templates: ReminderTemplates 
       hi: " Yeh final reminder hai, iske baad mujhe escalate karna padega.",
     }[m.lang];
   }
-  if (m.msme) {
+  if (m.msme && msmeOffered(m.stage)) {
     body += {
       en: "\n\nAs an MSME-registered supplier, interest applies to payments after the agreed date.",
       te: "\n\nNenu MSME registered supplier ni, so late payment ki interest apply avuthundi.",

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Item } from "@/components/ui";
+import { Head, Item } from "@/components/ui";
 import { daysBetween } from "@/lib/dates";
-import { rowHref, type DealView, type Tone } from "@/lib/deal-view";
+import { rowHref, sumAmounts, type DealView, type Tone } from "@/lib/deal-view";
 import { loadViews } from "@/lib/data";
 
 export const metadata = { title: "Brands · Creator Assist" };
@@ -31,7 +31,7 @@ export default async function Brands() {
 
   return (
     <main className="scr">
-      <h1>Brands</h1>
+      <Head title="Brands" />
       {groups.size === 0 && (
         <div className="card empty">
           <p className="sub">Brands appear here once you add a deal.</p>
@@ -40,8 +40,11 @@ export default async function Brands() {
       )}
       {[...groups.values()].map((vs) => {
         const r = behaviour(vs, today);
-        const open = vs.find((v) => v.phase !== "paid") ?? vs[0];
-        return <Item key={vs[0].d.brand.id} avatar={vs[0].d.brand.name} href={rowHref(open)} title={vs[0].d.brand.name} sub={r.sub} chip={{ label: r.chip, tone: r.tone }} />;
+        const unpaid = vs.filter((v) => v.phase !== "paid");
+        const open = unpaid[0] ?? vs[0];
+        // Brands you're still owed by show what's due; fully paid brands show what they paid.
+        const amount = unpaid.length ? { ...sumAmounts(unpaid), label: "due" as const } : { ...sumAmounts(vs), label: "paid" as const };
+        return <Item key={vs[0].d.brand.id} avatar={vs[0].d.brand.name} href={rowHref(open)} title={vs[0].d.brand.name} sub={r.sub} amount={amount} chip={{ label: r.chip, tone: r.tone }} />;
       })}
     </main>
   );

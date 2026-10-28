@@ -12,7 +12,8 @@ const sql = (q) => execSync(`docker exec supabase_db_creator-assist psql -U post
   for (const scheme of ["dark", "light"]) {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: scheme });
     const page = await ctx.newPage();
-    const shot = async (name) => { await page.waitForTimeout(250); await page.screenshot({ path: `${OUT}${name}-${scheme}.png`, fullPage: true }); };
+    // Full-page shots would paint the sticky tab/action bars mid-page, so they're unpinned for these; 35-deal-actionbar shows them pinned.
+    const shot = async (name) => { await page.addStyleTag({ content: ".nav,.actbar{position:static!important}" }); await page.waitForTimeout(250); await page.screenshot({ path: `${OUT}${name}-${scheme}.png`, fullPage: true }); };
     await page.goto(BASE + "/signin"); await shot("01-signin");
     await page.getByLabel("Mobile number").fill("98765 43210");
     await page.getByRole("button", { name: "Send OTP" }).click();
@@ -32,10 +33,20 @@ const sql = (q) => execSync(`docker exec supabase_db_creator-assist psql -U post
       ["16-deal-paid", `/deals/${zen}`], ["17-brands", "/brands"], ["18-tax", "/tax"], ["19-tax-file", "/tax/file"],
       ["20-tds-remind", `/tax/remind/${fitBrand}`], ["21-settings", "/settings"], ["22-admin-feedback", "/admin/feedback"],
       ["23-legal-booked", `/deals/${voltra}/legal-call/booked`], ["24-filing-booked", "/tax/file/booked"],
+      ["28-about", "/about"], ["29-deal-due", `/deals/${fit}`], ["30-deal-sign", `/deals/${urban}`], ["31-invoice-preview", `/deals/${urban}/invoice`],
+      ["32-deals-paid", "/deals?f=paid"],
     ];
     for (const [name, url] of routes) { await page.goto(BASE + url); await shot(name); }
     await page.goto(BASE + "/deals/new");
     await page.getByRole("button", { name: "Feedback" }).click(); await shot("25-feedback-sheet");
+    await page.goto(BASE + "/tax");
+    await page.getByRole("button", { name: "What is GST?" }).click(); await page.screenshot({ path: `${OUT}33-help-gst-${scheme}.png` });
+    await page.goto(BASE + "/settings");
+    await page.getByRole("button", { name: "Preview what the brand sees" }).click();
+    await page.getByRole("region", { name: "What the brand sees" }).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(250); await page.screenshot({ path: `${OUT}34-settings-preview-${scheme}.png` });
+    await page.goto(BASE + `/deals/${voltra}`); await page.mouse.wheel(0, 300); await page.waitForTimeout(250);
+    await page.screenshot({ path: `${OUT}35-deal-actionbar-${scheme}.png` });
     const anon = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: scheme });
     const bp = await anon.newPage();
     await bp.goto(`${BASE}/s/${token}`); await bp.waitForTimeout(250);
@@ -62,6 +73,8 @@ const sql = (q) => execSync(`docker exec supabase_db_creator-assist psql -U post
     await page.getByRole("button", { name: "Verify and continue" }).click();
     await page.waitForURL("**/onboarding**", { timeout: 20000 });
     await page.screenshot({ path: `${OUT}27-onboarding-${scheme}.png`, fullPage: true });
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.waitForTimeout(250); await page.screenshot({ path: `${OUT}27b-onboarding-bank-${scheme}.png`, fullPage: true });
     await ctx.close();
   }
   await browser.close();

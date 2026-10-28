@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Item } from "@/components/ui";
-import { brandWithAgency, listRow, rowHref } from "@/lib/deal-view";
+import { Head, Item } from "@/components/ui";
+import { brandWithAgency, dealAmounts, listRow, rowHref } from "@/lib/deal-view";
 import { loadViews } from "@/lib/data";
-import { inr } from "@/lib/money";
 
 export const metadata = { title: "Deals · Creator Assist" };
 
@@ -23,10 +22,9 @@ export default async function Deals({ searchParams }: { searchParams: Promise<{ 
 
   return (
     <main className="scr">
-      <div className="top" style={{ justifyContent: "space-between" }}>
-        <h1>Deals</h1>
-        <Link className="btn" style={{ width: "auto" }} href="/deals/new">+ New</Link>
-      </div>
+      <Head title="Deals">
+        <Link className="btn sm" href="/deals/new">+ New</Link>
+      </Head>
       <nav className="chips" aria-label="Filter deals">
         {FILTERS.map((x) => (
           <Link key={x.key} href={x.key === "all" ? "/deals" : `/deals?f=${x.key}`} className={f === x.key ? "on" : ""} aria-current={f === x.key ? "true" : undefined} replace scroll={false}>
@@ -36,7 +34,7 @@ export default async function Deals({ searchParams }: { searchParams: Promise<{ 
       </nav>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {shown.map(({ v, r }) => (
-          <Item key={v.d.id} avatar={v.d.brand.name} href={rowHref(v)} title={brandWithAgency(v.d)} sub={r.sub} amount={inr(r.amount)} chip={{ label: r.chip, tone: r.tone }} />
+          <Item key={v.d.id} avatar={v.d.brand.name} href={rowHref(v)} title={brandWithAgency(v.d)} sub={r.sub} amount={dealAmounts(v)} chip={{ label: r.chip, tone: r.tone }} />
         ))}
         {shown.length === 0 && (
           <div className="card empty">

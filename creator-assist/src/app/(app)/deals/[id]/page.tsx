@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { markAdvanceReceived } from "@/app/actions/deals";
 import { SubmitButton } from "@/components/client";
+import { Help } from "@/components/help";
 import { Chip, Row, Top } from "@/components/ui";
 import { fmtDay, fmtDate } from "@/lib/dates";
-import { detailChip } from "@/lib/deal-view";
+import { dealAmounts, detailChip, type DealView } from "@/lib/deal-view";
 import { deliverablesSummary, usageDurationLabel } from "@/lib/deliverables";
 import { loadDealView } from "@/lib/data";
 import { inr, minus } from "@/lib/money";
@@ -18,11 +19,17 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   const advanceIn = d.advance_received_at && d.advance_paise ? d.advance_paise : 0;
   const timeline = dealTimeline(v, today);
   const advanceAction = markAdvanceReceived.bind(null, d.id);
+  const amt = dealAmounts(v);
+  const actions = barActions(v);
 
   return (
     <main className="scr">
       <Top title={d.brand.name} sub={inv?.number ?? (d.is_sample ? "Sample deal" : "Not invoiced yet")} fallback="/deals" />
       <Chip tone={chip.tone} style={{ alignSelf: "flex-start" }}>{chip.label}</Chip>
+      <div className="deal-amts">
+        <p className="big-amt">{inr(amt.due)} <span>{amt.label}</span></p>
+        <p className="sub">{inr(amt.afterTds)} after TDS{amt.label === "due" && !inv ? " · estimate, not invoiced yet" : ""}</p>
+      </div>
 
       <div className="card">
         {inv ? (<>
@@ -42,7 +49,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           <Row strong k="Balance you receive" v={<span className="big">{inr(Math.max(0, v.total - d.advance_paise - v.tdsExpected))}</span>} />
         </>)}
         {v.interest > 0 && (
-          <div className="note">MSME interest so far: <b>{inr(v.interest)}</b> on the {inr(v.remaining)} unpaid, for {v.daysOverdue} day{v.daysOverdue === 1 ? "" : "s"}.</div>
+          <div className="note">MSME interest<Help term="msme" /> so far: <b>{inr(v.interest)}</b> on the {inr(v.remaining)} unpaid, for {v.daysOverdue} day{v.daysOverdue === 1 ? "" : "s"}.</div>
         )}
       </div>
 
@@ -58,8 +65,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         <Row k="Deliverables" v={deliverablesSummary(d.deliverables)} />
         <Row k="Usage rights" v={d.usage?.enabled ? `${usageDurationLabel(d.usage.duration)} · included` : "None"} />
         <Row k="Paid by" v={d.paid_by === "agency" ? d.brand.agency_name ?? "Agency" : "Brand directly"} />
-        <Row k="GST" v={d.gst_mode === "incl" ? "Included in fee" : d.gst_mode === "add" && profile.gstin ? "Added on top" : "None"} />
-        <Row k="TDS" v={Number(d.tds_rate) > 0 ? `${Number(d.tds_rate)}% by brand` : "Not deducted"} />
+        <Row k={<>GST<Help term="gst" /></>} v={d.gst_mode === "incl" ? "Included in fee" : d.gst_mode === "add" && profile.gstin ? "Added on top" : "None"} />
+        <Row k={<>TDS<Help term="tds" /></>} v={Number(d.tds_rate) > 0 ? `${Number(d.tds_rate)}% by brand` : "Not deducted"} />
         {d.go_live_date && <Row k="Go-live" v={fmtDate(d.go_live_date)} />}
         <Row k="Terms" v={`${d.terms_days} days after invoice`} />
       </div>
@@ -71,11 +78,14 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         <Link className="btn sec" href={`/deals/${d.id}/agreement`}>{d.agreement ? "Agreement · awaiting signature" : "Send agreement for e-sign"}</Link>
       )}
 
+      {/* Everything else stays one tap away; the bar's own actions aren't repeated here. */}
       <div className="stats">
-        <Link className="btn sec" href={`/deals/${d.id}/invoice`}>Invoice</Link>
-        <Link className="btn sec" href={`/deals/${d.id}/reminders`}>Reminders</Link>
-        <Link className="btn warn" href={`/deals/${d.id}/escalate`}>Escalate</Link>
-        <Link className="btn" href={`/deals/${d.id}/payment`}>{v.phase === "paid" ? "Payments" : "Mark paid"}</Link>
+        {[
+          { href: `/deals/${d.id}/invoice`, label: "Invoice", cls: "btn sec" },
+          { href: `/deals/${d.id}/reminders`, label: "Reminders", cls: "btn sec" },
+          { href: `/deals/${d.id}/escalate`, label: "Escalate", cls: "btn warn" },
+          { href: `/deals/${d.id}/payment`, label: v.phase === "paid" ? "Payments" : "Mark paid", cls: "btn sec" },
+        ].filter((x) => !actions.some((a) => a.href === x.href)).map((x) => <Link key={x.href} className={x.cls} href={x.href}>{x.label}</Link>)}
       </div>
 
       {timeline.length > 0 && (
@@ -87,6 +97,27 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
       {d.agreement?.status === "signed" && <Link className="linkbtn" style={{ alignSelf: "center" }} href={`/deals/${d.id}/agreement`}>View signed agreement</Link>}
+
+      {/* Pinned above the tab bar; it stays in the page flow, so nothing scrolls out of reach behind it. */}
+      <div className="actbar" role="group" aria-label="Next steps">
+        {actions.map((a) => <Link key={a.href} className={`btn${a.primary ? "" : " sec"}`} href={a.href}>{a.label}</Link>)}
+      </div>
     </main>
   );
+}
+
+/** The one or two next steps that fit where the deal is. */
+function barActions(v: DealView): { label: string; href: string; primary?: boolean }[] {
+  const base = `/deals/${v.d.id}`;
+  switch (v.phase) {
+    case "overdue":
+      return v.noticeReady
+        ? [{ label: "Send legal notice", href: `${base}/notice` }, { label: "Mark paid", href: `${base}/payment`, primary: true }]
+        : [{ label: "Send reminder", href: `${base}/reminders` }, { label: "Mark paid", href: `${base}/payment`, primary: true }];
+    case "due": return [{ label: "Send reminder", href: `${base}/reminders` }, { label: "Mark paid", href: `${base}/payment`, primary: true }];
+    case "sign": return [{ label: "View agreement", href: `${base}/agreement`, primary: true }];
+    case "ready": return [{ label: "Create invoice", href: `${base}/invoice`, primary: true }];
+    case "draft": return [{ label: "Send agreement", href: `${base}/agreement`, primary: true }];
+    default: return [{ label: "View invoice", href: `${base}/invoice`, primary: true }];
+  }
 }

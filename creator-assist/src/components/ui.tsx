@@ -1,17 +1,20 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Tone } from "@/lib/deal-view";
+import type { DealAmounts, Tone } from "@/lib/deal-view";
+import { inr } from "@/lib/money";
 import { BackButton } from "./client";
+import { FeedbackButton } from "./feedback";
 
 export function Top({ title, sub, back = true, fallback = "/home", right }: { title: string; sub?: string; back?: boolean; fallback?: string; right?: ReactNode }) {
   return (
-    <div className="top" style={right ? { justifyContent: "space-between" } : undefined}>
+    <div className="top">
       {back && <BackButton fallback={fallback} />}
-      <div style={{ minWidth: 0, flex: right ? undefined : 1 }}>
+      <div style={{ minWidth: 0, flex: 1 }}>
         <h1>{title}</h1>
         {sub && <p className="sub">{sub}</p>}
       </div>
       {right}
+      <FeedbackButton />
     </div>
   );
 }
@@ -36,13 +39,23 @@ export function Avatar({ name }: { name: string }) {
   return <span className={`av av-${hue}`} aria-hidden>{initials}</span>;
 }
 
-export function Item({ href, title, sub, amount, chip, avatar }: { href: string; title: string; sub?: string; amount?: string; chip?: { label: string; tone: Tone }; avatar?: string }) {
+/** "₹X due" with "₹Y after TDS" in smaller text underneath. */
+export function Amounts({ a }: { a: Pick<DealAmounts, "due" | "afterTds"> & { label?: DealAmounts["label"] } }) {
+  return (
+    <span className="amts">
+      <span className="amt">{inr(a.due)} <span className="amt-l">{a.label ?? "due"}</span></span>
+      <span className="amt-sub">{inr(a.afterTds)} after TDS</span>
+    </span>
+  );
+}
+
+export function Item({ href, title, sub, amount, chip, avatar }: { href: string; title: string; sub?: string; amount?: Parameters<typeof Amounts>[0]["a"]; chip?: { label: string; tone: Tone }; avatar?: string }) {
   return (
     <Link className="item" href={href}>
       {avatar && <Avatar name={avatar} />}
       <span className="l"><span className="t trunc">{title}</span>{sub && <span className="s">{sub}</span>}</span>
       <span className="r">
-        {amount && <span className="amt">{amount}</span>}
+        {amount && <Amounts a={amount} />}
         {chip && <Chip tone={chip.tone}>{chip.label}</Chip>}
       </span>
     </Link>
@@ -72,6 +85,20 @@ export function Doc({ body }: { body: { title: string; subtitle: string; clauses
           <p>{t}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** Header for a tab's main screen: title (and optional eyebrow) on the left, actions + feedback on the right. */
+export function Head({ title, eyebrow, children }: { title: ReactNode; eyebrow?: ReactNode; children?: ReactNode }) {
+  return (
+    <div className="top">
+      <div style={{ minWidth: 0, flex: 1 }}>
+        {eyebrow && <p className="sub">{eyebrow}</p>}
+        <h1>{title}</h1>
+      </div>
+      {children}
+      <FeedbackButton />
     </div>
   );
 }

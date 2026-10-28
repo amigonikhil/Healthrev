@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import type { FormState } from "@/app/actions/profile";
 import { STATES } from "@/lib/states";
 import { ActionForm, SubmitButton } from "./client";
+import { Lock } from "./lock";
 
 type Defaults = {
   name?: string; handle?: string; email?: string; phone?: string; city?: string; address?: string; state?: string;
@@ -44,7 +46,7 @@ export function ProfileForm({ action, defaults, mode, needPhone }: {
         </>)}
         {editing && <h2 style={{ marginTop: 8 }}>Tax and bank</h2>}
         <label className="f">Full name (as on PAN)<input name="name" defaultValue={defaults.name} required autoComplete="name" /></label>
-        <label className="f">PAN<input name="pan" placeholder={editing ? `${defaults.panMasked ?? ""} · leave blank to keep` : "ABCDE1234F"} required={!editing} maxLength={10} style={{ textTransform: "uppercase" }} autoComplete="off" /></label>
+        <label className="f"><span className="lab">PAN <Lock inLabel /></span><input aria-label="PAN" name="pan" placeholder={editing ? `${defaults.panMasked ?? ""} · leave blank to keep` : "ABCDE1234F"} required={!editing} maxLength={10} style={{ textTransform: "uppercase" }} autoComplete="off" /></label>
         <label className="f">State
           <select name="state" defaultValue={defaults.state ?? "Telangana"}>
             {STATES.map((s) => <option key={s.code} value={s.name}>{s.name} ({s.code})</option>)}
@@ -52,8 +54,12 @@ export function ProfileForm({ action, defaults, mode, needPhone }: {
         </label>
         <label className="f">GSTIN (if registered)<input name="gstin" defaultValue={defaults.gstin} placeholder="36ABCDE1234F1Z5" maxLength={15} style={{ textTransform: "uppercase" }} /></label>
         <label className="f">Udyam (MSME) number<input name="udyam" defaultValue={defaults.udyam} placeholder="UDYAM-TS-02-0012345" style={{ textTransform: "uppercase" }} /></label>
-        <label className="f">Bank account<input name="bank_account" inputMode="numeric" placeholder={editing ? `••${defaults.bankLast4 ?? ""} · leave blank to keep` : "Account number"} required={!editing} autoComplete="off" /></label>
+        <label className="f"><span className="lab">Bank account <Lock inLabel /></span><input aria-label="Bank account" name="bank_account" inputMode="numeric" placeholder={editing ? `••${defaults.bankLast4 ?? ""} · leave blank to keep` : "Account number"} required={!editing} autoComplete="off" /></label>
         <label className="f">IFSC<input name="ifsc" defaultValue={defaults.ifsc} placeholder="HDFC0001234" maxLength={11} required style={{ textTransform: "uppercase" }} /></label>
+        <p className="sub">
+          Why we ask, and how it&apos;s protected:{" "}
+          <Link className="linkbtn" style={{ minHeight: 0, display: "inline" }} href={editing ? "/about" : "/about?from=onboarding"} target={editing ? undefined : "_blank"}>About &amp; data safety</Link>
+        </p>
         <label className="f">UPI ID<input name="upi" defaultValue={defaults.upi} placeholder="you@hdfcbank" /></label>
         {editing && <label className="f">Invoice prefix<input name="invoice_prefix" defaultValue={defaults.invoicePrefix} maxLength={8} required style={{ textTransform: "uppercase" }} /></label>}
         {!editing && (

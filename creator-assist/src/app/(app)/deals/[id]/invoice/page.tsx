@@ -1,4 +1,6 @@
+import { BrandPreview } from "@/components/brand-preview";
 import { Row, Top } from "@/components/ui";
+import { reminderTemplates } from "@/lib/app-settings";
 import { fmtDate, fmtDay, todayIST } from "@/lib/dates";
 import { getTax, loadDealView } from "@/lib/data";
 import { buildInvoice } from "@/lib/invoice";
@@ -51,7 +53,13 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </div>
       {d.invoice
         ? <InvoiceActions invoiceId={d.invoice.id} pdfHref={`/api/invoices/${d.invoice.id}/pdf`} />
-        : <GenerateForm dealId={d.id} defaultDate={inv.invoice_date} hasEmail={!!d.brand.contact_email} />}
+        : (<>
+          {profile.remind_email && d.brand.contact_email && (
+            <BrandPreview creator={profile.name} lang={profile.language} templates={await reminderTemplates()} contact={(d.brand.contact_name ?? "").split(" ")[0]}
+              invoiceNo={`${profile.invoice_prefix}/…`} amount={inv.balance_due_paise} dueDate={inv.due_date} />
+          )}
+          <GenerateForm dealId={d.id} defaultDate={inv.invoice_date} hasEmail={!!d.brand.contact_email} />
+        </>)}
     </main>
   );
 }

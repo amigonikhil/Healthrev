@@ -1,3 +1,4 @@
+import { Head } from "@/components/ui";
 import { SignInForm } from "./form";
 import { GoogleButton } from "./google";
 
@@ -18,7 +19,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
           <li>TDS tracking for your CA</li>
         </ul>
       </div>
-      <h1>Sign in</h1>
+      <Head title="Sign in" />
       {error && (
         <p className="err" role="alert">
           {error === "link"

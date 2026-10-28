@@ -82,7 +82,7 @@ async function otpFor(email) {
   const dealUrl = page.url().replace("/agreement", "");
   await page.goto(dealUrl);
   t = await text();
-  ok(t.includes("GST Included in fee") && t.includes("TDS Not deducted") && t.includes("Terms 50 days after invoice") && t.includes("7 months · included"), "deal facts");
+  ok(/GST ?\??\s*Included in fee/.test(t) && /TDS ?\??\s*Not deducted/.test(t) && t.includes("Terms 50 days after invoice") && t.includes("7 months · included"), "deal facts");
   await page.goto(dealUrl + "/invoice");
   await page.getByRole("button", { name: "Generate invoice" }).click();
   await page.waitForSelector("text=Download PDF");

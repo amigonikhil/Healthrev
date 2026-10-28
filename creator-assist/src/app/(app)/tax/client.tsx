@@ -30,6 +30,7 @@ export function AisPanel({ updated, fy }: { updated: string | null; fy: string }
   const [up, upAction, upActionPending] = useActionState(uploadAis, undefined);
   const [man, manAction, manActionPending] = useActionState(addAisEntry, undefined);
   return (<>
+    <p className="term-x"><b>AIS</b> · The tax department&apos;s record of TDS brands deducted for you.</p>
     <p className="sub">
       {updated ? `AIS last updated ${updated}` : "No AIS uploaded yet"} ·{" "}
       <button type="button" className="linkbtn" onClick={() => setOpen(open === "upload" ? "" : "upload")}>Update AIS</button>

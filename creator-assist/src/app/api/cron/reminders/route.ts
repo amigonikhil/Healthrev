@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       const daysToDue = daysBetween(today, inv.due_date);
       text = paymentMessage({
         lang: r.language, contact: (brand.contact_name ?? "").split(" ")[0], invoiceNo: inv.number, balance: remaining,
-        dueDate: inv.due_date, daysToDue, stage: r.stage, msme: !!p.udyam_no && daysToDue < 0, creator: p.name,
+        dueDate: inv.due_date, daysToDue, stage: r.stage, msme: false, creator: p.name, // MSME interest is off by default; the creator adds it by hand from the Firm stage
       }, templates);
       subject = `Payment reminder: invoice ${inv.number} (${inr(remaining)})`;
       waHref = `/deals/${deal.id}/reminders`;

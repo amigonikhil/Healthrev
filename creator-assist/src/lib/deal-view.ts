@@ -87,6 +87,25 @@ export function viewDeal(d: DealFull, profile: Profile, tax: TaxConfig, today: s
   };
 }
 
+/**
+ * The two labelled numbers shown wherever a deal's money appears (Home, Deals, Brands, Deal page):
+ * `due` is what the brand still pays you after any advance; `afterTds` is what lands in your bank
+ * once the brand deducts TDS. Uses only figures viewDeal already worked out, so every screen matches.
+ */
+export type DealAmounts = { label: "due" | "paid"; due: number; afterTds: number };
+export function dealAmounts(v: DealView): DealAmounts {
+  if (v.phase === "paid") return { label: "paid", due: v.received + v.tdsRecorded, afterTds: v.received };
+  if (v.d.invoice) return { label: "due", due: v.remaining, afterTds: v.receive };
+  // Not invoiced yet: estimated invoice total less the agreed advance, then less the TDS estimate.
+  const due = Math.max(0, v.total - v.d.advance_paise);
+  return { label: "due", due, afterTds: Math.max(0, due - v.tdsExpected) };
+}
+
+/** Totals of dealAmounts across several deals (Home hero, a brand's open deals). */
+export function sumAmounts(vs: DealView[]): { due: number; afterTds: number } {
+  return vs.map(dealAmounts).reduce((a, x) => ({ due: a.due + x.due, afterTds: a.afterTds + x.afterTds }), { due: 0, afterTds: 0 });
+}
+
 export const brandLabel = (d: DealFull) => d.brand.name;
 export const brandWithAgency = (d: DealFull) =>
   d.paid_by === "agency" && d.brand.agency_name ? `${d.brand.name} via ${d.brand.agency_name}` : d.brand.name;
@@ -103,15 +122,14 @@ export function rowHref(v: DealView): string {
 }
 
 /** Home "Needs attention" row. */
-export function attentionRow(v: DealView): { sub: string; amount: number; chip: string; tone: Tone } {
+export function attentionRow(v: DealView): { sub: string; chip: string; tone: Tone } {
   const d = v.d;
   const due = v.dueDate ? fmtDay(v.dueDate) : "";
   const advance = d.advance_received_at && d.advance_paise ? d.advance_paise : 0;
   switch (v.phase) {
     case "overdue":
       return {
-        sub: advance ? `Balance after ${inr(advance)} advance · due ${due}` : `${d.invoice!.number} · due ${due}`,
-        amount: v.remaining, chip: `Overdue ${v.daysOverdue} day${v.daysOverdue === 1 ? "" : "s"}`, tone: "over",
+        sub: advance ? `Balance after ${inr(advance)} advance · due ${due}` : `${d.invoice!.number} · due ${due}`, chip: `Overdue ${v.daysOverdue} day${v.daysOverdue === 1 ? "" : "s"}`, tone: "over",
       };
     case "due": {
       const when = v.daysToDue === 0 ? "due today" : `due ${due}`;
@@ -122,35 +140,35 @@ export function attentionRow(v: DealView): { sub: string; amount: number; chip: 
       const chip = d.status === "partially_paid" ? "Part paid"
         : v.daysToDue === 0 ? (sentToday ? "Reminder sent" : "Due today")
         : `Due in ${v.daysToDue} day${v.daysToDue === 1 ? "" : "s"}`;
-      return { sub, amount: v.remaining, chip, tone: v.daysToDue === 0 || d.status === "partially_paid" ? "info" : "mute" };
+      return { sub, chip, tone: v.daysToDue === 0 || d.status === "partially_paid" ? "info" : "mute" };
     }
     case "sign":
-      return { sub: `Agreement sent ${fmtDay(istDate(d.agreement!.sent_at))}`, amount: d.fee_paise, chip: "Awaiting sign", tone: "info" };
+      return { sub: `Agreement sent ${fmtDay(istDate(d.agreement!.sent_at))}`, chip: "Awaiting sign", tone: "info" };
     case "ready":
-      return { sub: `${deliverablesSummary(d.deliverables, " + ")} · not invoiced`, amount: d.fee_paise, chip: "Ready to invoice", tone: "mute" };
+      return { sub: `${deliverablesSummary(d.deliverables, " + ")} · not invoiced`, chip: "Ready to invoice", tone: "mute" };
     case "draft":
-      return { sub: "Agreement not sent", amount: d.fee_paise, chip: "Draft", tone: "mute" };
+      return { sub: "Agreement not sent", chip: "Draft", tone: "mute" };
     default:
-      return { sub: "", amount: v.total, chip: "Paid", tone: "ok" };
+      return { sub: "", chip: "Paid", tone: "ok" };
   }
 }
 
 /** Deals list row. */
-export function listRow(v: DealView): { sub: string; amount: number; chip: string; tone: Tone; key: string } {
+export function listRow(v: DealView): { sub: string; chip: string; tone: Tone; key: string } {
   const d = v.d;
   const n = d.invoice?.number;
   const due = v.dueDate ? fmtDay(v.dueDate) : "";
   switch (v.phase) {
-    case "overdue": return { sub: `${n} · balance due ${due}`, amount: v.remaining, chip: "Overdue", tone: "over", key: "over" };
+    case "overdue": return { sub: `${n} · balance due ${due}`, chip: "Overdue", tone: "over", key: "over" };
     case "due": return {
-      sub: `${n} · due ${due}`, amount: v.remaining,
+      sub: `${n} · due ${due}`,
       chip: d.status === "partially_paid" ? "Part paid" : v.daysToDue === 0 ? "Due today" : `In ${v.daysToDue} day${v.daysToDue === 1 ? "" : "s"}`,
       tone: v.daysToDue === 0 ? "info" : "mute", key: "due",
     };
-    case "sign": return { sub: "Not invoiced yet", amount: d.fee_paise, chip: "To sign", tone: "info", key: "sign" };
-    case "paid": return { sub: `${n ?? ""} · paid ${v.paidOn ? fmtDay(v.paidOn) : ""}`, amount: v.total, chip: "Paid", tone: "ok", key: "paid" };
-    case "ready": return { sub: "Not invoiced yet", amount: d.fee_paise, chip: "Signed", tone: "ok", key: "other" };
-    default: return { sub: "Agreement not sent", amount: d.fee_paise, chip: "Draft", tone: "mute", key: "other" };
+    case "sign": return { sub: "Not invoiced yet", chip: "To sign", tone: "info", key: "sign" };
+    case "paid": return { sub: `${n ?? ""} · paid ${v.paidOn ? fmtDay(v.paidOn) : ""}`, chip: "Paid", tone: "ok", key: "paid" };
+    case "ready": return { sub: "Not invoiced yet", chip: "Signed", tone: "ok", key: "other" };
+    default: return { sub: "Agreement not sent", chip: "Draft", tone: "mute", key: "other" };
   }
 }
 

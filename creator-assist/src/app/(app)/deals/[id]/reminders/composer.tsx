@@ -4,7 +4,7 @@ import { trackClient } from "@/components/track";
 import { useState, useTransition } from "react";
 import { logWhatsAppReminder, sendReminderEmail } from "@/app/actions/reminders";
 import { Seg, useToast } from "@/components/client";
-import { LANGS, paymentMessage, waLink, type ReminderTemplates } from "@/lib/messages";
+import { LANGS, msmeOffered, paymentMessage, waLink, type ReminderTemplates } from "@/lib/messages";
 import type { Lang } from "@/lib/types";
 
 export function Composer(p: {
@@ -12,7 +12,8 @@ export function Composer(p: {
   invoiceNo: string; balance: number; dueDate: string; daysToDue: number; msmeAvailable: boolean; creator: string; templates: ReminderTemplates;
 }) {
   const [lang, setLang] = useState<Lang>(p.defaultLang);
-  const [msme, setMsme] = useState(p.msmeAvailable && p.daysToDue < 0);
+  const [msme, setMsme] = useState(false);
+  const offerMsme = p.msmeAvailable && msmeOffered(p.stage);
   const [cc, setCc] = useState(!!p.ccEmail);
   const [pending, start] = useTransition();
   const toast = useToast();
@@ -28,7 +29,7 @@ export function Composer(p: {
       <Seg label="Message language" value={lang} onChange={setLang} options={LANGS} />
     </div>
     <div className="bubble" aria-live="polite">{text}</div>
-    {p.msmeAvailable && <label className="tog"><span>Mention MSME interest</span><input type="checkbox" checked={msme} onChange={(e) => setMsme(e.target.checked)} /></label>}
+    {offerMsme && <label className="tog"><span>Mention MSME interest</span><input type="checkbox" checked={msme} onChange={(e) => setMsme(e.target.checked)} /></label>}
     <label className="tog">
       <span>CC agency / finance team{p.ccEmail ? ` · ${p.ccEmail}` : " (add a CC email on the brand)"}</span>
       <input type="checkbox" checked={cc} disabled={!p.ccEmail} onChange={(e) => setCc(e.target.checked)} />

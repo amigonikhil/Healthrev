@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { trySampleData } from "@/app/actions/sample";
 import { SubmitButton } from "@/components/client";
-import { Item } from "@/components/ui";
+import { Help } from "@/components/help";
+import { Head, Item } from "@/components/ui";
 import { addDays, fmtWeekday } from "@/lib/dates";
-import { attentionRow, brandLabel, rowHref, type DealView } from "@/lib/deal-view";
+import { attentionRow, brandLabel, dealAmounts, rowHref, sumAmounts, type DealView } from "@/lib/deal-view";
 import { loadViews } from "@/lib/data";
 import { inr } from "@/lib/money";
 
@@ -16,7 +17,7 @@ export default async function Home() {
   const first = profile.name.split(/\s+/)[0];
 
   const open = views.filter((v) => v.phase === "overdue" || v.phase === "due");
-  const owed = open.reduce((a, v) => a + v.remaining, 0);
+  const owed = sumAmounts(open);
   const overdue = views.filter((v) => v.phase === "overdue").reduce((a, v) => a + v.remaining, 0);
   const weekEnd = addDays(today, 6);
   const dueWeek = open.filter((v) => v.dueDate! >= today && v.dueDate! <= weekEnd).reduce((a, v) => a + v.remaining, 0);
@@ -28,15 +29,15 @@ export default async function Home() {
 
   return (
     <main className="scr">
-      <div className="top" style={{ justifyContent: "space-between" }}>
-        <div><p className="sub">{fmtWeekday(today)}</p><h1>Hi, {first}</h1></div>
+      <Head eyebrow={fmtWeekday(today)} title={`Hi, ${first}`}>
         <Link className="btn sm" href="/deals/new">+ New deal</Link>
-      </div>
+      </Head>
 
       {views.length === 0 ? <Empty /> : (<>
         <section className="hero-y">
           <p className="k">Money owed to you</p>
-          <p className="hero-amt">{inr(owed)}</p>
+          <p className="hero-amt">{inr(owed.due)} <span className="hero-l">due</span></p>
+          <p className="hero-sub">{inr(owed.afterTds)} after TDS</p>
           <p className="stickers">
             <span className="sticker dark">{open.length} open invoice{open.length === 1 ? "" : "s"}</span>
             {overdue ? <><span className="sr"> · </span><span className="sticker pop over">{inr(overdue)} overdue</span></> : null}
@@ -44,7 +45,7 @@ export default async function Home() {
         </section>
         <div className="stats">
           <div className="stat"><span className="k">Due this week</span><span className="v">{inr(dueWeek)}</span></div>
-          <div className="stat hot"><span className="k">TDS to be deducted</span><span className="v">{inr(tdsPending)}</span></div>
+          <div className="stat"><span className="k">TDS to be deducted<Help term="tds" /></span><span className="v">{inr(tdsPending)}</span></div>
         </div>
         <h2>Needs attention</h2>
         {attention.length === 0 && <p className="sub">Nothing pending. Nice work!</p>}
@@ -56,7 +57,7 @@ export default async function Home() {
 
 function AttentionItem({ v }: { v: DealView }) {
   const r = attentionRow(v);
-  return <Item avatar={v.d.brand.name} href={rowHref(v)} title={brandLabel(v.d)} sub={r.sub} amount={inr(r.amount)} chip={{ label: r.chip, tone: r.tone }} />;
+  return <Item avatar={v.d.brand.name} href={rowHref(v)} title={brandLabel(v.d)} sub={r.sub} amount={dealAmounts(v)} chip={{ label: r.chip, tone: r.tone }} />;
 }
 
 function Empty() {

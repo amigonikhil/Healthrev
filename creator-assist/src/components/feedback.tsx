@@ -5,16 +5,13 @@ import { useState, useTransition } from "react";
 import { submitFeedback } from "@/app/actions/feedback";
 import { useToast } from "./client";
 
-const HIDDEN = [/^\/s\//, /^\/admin/]; // the brand's signing page is not for testers; admin has its own
-const NO_NAV = [/^\/signin/, /^\/onboarding/];
-
+/** Small speech-bubble button in each screen's header; opens the feedback sheet. */
 export function FeedbackButton() {
   const path = usePathname();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [pending, start] = useTransition();
-  if (HIDDEN.some((r) => r.test(path))) return null;
 
   const send = () =>
     start(async () => {
@@ -28,7 +25,12 @@ export function FeedbackButton() {
 
   return (
     <>
-      <button type="button" className={`fab${NO_NAV.some((r) => r.test(path)) ? " low" : ""}`} onClick={() => setOpen(true)}>Feedback</button>
+      <button type="button" className="icon-btn fb" aria-label="Feedback" title="Send feedback" onClick={() => setOpen(true)}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" />
+          <path d="M9 11h.01M12 11h.01M15 11h.01" strokeWidth="2.6" />
+        </svg>
+      </button>
       {open && (
         <div className="sheet-bg" onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
           <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="fb-title">

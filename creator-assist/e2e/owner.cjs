@@ -30,7 +30,8 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.waitForSelector("text=Money owed to you");
   let t = await text();
   ok(t.includes("Hi, Ravi"), "greets owner by env name");
-  ok(t.includes("₹85,300"), "money owed ₹85,300");
+  ok(t.includes("₹85,300 due") && /₹[\d,]+ after TDS/.test(t), "money owed ₹85,300 due, with after-TDS line");
+  ok((await page.locator(".stat.hot").count()) === 0, "TDS tile uses the neutral surface");
   ok(t.includes("3 open invoices · ₹38,100 overdue"), "3 open invoices · ₹38,100 overdue");
   ok(t.includes("₹47,200"), "due this week ₹47,200");
   ok(t.includes("₹8,500"), "TDS to be deducted ₹8,500");
@@ -50,7 +51,7 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.getByRole("link", { name: "Paid · 1" }).click();
   await page.waitForURL("**/deals?f=paid");
   t = await text();
-  ok(t.includes("Zenvolt") && t.includes("₹29,500") && !t.includes("Voltra Motors"), "Paid filter shows Zenvolt ₹29,500");
+  ok(t.includes("Zenvolt") && t.includes("₹29,500 paid") && t.includes("₹27,000 after TDS") && !t.includes("Voltra Motors"), "Paid filter shows Zenvolt ₹29,500 paid · ₹27,000 after TDS");
 
   console.log("Voltra deal detail");
   await page.goto(BASE + "/deals");
@@ -59,7 +60,10 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   t = await text();
   ok(t.includes("Balance overdue 18 days"), "chip Balance overdue 18 days");
   ok(t.includes("₹33,600"), "balance to receive ₹33,600");
-  ok(t.includes("MSME interest so far: ₹310 on the ₹38,100 unpaid, for 18 days."), "MSME interest ₹310");
+  ok(t.includes("₹38,100 due ₹33,600 after TDS"), "labelled due / after-TDS numbers at the top");
+  const bar = (await page.locator(".actbar").innerText()).replace(/\s+/g, " ");
+  ok(bar.includes("Send legal notice") && bar.includes("Mark paid"), "pinned action bar fits an overdue deal: " + bar);
+  ok(t.includes("so far: ₹310 on the ₹38,100 unpaid, for 18 days.") && !!(await page.getByRole("button", { name: "What is MSME interest?" }).count()), "MSME interest ₹310, with a ? explainer");
   ok(t.includes("2 Reels · 3 Stories") && t.includes("3 months · included"), "deal facts");
   ok(t.includes(`3 reminders sent, read by brand · ${DUE}–${DUE1}`) && t.includes(`Legal notice due · ${DUE1}`), "timeline reminders then legal notice due");
   ok(t.includes("Time for the legal notice") && t.includes("3 reminders sent and Voltra Motors still hasn't paid"), "deal prompts the legal notice after 3 reminders");
@@ -89,16 +93,20 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   ok(t.includes(`Friendly · ${DUE}, 9:00 am`) && t.includes(`Follow-up · ${DUE}, 5:00 pm`) && t.includes(`Final notice · ${DUE1}, 1:00 am`) && t.includes("Sent · read"), "3 reminders, 8 hours apart");
   ok(t.includes(`Legal notice · ${DUE1}, 9:00 am`) && t.includes("Due now") && !!(await page.getByRole("link", { name: "Send legal notice" }).count()), "legal notice step after the reminders");
   let bubble = await page.locator(".bubble").innerText();
-  ok(bubble.startsWith(`Hi Arjun, hope you are well. The balance of ₹38,100 on invoice RTK/2026-27/014 was due on ${DUE} and is now 18 days overdue.`), "English message");
-  ok(bubble.includes("MSME-registered"), "MSME line on");
+  ok(bubble.startsWith(`Hi Arjun, hope you're doing well! Just a gentle nudge about invoice RTK/2026-27/014: the balance of ₹38,100 was due on ${DUE}.`), "English message");
+  ok(!bubble.includes("MSME") && !/interest|lawyer|legal/i.test(bubble.split("This is a final")[0]), "warm copy: no interest or lawyers, MSME off by default");
+  await page.getByLabel("Mention MSME interest").check();
+  bubble = await page.locator(".bubble").innerText();
+  ok(bubble.includes("MSME-registered"), "MSME line offered at the final stage and added on request");
+  await page.getByLabel("Mention MSME interest").uncheck();
   await page.getByRole("radio", { name: "Telugu-Eng" }).click();
   bubble = await page.locator(".bubble").innerText();
-  ok(bubble.includes("Arjun garu") && bubble.includes("18 days overdue ayyindi"), "Telugu-English rewrite");
+  ok(bubble.includes("Arjun garu") && bubble.includes(`${DUE} ki due ayyindi`), "Telugu-English rewrite");
   await page.getByRole("radio", { name: "Hinglish" }).click();
   bubble = await page.locator(".bubble").innerText();
-  ok(bubble.includes("18 din overdue hai"), "Hinglish rewrite");
+  ok(bubble.includes(`${DUE} ko due tha`), "Hinglish rewrite");
   const wa = await page.getByRole("link", { name: "Send now on WhatsApp" }).getAttribute("href");
-  ok(wa.startsWith("https://wa.me/919000012345?text=") && decodeURIComponent(wa).includes("din overdue"), "wa.me link prefilled in chosen language");
+  ok(wa.startsWith("https://wa.me/919000012345?text=") && decodeURIComponent(wa).includes("ko due tha"), "wa.me link prefilled in chosen language");
   await shot("06-reminders");
 
   console.log("Escalate + lawyer notice");
@@ -223,7 +231,7 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await bp.goto(signLink);
   let bt = (await bp.locator("main").innerText()).replace(/\s+/g, " ");
   ok(bt.includes("Ravi Teja K sent you an agreement") && bt.includes("Urban Roots Cafe"), "public page loads without login");
-  ok((await bp.locator("nav.nav").count()) === 0 && (await bp.locator(".fab").count()) === 0, "no tab bar / feedback on brand page");
+  ok((await bp.locator("nav.nav").count()) === 0 && (await bp.locator("button.fb").count()) === 0, "no tab bar / feedback on brand page");
   await bp.getByLabel("Your name").fill("Sameer Rao");
   await bp.getByLabel("Designation").fill("Owner");
   await bp.getByRole("button", { name: "Send OTP to email" }).click();
@@ -248,6 +256,7 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   await page.goto(BASE + "/brands");
   t = await text();
   ok(t.includes("Slow payer") || t.includes("Paid late"), "brands show payment behaviour");
+  ok(/₹[\d,]+ due/.test(t) && t.includes("₹29,500 paid") && t.includes("after TDS"), "brands show labelled amounts");
   await shot("15-brands");
   await page.getByRole("button", { name: "Feedback" }).click();
   await page.getByLabel("Your feedback").fill("E2E: the brands list is great");
@@ -278,6 +287,7 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   ok(data.profile.pan === "ABCDE1234F" && data.deals.length === 5 && !("pan_enc" in data.profile && data.profile.pan_enc), "export has decrypted data, 5 deals");
   await page.getByRole("button", { name: "Clear sample data" }).click();
   await page.waitForSelector("text=Sample data cleared");
+  ok(await page.getByRole("button", { name: "Load sample data" }).waitFor({ timeout: 5000 }).then(() => true, () => false), "Settings offers Load sample data once cleared");
   await page.goto(BASE + "/home");
   t = await text();
   ok(t.includes("No deals yet") && t.includes("Try with sample data"), "empty dashboard after clear");

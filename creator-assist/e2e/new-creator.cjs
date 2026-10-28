@@ -165,21 +165,21 @@ async function otpFor(email) {
   t = await text();
   ok(t.includes("No TDS mismatches") && t.includes("All matched"), "uploaded AIS clears the mismatch");
 
-  console.log("Sample data switch");
+  console.log("Sample data in Settings");
   await page.goto(BASE + "/deals");
-  const sw = page.getByRole("switch", { name: /Sample data/ });
-  ok((await sw.getAttribute("aria-checked")) === "false", "sample switch shows off for a real account");
+  ok((await page.locator(".fab").count()) === 0, "no floating buttons");
   const ownDeals = (await text()).match(/All · (\d+)/)?.[1];
-  await sw.click();
-  await page.waitForSelector("text=Sample data loaded");
-  await page.waitForURL("**/home");
+  await page.goto(BASE + "/settings");
+  await page.getByRole("button", { name: "Load sample data" }).click();
+  await page.waitForURL("**/home**");
   await page.waitForSelector("text=Voltra Motors");
-  ok((await page.getByRole("switch", { name: /Sample data/ }).getAttribute("aria-checked")) === "true", "switch on: demo deals loaded");
-  await page.getByRole("switch", { name: /Sample data/ }).click();
+  ok(true, "Load sample data in Settings: demo deals loaded");
+  await page.goto(BASE + "/settings");
+  await page.getByRole("button", { name: "Clear sample data" }).click();
   await page.waitForSelector("text=Sample data cleared");
   await page.goto(BASE + "/deals");
   t = await text();
-  ok(!t.includes("Voltra Motors") && t.match(/All · (\d+)/)?.[1] === ownDeals, "switch off: only sample deals removed, own deals kept");
+  ok(!t.includes("Voltra Motors") && t.match(/All · (\d+)/)?.[1] === ownDeals, "clear: only sample deals removed, own deals kept");
 
   console.log("Settings + delete account");
   await page.goto(BASE + "/settings");

@@ -1,9 +1,13 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { clearSampleData } from "@/app/actions/sample";
+import { clearSampleData, trySampleData } from "@/app/actions/sample";
 import { signOut } from "@/app/actions/settings";
 import { SubmitButton, ThemeSwitch } from "@/components/client";
-import { Row } from "@/components/ui";
+import { Lock } from "@/components/lock";
+import { Head, Row } from "@/components/ui";
+import { rateDefaults, reminderTemplates } from "@/lib/app-settings";
+import { fyOf, todayIST } from "@/lib/dates";
+import { invoiceNumber } from "@/lib/invoice";
 import { getTax, requireProfile } from "@/lib/data";
 import { isOwner } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -22,7 +26,7 @@ export default async function Settings() {
 
   return (
     <main className="scr">
-      <h1>Settings</h1>
+      <Head title="Settings" />
       <div className="card">
         <div className="row"><h2>Profile</h2><Link className="linkbtn" href="/settings/profile">Edit</Link></div>
         <Row k="Name" v={profile.name} />
@@ -32,10 +36,10 @@ export default async function Settings() {
       </div>
       <div className="card">
         <div className="row"><h2>Tax and bank</h2><Link className="linkbtn" href="/settings/profile">Edit</Link></div>
-        <Row k="PAN" v={profile.pan_masked ?? "—"} />
+        <Row k={<>PAN <Lock /></>} v={profile.pan_masked ?? "—"} />
         <Row k="GSTIN" v={profile.gstin ?? "Not registered"} />
         <Row k="Udyam" v={profile.udyam_no ?? "—"} />
-        <Row k="Bank" v={profile.bank_account_last4 ? `${(profile.bank_name ?? "").replace(/ Bank$/, "")} ••${profile.bank_account_last4}` : "—"} />
+        <Row k={<>Bank <Lock /></>} v={profile.bank_account_last4 ? `${(profile.bank_name ?? "").replace(/ Bank$/, "")} ••${profile.bank_account_last4}` : "—"} />
         <Row k="Invoice prefix" v={profile.invoice_prefix} />
       </div>
       <div className="card">
@@ -43,8 +47,9 @@ export default async function Settings() {
         <ThemeSwitch initial={theme === "light" || theme === "dark" ? theme : "system"} />
         <p className="sub">System follows your phone&apos;s light or dark setting.</p>
       </div>
-      <ReminderForm every={everyHours(profile.remind_every_hours)} whatsapp={profile.remind_whatsapp} email={profile.remind_email} language={profile.language} terms={profile.default_terms_days} />
-      <RatesForm tax={tax} />
+      <ReminderForm every={everyHours(profile.remind_every_hours)} whatsapp={profile.remind_whatsapp} email={profile.remind_email} language={profile.language} terms={profile.default_terms_days}
+        preview={{ creator: profile.name, templates: await reminderTemplates(), invoiceNo: invoiceNumber(profile.invoice_prefix, fyOf(todayIST()), 1), dueDate: todayIST() }} />
+      <RatesForm tax={tax} defaults={await rateDefaults()} />
 
       <div className="card">
         <h2>Your data</h2>
@@ -52,10 +57,19 @@ export default async function Settings() {
           <form action={clearSampleData}>
             <SubmitButton className="btn sec" pendingText="Clearing…">Clear sample data</SubmitButton>
           </form>
-        ) : <p className="sub">No sample data in your account. Load it from an empty Home screen.</p>}
+        ) : (
+          <form action={trySampleData}>
+            <SubmitButton className="btn sec" pendingText="Loading sample data…">Load sample data</SubmitButton>
+          </form>
+        )}
+        <p className="sub">Sample deals are marked and never mix with your real ones. Clearing removes only them.</p>
         <a className="btn sec" href="/api/export" download>Export my data</a>
         <DeleteAccount />
       </div>
+      <Link className="item" href="/about">
+        <span className="l"><span className="t">About &amp; data safety</span><span className="s">Who built this, what we store, how it&apos;s protected</span></span>
+        <span aria-hidden>›</span>
+      </Link>
       {(isOwner(user) || isAdmin) && <Link className="btn sec" href="/admin">Admin dashboard</Link>}
       <form action={signOut}><SubmitButton className="btn sec" pendingText="Logging out…">Log out</SubmitButton></form>
       <p className="sub" style={{ textAlign: "center" }}>Creator Assist beta · PAN and bank numbers are encrypted.</p>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createProfile, provisionOwnerIfNeeded } from "@/app/actions/profile";
+import { FeedbackButton } from "@/components/feedback";
 import { ProfileForm } from "@/components/profile-form";
 import { getSession } from "@/lib/data";
 
@@ -17,6 +18,10 @@ export default async function Onboarding() {
 
   return (
     <main className="scr">
+      <div className="top" style={{ justifyContent: "space-between", minHeight: 44 }}>
+        <p className="sub" style={{ fontWeight: 700 }}>Creator Assist · set up</p>
+        <FeedbackButton />
+      </div>
       <ProfileForm action={createProfile} mode="onboard" needPhone={!user.phone} defaults={{ email: user.email ?? "", name: googleName(user.user_metadata) }} />
     </main>
   );

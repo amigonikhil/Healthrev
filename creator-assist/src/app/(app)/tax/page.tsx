@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Chip } from "@/components/ui";
+import { Help } from "@/components/help";
+import { Chip, Head } from "@/components/ui";
 import { loadViews } from "@/lib/data";
 import { fmtDay, istDate } from "@/lib/dates";
 import { inr } from "@/lib/money";
@@ -22,12 +23,12 @@ export default async function TaxPage() {
 
   return (
     <main className="scr">
-      <h1>Tax hub</h1>
+      <Head title="Tax hub" />
       <p className="sub">FY {hub.fy} · so far</p>
       <div className="stats">
         <div className="stat"><span className="k">Income invoiced</span><span className="v">{inr(hub.income)}</span><span className="sub">{hub.brands} brand{hub.brands === 1 ? "" : "s"}</span></div>
-        <div className="stat"><span className="k">GST collected</span><span className="v">{inr(hub.gst)}</span><span className="sub">{profile.gstin ? "On your invoices" : "Not GST-registered"}</span></div>
-        <div className="stat"><span className="k">TDS by brands</span><span className="v">{inr(hub.tdsExpected)}</span><span className="sub">Per your invoices</span></div>
+        <div className="stat"><span className="k">GST collected<Help term="gst" /></span><span className="v">{inr(hub.gst)}</span><span className="sub">{profile.gstin ? "On your invoices" : "Not GST-registered"}</span></div>
+        <div className="stat"><span className="k">TDS by brands<Help term="tds" /></span><span className="v">{inr(hub.tdsExpected)}</span><span className="sub">Per your invoices</span></div>
         <div className={`stat${hub.missingTotal ? " alert" : ""}`}>
           <span className="k">TDS in AIS</span><span className="v">{inr(hub.tdsInAis)}</span>
           {hub.missingTotal > 0
@@ -66,11 +67,12 @@ export default async function TaxPage() {
               <span><b style={{ color: "var(--text)" }}>{c.title}</b><br />{c.detail}</span>
               <Chip tone={tone}>Due {fmtDay(c.due)}</Chip>
             </div>
+            {c.type === "itr" && <p className="term-x"><b>ITR-4</b> · The income tax return form most creators file.</p>}
             {c.type === "itr" && profile.files_with === "creator_assist" && !c.filing?.data_sent_at ? (<>
               <div className="row"><span>Data goes to Creator Assist after your AI call</span><Chip tone="mute">Opens 1 Apr</Chip></div>
-              <Link className="btn sec sm" href="/tax/file">Book AI call now</Link>
+              <Link className="btn sec sm" href="/tax/file">Book a 10-min call to finish your return</Link>
             </>) : c.filing?.data_sent_at ? (
-              <div className="row"><span>Data sent to {c.filing.handled_by === "own_ca" ? "your CA" : "Creator Assist"} · {fmtDay(istDate(c.filing.data_sent_at))}</span><Chip tone="ok">Ready</Chip></div>
+              <div className="row"><span>{c.filing.handled_by === "own_ca" ? "Data sent to your CA" : "We have everything we need"} · {fmtDay(istDate(c.filing.data_sent_at))}</span><Chip tone="ok">Ready</Chip></div>
             ) : (
               <FilingAction type={c.type} period={c.period} due={c.due} label={c.type === "itr" ? "Send ITR data to my CA" : `Send data to ${who}`} />
             )}

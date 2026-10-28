@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { ToastFromQuery, ToastProvider } from "@/components/client";
-import { FeedbackButton } from "@/components/feedback";
 import { PageTracker } from "@/components/track";
 import "./globals.css";
 
@@ -35,7 +34,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ToastProvider>
           <div className="phone">
             {children}
-            <FeedbackButton />
           </div>
           <Suspense><ToastFromQuery /></Suspense>
           <PageTracker />
