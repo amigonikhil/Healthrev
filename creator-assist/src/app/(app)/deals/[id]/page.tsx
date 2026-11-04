@@ -6,13 +6,17 @@ import { Chip, Row, Top } from "@/components/ui";
 import { fmtDay, fmtDate } from "@creator-assist/shared/dates";
 import { dealAmounts, detailChip, type DealView } from "@creator-assist/shared/deal-view";
 import { deliverablesSummary, usageDurationLabel } from "@creator-assist/shared/deliverables";
-import { loadDealView } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { getDeal } from "@/server/deals";
+import { orRedirect } from "@/server/forms";
 import { inr, minus } from "@creator-assist/shared/money";
 import { dealTimeline } from "@creator-assist/shared/timeline";
 
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, today, profile } = await loadDealView(id);
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { v, today } = await orRedirect(getDeal(ctx, id), "/deals");
   const d = v.d;
   const inv = d.invoice;
   const chip = detailChip(v);

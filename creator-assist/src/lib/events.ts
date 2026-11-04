@@ -12,11 +12,12 @@ export type EventName =
 
 export const CLIENT_EVENTS: EventName[] = ["page_view", "signin_opened", "otp_requested", "otp_verified", "whatsapp_clicked"];
 
-export async function track(userId: string | null, name: EventName, opts: { sample?: boolean; screen?: string; props?: Record<string, unknown>; anonId?: string } = {}) {
+/** Every event records which app it came from: properties.platform = "web" | "ios" | "android". */
+export async function track(userId: string | null, name: EventName, opts: { sample?: boolean; screen?: string; props?: Record<string, unknown>; anonId?: string; platform?: string } = {}) {
   try {
     await createAdminClient().from("events").insert({
       user_id: userId, event_name: name, is_sample: !!opts.sample, screen: opts.screen ?? null,
-      properties: opts.props ?? {}, anon_id: opts.anonId ?? null,
+      properties: { ...(opts.props ?? {}), platform: opts.platform ?? "web" }, anon_id: opts.anonId ?? null,
     });
   } catch (e) {
     console.error("event insert failed", name, e);

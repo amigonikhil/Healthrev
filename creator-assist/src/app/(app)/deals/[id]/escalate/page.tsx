@@ -2,24 +2,25 @@ import Link from "next/link";
 import { Chip, Top } from "@/components/ui";
 import { ADVOCATE, LEGAL_CALL, NOTICE_DAYS } from "@creator-assist/shared/advocate";
 import { msmeAnnualRate } from "@creator-assist/shared/calc";
-import { loadDealView } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { escalateView } from "@/server/escalations";
+import { orRedirect } from "@/server/forms";
 import { addDays, daysBetween, fmtDateLong, istDate } from "@creator-assist/shared/dates";
 import { inr } from "@creator-assist/shared/money";
-import { noticeFor } from "@/lib/notice-data";
 import { fmtSlot } from "@creator-assist/shared/slots";
 import { SamadhaanItem } from "./samadhaan";
 
 export default async function EscalatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, profile, tax, today, db } = await loadDealView(id);
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { v, tax, today, sentNotice: sent, callSlot, claim } = await orRedirect(escalateView(ctx, id), "/deals");
   const d = v.d;
   const rate = msmeAnnualRate(tax);
   const canEscalate = v.phase === "overdue";
-  const sent = d.escalations.filter((e) => e.type === "lawyer_notice" && e.status === "sent").sort((a, b) => a.created_at.localeCompare(b.created_at)).at(-1);
-  if (canEscalate && sent) {
-    const { data: call } = await db.from("legal_call_bookings").select("slot").eq("deal_id", d.id).neq("status", "cancelled").order("slot", { ascending: false }).limit(1).maybeSingle();
+  if (canEscalate && sent && claim) {
     return <AfterNotice id={d.id} brand={d.brand.name} sentOn={istDate(sent.created_at)} channel={sent.channel} today={today}
-      claim={noticeFor(v, profile, tax).claim} callSlot={call?.slot ?? null} udyam={!!profile.udyam_no} />;
+      claim={claim} callSlot={callSlot} udyam={!!profile.udyam_no} />;
   }
 
   return (
@@ -71,7 +72,7 @@ function AfterNotice(p: {
         <p className="sub">Legal notice sent · {fmtDateLong(p.sentOn)}{p.channel ? ` by ${p.channel === "email" ? "email" : "WhatsApp"}` : ""}</p>
         <p className="big">{inr(p.claim.total)}</p>
         <p className="sub">Claimed from {p.brand}: {inr(p.claim.principal)} unpaid{parts ? ` + ${parts}` : ""}.</p>
-        <a className="sub" href={`/api/deals/${p.id}/notice`} target="_blank" rel="noopener">View the notice</a>
+        <a className="sub" href={`/api/v1/deals/${p.id}/notice/pdf`} target="_blank" rel="noopener">View the notice</a>
       </div>
       <h2>What happens next</h2>
       <div className="item" style={{ cursor: "default" }}>

@@ -1,17 +1,14 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
-import { track } from "@/lib/events";
+import { ApiError, webOptionalCtx } from "@/server/context";
+import { submitFeedback as submit } from "@/server/misc";
 
 export async function submitFeedback(screen: string, message: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const text = message.trim().slice(0, 4000);
-  if (!text) return { ok: false, error: "Please write a message" };
-  const db = await createClient();
-  const { data: { user } } = await db.auth.getUser();
-  // Signed-in testers write through RLS; sign-in/onboarding feedback is anonymous.
-  const client = user ? db : createAdminClient();
-  const { error } = await client.from("feedback").insert({ user_id: user?.id ?? null, screen: screen.slice(0, 200), message: text });
-  if (!error) await track(user?.id ?? null, "feedback_sent", { screen: screen.slice(0, 120) });
-  return error ? { ok: false, error: "Could not send feedback. Try again." } : { ok: true };
+  try {
+    await submit(await webOptionalCtx(), { screen, message });
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof ApiError) return { ok: false, error: e.message };
+    throw e;
+  }
 }

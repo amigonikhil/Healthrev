@@ -1,24 +1,18 @@
 import Link from "next/link";
 import { Help } from "@/components/help";
 import { Chip, Head } from "@/components/ui";
-import { loadViews } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { taxHubView } from "@/server/tax";
 import { fmtDay, istDate } from "@creator-assist/shared/dates";
 import { inr } from "@creator-assist/shared/money";
-import { taxHub, upcomingFilings } from "@creator-assist/shared/tax";
-import type { AisEntry, Filing } from "@creator-assist/shared/types";
 import { AisPanel, FilingAction, WhoFiles } from "./client";
 
 export const metadata = { title: "Tax hub · Creator Assist" };
 
 export default async function TaxPage() {
-  const { db, views, today, profile } = await loadViews();
-  const [{ data: ais }, { data: filings }] = await Promise.all([
-    db.from("ais_entries").select("*"),
-    db.from("filings").select("*"),
-  ]);
-  const hub = taxHub(views, (ais ?? []) as AisEntry[], today);
-  const cards = upcomingFilings(views, profile, (filings ?? []) as Filing[], today, hub);
-  const missing = hub.payers.filter((p) => p.missing > 0);
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { today, hub, cards, missing } = await taxHubView(ctx);
   const who = profile.files_with === "own_ca" ? "your CA" : "Creator Assist";
 
   return (

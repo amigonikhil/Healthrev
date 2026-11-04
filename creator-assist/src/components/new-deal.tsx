@@ -51,9 +51,9 @@ export function NewDealButton({ label = "+ New deal" }: { label?: string }) {
       const body = new FormData();
       if (text.trim()) body.set("text", text.trim());
       if (shot) body.set("image", await shrink(shot.file), "screenshot.jpg");
-      const res = await fetch("/api/deals/extract", { method: "POST", body });
-      const json = (await res.json().catch(() => null)) as { ok: true; deal: PastedDeal } | { ok: false; error: string } | null;
-      if (!json?.ok) { setError(json?.error ?? "Something went wrong. Try again, or fill in the form yourself."); return; }
+      const res = await fetch("/api/v1/deals/extract", { method: "POST", body });
+      const json = (await res.json().catch(() => null)) as { deal?: PastedDeal; error?: string } | null;
+      if (!res.ok || !json?.deal) { setError(json?.error ?? "Something went wrong. Try again, or fill in the form yourself."); return; }
       // Hand the extracted fields (not the pasted message) to the form; it reads and removes them once.
       try { sessionStorage.setItem(PASTED_DEAL_KEY, JSON.stringify(json.deal)); } catch { /* private mode: form opens empty */ }
       setText("");

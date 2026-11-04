@@ -1,25 +1,18 @@
-import { redirect } from "next/navigation";
 import { Chip, Top } from "@/components/ui";
-import { decrypt } from "@/lib/crypto";
-import { loadViews } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { orRedirect } from "@/server/forms";
+import { tdsReminderView } from "@/server/reminders";
 import { fmtDay, istDate } from "@creator-assist/shared/dates";
 import { STAGE_LABEL } from "@creator-assist/shared/messages";
 import { inr } from "@creator-assist/shared/money";
-import { taxHub } from "@creator-assist/shared/tax";
-import type { AisEntry, Reminder } from "@creator-assist/shared/types";
 import { TdsComposer } from "./composer";
 
 export default async function TdsRemind({ params }: { params: Promise<{ brandId: string }> }) {
   const { brandId } = await params;
-  const { db, views, today, profile } = await loadViews();
-  const [{ data: ais }, { data: rems }] = await Promise.all([
-    db.from("ais_entries").select("*"),
-    db.from("reminders").select("*").eq("brand_id", brandId).eq("kind", "tds").order("scheduled_at"),
-  ]);
-  const payer = taxHub(views, (ais ?? []) as AisEntry[], today).payers.find((p) => p.brand.id === brandId);
-  if (!payer) redirect("/tax");
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { payer, ladder, pan } = await orRedirect(tdsReminderView(ctx, brandId), "/tax");
   const b = payer.brand;
-  const ladder = (rems ?? []) as Reminder[];
   const sentEmail = ladder.filter((r) => r.channel === "email" && r.sent_at);
   const rows = ladder.length
     ? ladder.filter((r) => r.channel === "email").map((r) => ({ label: `${STAGE_LABEL[r.stage] ?? r.stage} · ${fmtDay(istDate(r.scheduled_at))}`, chip: r.cancelled_at ? "Cancelled" : r.sent_at ? "Sent" : "Scheduled", tone: r.sent_at ? "ok" : "mute" }))
@@ -39,7 +32,7 @@ export default async function TdsRemind({ params }: { params: Promise<{ brandId:
       </div>
       <TdsComposer
         brandId={b.id} contact={b.contact_name ?? ""} phone={b.contact_whatsapp} email={b.contact_email}
-        amount={payer.missing} invoiceNos={payer.invoiceNos} pan={decrypt(profile.pan_enc) ?? profile.pan_masked ?? ""}
+        amount={payer.missing} invoiceNos={payer.invoiceNos} pan={pan}
         creator={profile.name} defaultLang={profile.language} alreadyEmailed={sentEmail.length}
       />
     </main>

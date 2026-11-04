@@ -1,11 +1,10 @@
 import "server-only";
-import { redirect } from "next/navigation";
-import { cache } from "react";
+
+// Data access shared by the services in src/server. Every query runs as the signed-in
+// user (RLS), except where a caller passes the service-role client on purpose.
 import type { TaxConfig } from "@creator-assist/shared/calc";
-import { todayIST } from "@creator-assist/shared/dates";
-import { viewDeal, type DealView } from "@creator-assist/shared/deal-view";
-import { createClient, type DB } from "./supabase/server";
-import type { Brand, DealFull, Profile } from "@creator-assist/shared/types";
+import type { DB } from "./supabase/server";
+import type { Brand, DealFull } from "@creator-assist/shared/types";
 
 const one = <T,>(x: T | T[] | null | undefined): T | null => (Array.isArray(x) ? x[0] ?? null : x ?? null);
 
@@ -29,21 +28,6 @@ export function normalizeDeal(row: any): DealFull {
     reminders: row.reminders ?? [],
     escalations: row.escalations ?? [],
   };
-}
-
-/** Signed-in user + their profile, or a redirect to sign-in / onboarding. */
-export const getSession = cache(async () => {
-  const db = await createClient();
-  const { data: { user } } = await db.auth.getUser();
-  if (!user) redirect("/signin");
-  const { data: profile } = await db.from("profiles").select("*").eq("id", user.id).maybeSingle<Profile>();
-  return { db, user, profile };
-});
-
-export async function requireProfile() {
-  const s = await getSession();
-  if (!s.profile) redirect("/onboarding");
-  return s as typeof s & { profile: Profile };
 }
 
 export async function getTax(db: DB): Promise<TaxConfig> {
@@ -78,21 +62,6 @@ export async function loadDeal(db: DB, id: string): Promise<DealFull | null> {
   const { data, error } = await db.from("deals").select(DEAL_SELECT).eq("id", id).maybeSingle();
   if (error) throw error;
   return data ? normalizeDeal(data) : null;
-}
-
-export async function loadViews(): Promise<{ profile: Profile; tax: TaxConfig; today: string; views: DealView[]; db: DB }> {
-  const { db, profile } = await requireProfile();
-  const [tax, deals] = await Promise.all([getTax(db), loadDeals(db)]);
-  const today = todayIST();
-  return { db, profile, tax, today, views: deals.map((d) => viewDeal(d, profile, tax, today)) };
-}
-
-export async function loadDealView(id: string) {
-  const { db, profile, user } = await requireProfile();
-  const [tax, deal] = await Promise.all([getTax(db), loadDeal(db, id)]);
-  if (!deal) redirect("/deals");
-  const today = todayIST();
-  return { db, user, profile, tax, today, v: viewDeal(deal, profile, tax, today) };
 }
 
 export async function loadBrands(db: DB): Promise<Brand[]> {

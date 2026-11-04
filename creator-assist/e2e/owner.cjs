@@ -190,7 +190,8 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   ok(t.includes("₹11,000"), "TDS by brands ₹11,000");
   ok(t.includes("₹5,300") && t.includes("₹5,700 missing"), "AIS ₹5,300 / ₹5,700 missing");
   ok(t.includes("Voltra Motors TDS ₹4,500 not in AIS") && t.includes("FitFuel Foods TDS ₹1,200 not in AIS"), "mismatch rows");
-  ok(t.includes("GSTR-1 · October") && t.includes("GSTR-3B · October") && t.includes("Income tax return"), "coming up filings");
+  const MONTH = new Date(Date.now() + 5.5 * 3600e3).toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+  ok(t.includes(`GSTR-1 · ${MONTH}`) && t.includes(`GSTR-3B · ${MONTH}`) && t.includes("Income tax return"), "coming up filings");
   await shot("10-tax");
   await page.locator("a", { hasText: "Remind" }).first().click();
   await page.waitForSelector(".bubble");

@@ -2,6 +2,7 @@ import "server-only";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../env";
+import { dbFetch } from "./fetch";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -9,6 +10,7 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 export async function createClient() {
   const store = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { fetch: dbFetch },
     cookies: {
       getAll: () => store.getAll(),
       setAll(list: CookieToSet[]) {

@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { createProfile, provisionOwnerIfNeeded } from "@/app/actions/profile";
+import { createProfile } from "@/app/actions/profile";
 import { FeedbackButton } from "@/components/feedback";
 import { ProfileForm } from "@/components/profile-form";
-import { getSession } from "@/lib/data";
+import { webSession } from "@/server/context";
+import { provisionOwnerIfNeeded } from "@/server/profile";
 
 export const metadata = { title: "Set up · Creator Assist" };
 
@@ -11,10 +12,11 @@ export const metadata = { title: "Set up · Creator Assist" };
 const googleName = (m: Record<string, unknown> | undefined) => String(m?.full_name ?? m?.name ?? "");
 
 export default async function Onboarding() {
-  const { user, profile } = await getSession();
+  const session = await webSession();
+  const { user, profile } = session;
   if (profile) redirect("/home");
   // The demo owner skips onboarding and lands on a fully seeded account.
-  if (await provisionOwnerIfNeeded()) redirect("/home");
+  if (await provisionOwnerIfNeeded(session)) redirect("/home");
 
   return (
     <main className="scr">

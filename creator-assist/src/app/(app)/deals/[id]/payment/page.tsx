@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { Row, Top } from "@/components/ui";
 import { fmtDay, todayIST } from "@creator-assist/shared/dates";
-import { loadDealView } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { getDeal } from "@/server/deals";
+import { orRedirect } from "@/server/forms";
 import { inr } from "@creator-assist/shared/money";
 import { PaymentForm } from "./form";
 
 export default async function PaymentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v } = await loadDealView(id);
+  const { v } = await orRedirect(getDeal(await webCtx(), id), "/deals");
   const d = v.d;
   const inv = d.invoice;
 

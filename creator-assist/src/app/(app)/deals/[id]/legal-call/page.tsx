@@ -1,6 +1,8 @@
 import { Row, Top } from "@/components/ui";
 import { ADVOCATE, LEGAL_CALL } from "@creator-assist/shared/advocate";
-import { loadDealView } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { getDeal } from "@/server/deals";
+import { orRedirect } from "@/server/forms";
 import { inr } from "@creator-assist/shared/money";
 import { callSlots } from "@creator-assist/shared/slots";
 import { LegalCallForm } from "./form";
@@ -9,7 +11,9 @@ export const metadata = { title: "Talk to the legal team · Creator Assist" };
 
 export default async function LegalCall({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, profile, today } = await loadDealView(id);
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { v, today } = await orRedirect(getDeal(ctx, id), "/deals");
   const fee = inr(LEGAL_CALL.feePaise);
   return (
     <main className="scr">

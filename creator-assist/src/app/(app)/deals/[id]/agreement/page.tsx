@@ -1,19 +1,15 @@
 import Link from "next/link";
 import { Chip, Doc, Row, Top } from "@/components/ui";
-import { buildAgreement } from "@creator-assist/shared/agreement";
-import { lateTerms } from "@creator-assist/shared/calc";
-import { decrypt } from "@/lib/crypto";
-import { fmtDateLong, fmtDay, fmtTimeIST, todayIST, istDate } from "@creator-assist/shared/dates";
-import { loadDealView } from "@/lib/data";
-import { siteUrl } from "@/lib/env";
+import { fmtDateLong, fmtDay, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
+import { agreementView } from "@/server/agreements";
+import { webCtx } from "@/server/context";
+import { orRedirect } from "@/server/forms";
 import { SendPanel } from "./send";
 
 export default async function AgreementPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, profile, tax } = await loadDealView(id);
+  const { v, body, agreement: a, signLink } = await orRedirect(agreementView(await webCtx(), id), "/deals");
   const d = v.d;
-  const a = d.agreement;
-  const body = a?.body ?? buildAgreement({ profile, pan: decrypt(profile.pan_enc), brand: d.brand, deal: d, deliverables: d.deliverables, usage: d.usage, date: todayIST(), lateInterest: lateTerms(tax) });
   const contact = d.brand.contact_name || d.brand.name;
 
   return (
@@ -29,7 +25,7 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
           <Row k="When" v={`${fmtDateLong(istDate(a.signed_at!))}, ${fmtTimeIST(a.signed_at!)}`} />
           <Row k="Verified by" v={`Email OTP · ${a.signer_email}`} />
         </div>
-        <a className="btn" href={`/api/agreements/${a.id}/pdf`}>Download PDF</a>
+        <a className="btn" href={`/api/v1/agreements/${a.id}/pdf`}>Download PDF</a>
         <Link className="btn sec" href={`/deals/${d.id}`}>Back to deal</Link>
       </>) : (<>
         {a && (
@@ -37,7 +33,7 @@ export default async function AgreementPage({ params }: { params: Promise<{ id: 
         )}
         <SendPanel
           dealId={d.id} contact={contact} email={d.brand.contact_email} whatsapp={d.brand.contact_whatsapp}
-          existingLink={a ? `${siteUrl()}/s/${a.sign_token}` : null}
+          existingLink={signLink}
         />
       </>)}
     </main>

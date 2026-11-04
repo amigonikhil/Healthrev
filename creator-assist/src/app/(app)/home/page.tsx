@@ -4,29 +4,18 @@ import { SubmitButton } from "@/components/client";
 import { Help } from "@/components/help";
 import { NewDealButton } from "@/components/new-deal";
 import { Head, Item } from "@/components/ui";
-import { addDays, fmtWeekday } from "@creator-assist/shared/dates";
-import { attentionRow, brandLabel, dealAmounts, rowHref, sumAmounts, type DealView } from "@creator-assist/shared/deal-view";
-import { loadViews } from "@/lib/data";
+import { fmtWeekday } from "@creator-assist/shared/dates";
+import { attentionRow, brandLabel, dealAmounts, rowHref, type DealView } from "@creator-assist/shared/deal-view";
+import { webCtx } from "@/server/context";
+import { home } from "@/server/deals";
 import { inr } from "@creator-assist/shared/money";
 
 export const metadata = { title: "Home · Creator Assist" };
 
-const ORDER = { overdue: 0, due: 1, sign: 2, ready: 3, draft: 4, paid: 5 } as const;
-
 export default async function Home() {
-  const { profile, today, views } = await loadViews();
-  const first = profile.name.split(/\s+/)[0];
-
-  const open = views.filter((v) => v.phase === "overdue" || v.phase === "due");
-  const owed = sumAmounts(open);
-  const overdue = views.filter((v) => v.phase === "overdue").reduce((a, v) => a + v.remaining, 0);
-  const weekEnd = addDays(today, 6);
-  const dueWeek = open.filter((v) => v.dueDate! >= today && v.dueDate! <= weekEnd).reduce((a, v) => a + v.remaining, 0);
-  const tdsPending = open.reduce((a, v) => a + v.tdsRemaining, 0);
-
-  const attention = views
-    .filter((v) => v.phase !== "paid")
-    .sort((a, b) => ORDER[a.phase] - ORDER[b.phase] || (a.dueDate ?? "9").localeCompare(b.dueDate ?? "9"));
+  const ctx = await webCtx();
+  const first = ctx.profile.name.split(/\s+/)[0];
+  const { today, empty, owed, openCount, overdue, dueThisWeek: dueWeek, tdsPending, attention } = await home(ctx);
 
   return (
     <main className="scr">
@@ -34,13 +23,13 @@ export default async function Home() {
         <NewDealButton />
       </Head>
 
-      {views.length === 0 ? <Empty /> : (<>
+      {empty ? <Empty /> : (<>
         <section className="hero-y">
           <p className="k">Money owed to you</p>
           <p className="hero-amt">{inr(owed.due)} <span className="hero-l">due</span></p>
           <p className="hero-sub">{inr(owed.afterTds)} after TDS</p>
           <p className="stickers">
-            <span className="sticker dark">{open.length} open invoice{open.length === 1 ? "" : "s"}</span>
+            <span className="sticker dark">{openCount} open invoice{openCount === 1 ? "" : "s"}</span>
             {overdue ? <><span className="sr"> · </span><span className="sticker pop over">{inr(overdue)} overdue</span></> : null}
           </p>
         </section>

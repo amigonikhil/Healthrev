@@ -1,24 +1,21 @@
 import { Chip, Top } from "@/components/ui";
 import Link from "next/link";
 import { fmtDay, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
-import { loadDealView } from "@/lib/data";
 import { STAGE_LABEL } from "@creator-assist/shared/messages";
 import { inr } from "@creator-assist/shared/money";
 import { everyHours, REMINDER_COUNT } from "@creator-assist/shared/reminder-schedule";
-import { reminderTemplates } from "@/lib/app-settings";
+import { webCtx } from "@/server/context";
+import { orRedirect } from "@/server/forms";
+import { reminderView } from "@/server/reminders";
 import { Composer } from "./composer";
 
 export default async function RemindersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [{ v, profile }, templates] = await Promise.all([loadDealView(id), reminderTemplates()]);
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { v, ladder, manual, stage, templates } = await orRedirect(reminderView(ctx, id), "/deals");
   const d = v.d;
   const inv = d.invoice;
-  const ladder = d.reminders.filter((r) => r.kind === "payment" && r.channel === "email").sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
-  const manual = d.reminders.filter((r) => r.kind === "payment" && r.channel === "whatsapp");
-
-  // Current stage: the latest ladder step that has come due (or the first one).
-  const due = ladder.filter((r) => r.scheduled_at <= new Date().toISOString());
-  const stage = (due.at(-1) ?? ladder[0])?.stage ?? "friendly";
   const status = v.phase === "overdue" ? `${inr(v.remaining)} balance overdue` : v.phase === "paid" ? "Paid in full" : inv ? `${inr(v.remaining)} due ${fmtDay(inv.due_date)}` : "Not invoiced yet";
 
   return (

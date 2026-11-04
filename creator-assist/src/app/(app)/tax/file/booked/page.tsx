@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { BetaNote, Chip, Done } from "@/components/ui";
-import { requireProfile } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { aiCallBooking } from "@/server/tax";
 
 export default async function Booked({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const { id } = await searchParams;
-  const { db } = await requireProfile();
-  const { data: b } = id ? await db.from("ai_call_bookings").select("slot").eq("id", id).maybeSingle() : { data: null };
+  const ctx = await webCtx();
+  const b = id ? await aiCallBooking(ctx, id) : null;
   const when = b ? new Date(b.slot).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false }) : "your chosen slot";
   return (
     <main className="scr">

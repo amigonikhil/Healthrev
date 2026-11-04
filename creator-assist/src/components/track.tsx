@@ -16,8 +16,8 @@ export function trackClient(name: string, props: Record<string, string> = {}) {
   if (typeof window === "undefined") return;
   const body = JSON.stringify({ name, screen: location.pathname, anon: id(localStorage, "ca_anon"), props: { ...props, session: id(sessionStorage, "ca_session") } });
   try {
-    if (!navigator.sendBeacon?.("/api/events", new Blob([body], { type: "application/json" }))) {
-      fetch("/api/events", { method: "POST", body, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(() => {});
+    if (!navigator.sendBeacon?.("/api/v1/events", new Blob([body], { type: "application/json" }))) {
+      fetch("/api/v1/events", { method: "POST", body, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(() => {});
     }
   } catch { /* tracking never breaks the app */ }
 }

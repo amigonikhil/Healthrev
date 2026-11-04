@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { BetaNote, Done } from "@/components/ui";
 import { ADVOCATE, LEGAL_CALL } from "@creator-assist/shared/advocate";
-import { requireProfile } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { legalCallBooking } from "@/server/escalations";
 import { fmtSlot } from "@creator-assist/shared/slots";
 
 export default async function LegalCallBooked({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ b?: string }> }) {
   const [{ id }, { b }] = await Promise.all([params, searchParams]);
-  const { db } = await requireProfile();
-  const { data } = b ? await db.from("legal_call_bookings").select("slot, phone").eq("id", b).maybeSingle() : { data: null };
+  const ctx = await webCtx();
+  const data = b ? await legalCallBooking(ctx, b) : null;
   return (
     <main className="scr">
       <Done icon="☎" tone="info" title="Call booked">

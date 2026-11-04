@@ -48,12 +48,22 @@ For local `.env.local` use `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`, th
 - The demo owner signs in with **98765 43210**, OTP **482913** (`supabase/config.toml` → `auth.sms.test_otp`).
 - Email OTPs land in Mailpit at http://127.0.0.1:54324.
 
+## Code layout
+
+- `packages/shared` (`@creator-assist/shared`): calculations (GST, advance, TDS, balance, MSME interest, invoice
+  numbering), types, deal views, reminder copy and the API request/response types. Pure TypeScript, imported by the
+  web app and the mobile apps.
+- `src/server`: every business rule, one service per domain. Pages and server actions call these directly.
+- `src/app/api/v1`: the same services over HTTP for the mobile apps (Supabase JWT auth, RLS applies). See
+  [docs/api-v1.md](docs/api-v1.md).
+
 ## Testing
 
 ```bash
-pnpm typecheck && pnpm lint && pnpm test   # unit tests: GST/TDS/MSME maths, money, dates, AIS parser
+pnpm typecheck && pnpm lint && pnpm test   # unit tests (packages/shared): every calculation, money, dates, AIS parser
 pnpm build && pnpm start                   # then, against a fresh `pnpm exec supabase db reset`:
 pnpm e2e                                   # Playwright: owner demo, new creator, deal options
+node e2e/api-v1.cjs                        # the API as the mobile apps call it (JWT), incl. cross-user RLS checks
 # To test exactly what Vercel ships (only traced files): STANDALONE=1 pnpm build, then
 # run .next/standalone/server.js (copy .next/static and .env.local next to it first).
 ```

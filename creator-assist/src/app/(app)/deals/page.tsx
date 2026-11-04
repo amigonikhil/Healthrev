@@ -2,7 +2,8 @@ import Link from "next/link";
 import { NewDealButton } from "@/components/new-deal";
 import { Head, Item } from "@/components/ui";
 import { brandWithAgency, dealAmounts, listRow, rowHref } from "@creator-assist/shared/deal-view";
-import { loadViews } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { listDeals } from "@/server/deals";
 
 export const metadata = { title: "Deals · Creator Assist" };
 
@@ -16,7 +17,7 @@ const FILTERS = [
 
 export default async function Deals({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
   const { f = "all" } = await searchParams;
-  const { views } = await loadViews();
+  const { views } = await listDeals(await webCtx());
   const rows = views.map((v) => ({ v, r: listRow(v) }));
   const count = (k: string) => (k === "all" ? rows.length : rows.filter((x) => x.r.key === k).length);
   const shown = f === "all" ? rows : rows.filter((x) => x.r.key === f);

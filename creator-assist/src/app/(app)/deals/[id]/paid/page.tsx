@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Done } from "@/components/ui";
-import { loadDealView } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { getDeal } from "@/server/deals";
+import { orRedirect } from "@/server/forms";
 import { inr } from "@creator-assist/shared/money";
 
 export default async function PaidPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ amt?: string; s?: string }> }) {
   const [{ id }, q] = await Promise.all([params, searchParams]);
-  const { v } = await loadDealView(id);
+  const { v } = await orRedirect(getDeal(await webCtx(), id), "/deals");
   const tds = Number(q.amt) || 0;
   const settled = v.phase === "paid";
   return (

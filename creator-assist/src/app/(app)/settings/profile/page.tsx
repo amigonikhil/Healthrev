@@ -1,10 +1,10 @@
 import { updateProfile } from "@/app/actions/profile";
 import { ProfileForm } from "@/components/profile-form";
 import { Top } from "@/components/ui";
-import { requireProfile } from "@/lib/data";
+import { webCtx } from "@/server/context";
 
 export default async function EditProfile() {
-  const { profile: p } = await requireProfile();
+  const { profile: p } = await webCtx();
   return (
     <main className="scr">
       <Top title="Edit profile" fallback="/settings" />

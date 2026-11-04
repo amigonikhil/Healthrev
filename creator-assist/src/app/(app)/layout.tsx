@@ -1,13 +1,13 @@
 import { BottomNav } from "@/components/nav";
 import { Notices } from "@/components/notices";
-import { requireProfile } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { listNotifications } from "@/server/misc";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { db } = await requireProfile();
-  const { data: notices } = await db.from("notifications").select("id, title, link").is("read_at", null).order("created_at", { ascending: false }).limit(3);
+  const notices = await listNotifications(await webCtx());
   return (
     <>
-      <Notices items={notices ?? []} />
+      <Notices items={notices} />
       {children}
       <BottomNav />
     </>

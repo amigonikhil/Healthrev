@@ -1,15 +1,15 @@
 import { Row, Top } from "@/components/ui";
-import { loadViews } from "@/lib/data";
+import { webCtx } from "@/server/context";
+import { fileWithUsView } from "@/server/tax";
 import { callSlots } from "@creator-assist/shared/slots";
-import { taxHub } from "@creator-assist/shared/tax";
 import { BookingForm } from "./form";
 
 export const metadata = { title: "File with us · Creator Assist" };
 
 export default async function FileWithUs() {
-  const { db, views, today, profile } = await loadViews();
-  const { data: ais } = await db.from("ais_entries").select("*");
-  const hub = taxHub(views, ais ?? [], today);
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { today, hub } = await fileWithUsView(ctx);
   return (
     <main className="scr">
       <Top title="File with us" fallback="/tax" />

@@ -1,7 +1,6 @@
-import { byToken, markViewed } from "@/lib/sign";
 import { Doc, Done } from "@/components/ui";
 import { fmtDateLong, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { signingPage } from "@/server/agreements";
 import type { AgreementBody } from "@creator-assist/shared/types";
 import { SignForm } from "./form";
 
@@ -10,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function SignPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const a = await byToken(token);
-  if (!a) {
+  const page = await signingPage(token);
+  if (!page) {
     return (
       <main className="scr calm">
         <Done icon="?" tone="info" title="Link not found">
@@ -20,8 +19,7 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
       </main>
     );
   }
-  const { data: creator } = await createAdminClient().from("profiles").select("name").eq("id", a.user_id).single();
-  const creatorName = creator?.name ?? "A creator";
+  const { a, creatorName } = page;
 
   if (a.status === "signed") {
     return (
@@ -37,7 +35,6 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
     );
   }
 
-  await markViewed(a);
   return (
     <main className="scr calm">
       <h1>{creatorName} sent you an agreement</h1>

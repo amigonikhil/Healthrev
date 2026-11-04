@@ -1,27 +1,20 @@
 import { BrandPreview } from "@/components/brand-preview";
 import { Row, Top } from "@/components/ui";
 import { reminderTemplates } from "@/lib/app-settings";
-import { fmtDate, fmtDay, todayIST } from "@creator-assist/shared/dates";
-import { getTax, loadDealView } from "@/lib/data";
-import { buildInvoice } from "@creator-assist/shared/invoice";
-import { billToName } from "@/lib/invoice-data";
+import { webCtx } from "@/server/context";
+import { orRedirect } from "@/server/forms";
+import { invoiceView } from "@/server/invoices";
+import { fmtDate, fmtDay } from "@creator-assist/shared/dates";
 import { amountInWords, inr, minus } from "@creator-assist/shared/money";
 import type { DealFull, InvoiceLine, Profile } from "@creator-assist/shared/types";
 import { GenerateForm, InvoiceActions } from "./actions";
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { v, profile, db } = await loadDealView(id);
+  const ctx = await webCtx();
+  const { profile } = ctx;
+  const { v, invoice: inv, billTo } = await orRedirect(invoiceView(ctx, id), "/deals");
   const d = v.d;
-  const today = todayIST();
-  const inv = d.invoice ?? {
-    ...buildInvoice({
-      profile, tax: await getTax(db), brandStateCode: d.brand.state_code, fee: d.fee_paise, gstMode: d.gst_mode, tdsRate: Number(d.tds_rate),
-      advanceReceived: d.advance_received_at ? d.advance_paise : 0, termsDays: d.terms_days,
-      invoiceDate: d.go_live_date && d.go_live_date <= today ? d.go_live_date : today, deliverables: d.deliverables, usage: d.usage,
-    }),
-    number: "Draft",
-  };
   const gstRate = Number(inv.gst_rate);
 
   return (
@@ -33,7 +26,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         <Row k="Date · Due" v={`${fmtDay(inv.invoice_date)} · ${fmtDate(inv.due_date)}`} />
         <div className="hr" />
         <Party title="From" lines={fromLines(profile)} />
-        <Party title="Bill to" lines={billLines(d)} />
+        <Party title="Bill to" lines={billLines(d, billTo)} />
         <div className="hr" />
         {inv.lines.map((l: InvoiceLine, i: number) => <Row key={i} k={`${l.label} · SAC ${l.sac}`} v={l.included ? "Included" : inr(l.amount_paise)} />)}
         <Row k="Taxable value" v={inr(inv.taxable_paise)} />
@@ -52,7 +45,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         {!profile.gstin && <p className="sub">You&apos;re not GST-registered, so no GST is charged. Add a GSTIN in Settings if you register.</p>}
       </div>
       {d.invoice
-        ? <InvoiceActions invoiceId={d.invoice.id} pdfHref={`/api/invoices/${d.invoice.id}/pdf`} />
+        ? <InvoiceActions invoiceId={d.invoice.id} pdfHref={`/api/v1/invoices/${d.invoice.id}/pdf`} />
         : (<>
           {profile.remind_email && d.brand.contact_email && (
             <BrandPreview creator={profile.name} lang={profile.language} templates={await reminderTemplates()} contact={(d.brand.contact_name ?? "").split(" ")[0]}
@@ -78,7 +71,7 @@ const fromLines = (p: Profile) => [
   [p.gstin && `GSTIN ${p.gstin}`, p.udyam_no].filter(Boolean).join(" · "),
 ].filter(Boolean);
 
-const billLines = (d: DealFull) => [
-  [billToName(d), d.brand.city, d.brand.state].filter(Boolean).join(", "),
+const billLines = (d: DealFull, billTo: string) => [
+  [billTo, d.brand.city, d.brand.state].filter(Boolean).join(", "),
   [d.brand.gstin && `GSTIN ${d.brand.gstin}`, d.brand.state && `Place of supply: ${d.brand.state} (${d.brand.state_code})`].filter(Boolean).join(" · "),
 ].filter(Boolean);

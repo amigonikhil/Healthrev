@@ -1,27 +1,15 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { audit } from "@/lib/audit";
-import { decrypt } from "@/lib/crypto";
-import { getTax, requireProfile } from "@/lib/data";
-import { todayIST } from "@creator-assist/shared/dates";
-import { seedDemoData } from "@/lib/seed";
-import { track } from "@/lib/events";
+import { webCtx } from "@/server/context";
+import { clearSampleData as clear, loadSampleData } from "@/server/settings";
 
 export async function trySampleData() {
-  const { db, user, profile } = await requireProfile();
-  const tax = await getTax(db);
-  const seeded = await seedDemoData(db, { userId: user.id, profile, pan: decrypt(profile.pan_enc), tax, today: todayIST() });
-  if (seeded) { await audit(db, user.id, "sample_seeded", "profile", user.id); await track(user.id, "sample_loaded", { sample: true }); }
-  redirect("/home?t=" + encodeURIComponent(seeded ? "Sample data loaded" : "Sample data is already loaded"));
+  const message = await loadSampleData(await webCtx());
+  redirect("/home?t=" + encodeURIComponent(message));
 }
 
 export async function clearSampleData() {
-  const { db, user } = await requireProfile();
-  const { error } = await db.rpc("clear_sample");
-  if (error) throw new Error("Could not clear sample data: " + error.message);
-  await audit(db, user.id, "sample_cleared", "profile", user.id);
-  await track(user.id, "sample_cleared", { sample: true });
-  redirect("/settings?t=" + encodeURIComponent("Sample data cleared"));
+  const message = await clear(await webCtx());
+  redirect("/settings?t=" + encodeURIComponent(message));
 }
-
