@@ -7,8 +7,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@creator-assist/shared"],
   // STANDALONE=1 reproduces Vercel's traced-files-only bundle locally.
   ...(process.env.STANDALONE ? { output: "standalone" as const } : {}),
-  // This app lives in a subfolder of a repo that has its own lockfile.
-  outputFileTracingRoot: path.join(__dirname),
+  // The monorepo root (apps/web → ../..), so files from packages/shared and the
+  // workspace's node_modules are traced into the deployment.
+  outputFileTracingRoot: path.join(__dirname, "../.."),
   // @react-pdf/renderer ships ESM + native-ish deps; keep it out of the server bundle.
   serverExternalPackages: ["@react-pdf/renderer"],
   // PDF fonts and images are read from disk at runtime, and pdfkit loads its standard
@@ -18,7 +19,7 @@ const nextConfig: NextConfig = {
     "/**/*": [
       "./src/fonts/**/*",
       "./src/assets/**/*",
-      "./node_modules/.pnpm/pdfkit@*/node_modules/pdfkit/js/standard-fonts/**/*",
+      "../../node_modules/.pnpm/pdfkit@*/node_modules/pdfkit/js/standard-fonts/**/*",
     ],
   },
   experimental: {

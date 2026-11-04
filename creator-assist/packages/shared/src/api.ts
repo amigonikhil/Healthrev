@@ -16,6 +16,8 @@ export type AppConfig = {
   flags: Record<FeatureFlag, boolean>;
   /** Mobile builds below this version must update before continuing. */
   minAppVersion: { ios: string; android: string };
+  /** Which sign-in methods are switched on (phone OTP waits for SMS/DLT registration). */
+  signIn: { phone: boolean; email: boolean };
 };
 
 // ---------------------------------------------------------------- session / profile

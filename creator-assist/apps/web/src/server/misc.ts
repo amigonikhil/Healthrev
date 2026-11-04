@@ -29,7 +29,8 @@ export async function appConfig(): Promise<AppConfig> {
   } catch (e) {
     console.error("app config read failed", e instanceof Error ? e.message : e);
   }
-  return { flags, minAppVersion: min };
+  // Phone OTP needs DLT-registered SMS; until it's live the apps offer email codes only.
+  return { flags, minAppVersion: min, signIn: { phone: process.env.NEXT_PUBLIC_SMS_ENABLED !== "false", email: true } };
 }
 
 // ---------------------------------------------------------------- feedback

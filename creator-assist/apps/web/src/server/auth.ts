@@ -11,7 +11,8 @@ import { EMAIL_RE } from "@creator-assist/shared/validate";
 const PER_30S = 1;
 const PER_HOUR = 6;
 
-export async function sendEmailCode(rawEmail: string): Promise<{ ok: true } | { ok: false; error: string }> {
+/** `platform` is recorded on a new account (its sign-up event says which app it came from). */
+export async function sendEmailCode(rawEmail: string, platform: "web" | "ios" | "android" = "web"): Promise<{ ok: true } | { ok: false; error: string }> {
   const email = rawEmail.trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return { ok: false, error: "Enter a valid email" };
   const admin = createAdminClient();
@@ -28,7 +29,7 @@ export async function sendEmailCode(rawEmail: string): Promise<{ ok: true } | { 
   // Magic-link generation creates the user on first sign-in.
   let { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email });
   if (error && /not found|no user/i.test(error.message)) {
-    const created = await admin.auth.admin.createUser({ email });
+    const created = await admin.auth.admin.createUser({ email, user_metadata: { platform } });
     if (created.error) return { ok: false, error: "Could not start sign-in. Please try again." };
     ({ data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email }));
   }
