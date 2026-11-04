@@ -73,6 +73,9 @@ const dealInput = {
   ok(r.status === 200 && r.json.profile.pan_masked === "ABCPR••••Q" && r.json.profile.bank_account_last4 === "9012", "onboarded; PAN and bank shown masked");
   const stored = sql(`select pan_enc || ' ' || bank_account_enc from profiles where id='${A.id}'`);
   ok(stored.startsWith("v1.") && !stored.includes("ABCPR1234Q") && !stored.includes("123456789012"), "PAN and bank account stored encrypted");
+  ok(r.json.profile.pan_enc === null && r.json.profile.bank_account_enc === null, "onboarding response carries no PAN/bank ciphertext");
+  r = await a.get("/me");
+  ok(r.json.profile.pan_masked === "ABCPR••••Q" && r.json.profile.pan_enc === null && r.json.profile.bank_account_enc === null && !JSON.stringify(r.json).includes(stored.split(" ")[0]), "me: masked PAN only, no ciphertext");
 
   console.log("Deal → agreement → invoice → reminders → payment");
   r = await a.post("/deals", { ...dealInput, deliverables: [] });

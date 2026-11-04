@@ -53,6 +53,8 @@ For local `.env.local` use `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`, th
 - `packages/shared` (`@creator-assist/shared`): calculations (GST, advance, TDS, balance, MSME interest, invoice
   numbering), types, deal views, reminder copy and the API request/response types. Pure TypeScript, imported by the
   web app and the mobile apps.
+- `apps/mobile` (`@creator-assist/mobile`): the iOS and Android app (Expo, React Native). How to run it on a
+  simulator or emulator: [apps/mobile/README.md](apps/mobile/README.md).
 - `src/server`: every business rule, one service per domain. Pages and server actions call these directly.
 - `src/app/api/v1`: the same services over HTTP for the mobile apps (Supabase JWT auth, RLS applies). See
   [docs/api-v1.md](docs/api-v1.md).

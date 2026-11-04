@@ -40,6 +40,9 @@ async function emailSignIn(b, email) {
   await p.goto(BASE + "/signin");
   await p.getByLabel("Mobile number").fill("98765 43210"); await p.getByRole("button", { name: "Send OTP" }).click();
   await p.getByLabel("Enter OTP").fill("482913"); await p.getByRole("button", { name: "Verify and continue" }).click(); await p.waitForURL("**/home");
+  // First sign-in goes /home → /onboarding (creates the owner's account) → /home; wait for the
+  // seeded Home to render so the next navigation doesn't race the account being set up.
+  await p.getByText("Money owed to you").waitFor();
   await p.goto(BASE + "/settings");
   await p.getByRole("link", { name: "Admin dashboard" }).click();
   await p.waitForURL("**/admin");

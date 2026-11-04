@@ -1,0 +1,43 @@
+{
+  "name": "@creator-assist/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "typecheck": "tsc --noEmit",
+    "doctor": "expo-doctor",
+    "bundle:check": "expo export --platform ios --platform android --output-dir .expo-export"
+  },
+  "dependencies": {
+    "@creator-assist/shared": "workspace:*",
+    "@expo-google-fonts/space-grotesk": "0.4.1",
+    "@expo/metro-runtime": "~58.0.17",
+    "@expo/vector-icons": "^15.0.2",
+    "@supabase/supabase-js": "2.75.0",
+    "expo": "~58.0.23",
+    "expo-constants": "~58.0.15",
+    "expo-dev-client": "~58.0.18",
+    "expo-font": "~58.0.11",
+    "expo-haptics": "~58.0.7",
+    "expo-linking": "~58.0.16",
+    "expo-router": "~58.0.30",
+    "expo-secure-store": "~58.0.2",
+    "expo-splash-screen": "~58.0.13",
+    "expo-status-bar": "~58.0.4",
+    "expo-system-ui": "~58.0.7",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-screens": "~4.30.1",
+    "react-native-url-polyfill": "4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "react-dom": "19.3.0",
+    "react-native-web": "~0.21.4",
+    "typescript": "5.9.2"
+  }
+}

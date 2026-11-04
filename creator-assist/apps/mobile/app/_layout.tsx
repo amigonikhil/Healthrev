@@ -1,0 +1,81 @@
+// Per-weight imports so only the four faces we use are bundled.
+import { SpaceGrotesk_400Regular } from "@expo-google-fonts/space-grotesk/400Regular";
+import { SpaceGrotesk_500Medium } from "@expo-google-fonts/space-grotesk/500Medium";
+import { SpaceGrotesk_600SemiBold } from "@expo-google-fonts/space-grotesk/600SemiBold";
+import { SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk/700Bold";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
+import { useEffect, useRef } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { PageTracker } from "@/lib/page-tracker";
+import { SessionProvider, useSession } from "@/session";
+import { useTheme } from "@/theme";
+import { Button, Txt } from "@/ui";
+
+void SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const [fontsLoaded] = useFonts({ SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold });
+  return (
+    <SafeAreaProvider>
+      <SessionProvider>
+        <Gate fontsLoaded={fontsLoaded} />
+      </SessionProvider>
+    </SafeAreaProvider>
+  );
+}
+
+/** Signed out → sign-in; signed in without a profile → setup; otherwise the tabs. */
+function Gate({ fontsLoaded }: { fontsLoaded: boolean }) {
+  const { status, error, refresh } = useSession();
+  const { c, scheme } = useTheme();
+  const ready = fontsLoaded && (status !== "loading" || !!error);
+
+  // Root background matches the theme (no white flash behind screens or the keyboard).
+  useEffect(() => { void SystemUI.setBackgroundColorAsync(c.bg); }, [c.bg]);
+  const splashDone = useRef(false);
+  useEffect(() => { if (ready && !splashDone.current) { splashDone.current = true; void SplashScreen.hideAsync(); } }, [ready]);
+
+  if (!ready) {
+    // At launch the splash screen covers this; later (e.g. loading your account right after
+    // sign-in) show a spinner rather than an empty screen.
+    return splashDone.current ? (
+      <View accessible accessibilityLabel="Loading" style={{ flex: 1, backgroundColor: c.bg, alignItems: "center", justifyContent: "center" }}>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+        <ActivityIndicator size="large" color={c.text} />
+      </View>
+    ) : null;
+  }
+  if (status === "loading" && error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: c.bg, justifyContent: "center", padding: 24, gap: 16 }}>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+        <Txt v="h1Sub" accessibilityRole="header">Can&apos;t reach Creator Assist</Txt>
+        <Txt color={c.muted}>{error}</Txt>
+        <Button title="Try again" onPress={refresh} />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+      <PageTracker />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.bg } }}>
+        <Stack.Protected guard={status === "signedOut"}>
+          <Stack.Screen name="sign-in" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === "needsProfile"}>
+          <Stack.Screen name="setup" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === "ready"}>
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+      </Stack>
+    </>
+  );
+}

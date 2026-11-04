@@ -54,6 +54,9 @@ function profileFields(input: ProfileInput, editing: boolean): ProfileFields {
 }
 
 /** The signed-in user, their profile (null until onboarded) and rates. */
+/** The profile as sent to the apps: the PAN and bank ciphertext stays on the server (masked values are kept). */
+export const clientProfile = (p: Profile): Profile => ({ ...p, pan_enc: null, bank_account_enc: null });
+
 export async function me(ctx: Ctx): Promise<Me> {
   const profile = await loadProfile(ctx);
   const [tax, admin, sample] = await Promise.all([
@@ -63,7 +66,7 @@ export async function me(ctx: Ctx): Promise<Me> {
   ]);
   return {
     user: { id: ctx.user.id, email: ctx.user.email ?? null, phone: ctx.user.phone ? "+" + normPhone(ctx.user.phone) : null },
-    profile, tax, isAdmin: isOwner(ctx.user) || !!admin.data, hasSampleData: (sample.count ?? 0) > 0,
+    profile: profile && clientProfile(profile), tax, isAdmin: isOwner(ctx.user) || !!admin.data, hasSampleData: (sample.count ?? 0) > 0,
   };
 }
 
