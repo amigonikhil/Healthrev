@@ -1,8 +1,8 @@
 import { byToken, markViewed } from "@/lib/sign";
 import { Doc, Done } from "@/components/ui";
-import { fmtDateLong, fmtTimeIST, istDate } from "@/lib/dates";
+import { fmtDateLong, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { AgreementBody } from "@/lib/types";
+import type { AgreementBody } from "@creator-assist/shared/types";
 import { SignForm } from "./form";
 
 export const metadata = { title: "Review and sign · Creator Assist", robots: { index: false, follow: false } };

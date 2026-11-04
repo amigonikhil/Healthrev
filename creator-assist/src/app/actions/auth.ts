@@ -3,7 +3,7 @@
 import { sendEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { EMAIL_RE } from "@/lib/validate";
+import { EMAIL_RE } from "@creator-assist/shared/validate";
 
 // Email sign-in codes are created by Supabase (admin generateLink, which does
 // not send anything) and emailed by the app through Resend. This keeps

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Chip, Doc, Row, Top } from "@/components/ui";
-import { buildAgreement } from "@/lib/agreement";
-import { lateTerms } from "@/lib/calc";
+import { buildAgreement } from "@creator-assist/shared/agreement";
+import { lateTerms } from "@creator-assist/shared/calc";
 import { decrypt } from "@/lib/crypto";
-import { fmtDateLong, fmtDay, fmtTimeIST, todayIST, istDate } from "@/lib/dates";
+import { fmtDateLong, fmtDay, fmtTimeIST, todayIST, istDate } from "@creator-assist/shared/dates";
 import { loadDealView } from "@/lib/data";
 import { siteUrl } from "@/lib/env";
 import { SendPanel } from "./send";

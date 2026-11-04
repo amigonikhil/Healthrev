@@ -3,13 +3,13 @@
 import { redirect } from "next/navigation";
 import { audit } from "@/lib/audit";
 import { getTax, loadDeal, requireProfile } from "@/lib/data";
-import { fmtDate, todayIST } from "@/lib/dates";
+import { fmtDate, todayIST } from "@creator-assist/shared/dates";
 import { sendEmail } from "@/lib/email";
-import { buildInvoice, invoiceNumber } from "@/lib/invoice";
+import { buildInvoice, invoiceNumber } from "@creator-assist/shared/invoice";
 import { billToName, nextInvoiceSeq, renderInvoicePdf } from "@/lib/invoice-data";
-import { inr } from "@/lib/money";
-import { everyHours, reminderSlots } from "@/lib/reminder-schedule";
-import type { Invoice } from "@/lib/types";
+import { inr } from "@creator-assist/shared/money";
+import { everyHours, reminderSlots } from "@creator-assist/shared/reminder-schedule";
+import type { Invoice } from "@creator-assist/shared/types";
 import { track } from "@/lib/events";
 
 export type InvState = { error?: string } | undefined;

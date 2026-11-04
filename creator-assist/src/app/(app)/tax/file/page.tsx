@@ -1,7 +1,7 @@
 import { Row, Top } from "@/components/ui";
 import { loadViews } from "@/lib/data";
-import { callSlots } from "@/lib/slots";
-import { taxHub } from "@/lib/tax";
+import { callSlots } from "@creator-assist/shared/slots";
+import { taxHub } from "@creator-assist/shared/tax";
 import { BookingForm } from "./form";
 
 export const metadata = { title: "File with us · Creator Assist" };

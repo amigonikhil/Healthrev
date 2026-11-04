@@ -2,9 +2,9 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { filtersOf, loadPeople, loadQueues, QUEUE_STATUSES, QUEUE_TABS, waitingLabel, type QueueItem, type QueueKind } from "@/lib/admin/data";
 import { inRange, one, parseRange, qs, type SP } from "@/lib/admin/range";
-import { daysBetween, fmtDate, istDate, todayIST } from "@/lib/dates";
-import { inr } from "@/lib/money";
-import { fmtSlot } from "@/lib/slots";
+import { daysBetween, fmtDate, istDate, todayIST } from "@creator-assist/shared/dates";
+import { inr } from "@creator-assist/shared/money";
+import { fmtSlot } from "@creator-assist/shared/slots";
 import { Chip } from "@/components/ui";
 import { QueueControls, RangePicker } from "../controls";
 

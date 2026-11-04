@@ -1,7 +1,7 @@
 import { loadDeal } from "@/lib/data";
 import { renderInvoicePdf } from "@/lib/invoice-data";
 import { createClient } from "@/lib/supabase/server";
-import type { Invoice, Profile } from "@/lib/types";
+import type { Invoice, Profile } from "@creator-assist/shared/types";
 
 export const runtime = "nodejs";
 

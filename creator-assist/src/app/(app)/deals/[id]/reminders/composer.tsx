@@ -4,8 +4,8 @@ import { trackClient } from "@/components/track";
 import { useState, useTransition } from "react";
 import { logWhatsAppReminder, sendReminderEmail } from "@/app/actions/reminders";
 import { Seg, useToast } from "@/components/client";
-import { LANGS, msmeOffered, paymentMessage, waLink, type ReminderTemplates } from "@/lib/messages";
-import type { Lang } from "@/lib/types";
+import { LANGS, msmeOffered, paymentMessage, waLink, type ReminderTemplates } from "@creator-assist/shared/messages";
+import type { Lang } from "@creator-assist/shared/types";
 
 export function Composer(p: {
   dealId: string; stage: string; defaultLang: Lang; contact: string; phone: string | null; email: string | null; ccEmail: string | null;

@@ -1,12 +1,12 @@
 import "server-only";
-import { DEFAULT_TEMPLATES, type ReminderTemplates } from "./messages";
+import { DEFAULT_TEMPLATES, type ReminderTemplates } from "@creator-assist/shared/messages";
 import { SUPABASE_URL } from "./env";
-import type { TaxConfig } from "./calc";
+import type { TaxConfig } from "@creator-assist/shared/calc";
 import { createAdminClient } from "./supabase/admin";
 
 // Admin-editable defaults (ADMIN.md §9). Stored in app_settings; service role only.
 export type TaxDefaults = { gst_rate: number; tds_rate: number; rbi_bank_rate: number; msme_multiple: number };
-export type { ReminderTemplates } from "./messages";
+export type { ReminderTemplates } from "@creator-assist/shared/messages";
 
 export async function getSetting<T>(key: string): Promise<T | null> {
   try {

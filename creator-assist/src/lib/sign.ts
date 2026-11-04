@@ -1,7 +1,7 @@
 import "server-only";
 import { audit } from "./audit";
 import { createAdminClient } from "./supabase/admin";
-import type { Agreement } from "./types";
+import type { Agreement } from "@creator-assist/shared/types";
 
 // Public signing-page lookups. Server-only on purpose: these return OTP state
 // and must never be exposed as server actions.

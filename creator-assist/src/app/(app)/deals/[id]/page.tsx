@@ -3,12 +3,12 @@ import { markAdvanceReceived } from "@/app/actions/deals";
 import { SubmitButton } from "@/components/client";
 import { Help } from "@/components/help";
 import { Chip, Row, Top } from "@/components/ui";
-import { fmtDay, fmtDate } from "@/lib/dates";
-import { dealAmounts, detailChip, type DealView } from "@/lib/deal-view";
-import { deliverablesSummary, usageDurationLabel } from "@/lib/deliverables";
+import { fmtDay, fmtDate } from "@creator-assist/shared/dates";
+import { dealAmounts, detailChip, type DealView } from "@creator-assist/shared/deal-view";
+import { deliverablesSummary, usageDurationLabel } from "@creator-assist/shared/deliverables";
 import { loadDealView } from "@/lib/data";
-import { inr, minus } from "@/lib/money";
-import { dealTimeline } from "@/lib/timeline";
+import { inr, minus } from "@creator-assist/shared/money";
+import { dealTimeline } from "@creator-assist/shared/timeline";
 
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

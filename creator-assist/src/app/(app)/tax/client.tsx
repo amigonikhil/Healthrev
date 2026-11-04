@@ -3,7 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import { addAisEntry, sendFilingData, setFiler, uploadAis } from "@/app/actions/tax";
 import { ActionForm, Seg, SubmitButton, useToast } from "@/components/client";
-import type { Filing } from "@/lib/types";
+import type { Filing } from "@creator-assist/shared/types";
 
 export function WhoFiles({ value }: { value: "creator_assist" | "own_ca" }) {
   const [v, setV] = useState(value);

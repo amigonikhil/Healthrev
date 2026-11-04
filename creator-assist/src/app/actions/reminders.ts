@@ -5,7 +5,7 @@ import { audit } from "@/lib/audit";
 import { requireProfile } from "@/lib/data";
 import { sendEmail, textToHtml } from "@/lib/email";
 import { siteUrl } from "@/lib/env";
-import type { Lang } from "@/lib/types";
+import type { Lang } from "@creator-assist/shared/types";
 import { track } from "@/lib/events";
 
 type Target = { dealId?: string; brandId?: string; kind: "payment" | "tds"; stage: string; lang: Lang; message: string };

@@ -1,6 +1,6 @@
 import { byToken } from "@/lib/sign";
 import { agreementPdf } from "@/lib/pdf";
-import type { AgreementBody } from "@/lib/types";
+import type { AgreementBody } from "@creator-assist/shared/types";
 
 export const runtime = "nodejs";
 

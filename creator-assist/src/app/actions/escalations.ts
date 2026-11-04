@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ADVOCATE, LEGAL_CALL, NOTICE_DAYS } from "@/lib/advocate";
+import { ADVOCATE, LEGAL_CALL, NOTICE_DAYS } from "@creator-assist/shared/advocate";
 import { audit } from "@/lib/audit";
 import { getTax, loadDeal, requireProfile } from "@/lib/data";
-import { todayIST } from "@/lib/dates";
-import { viewDeal } from "@/lib/deal-view";
+import { todayIST } from "@creator-assist/shared/dates";
+import { viewDeal } from "@creator-assist/shared/deal-view";
 import { sendEmail } from "@/lib/email";
-import { inr } from "@/lib/money";
-import { noticeText } from "@/lib/notice";
+import { inr } from "@creator-assist/shared/money";
+import { noticeText } from "@creator-assist/shared/notice";
 import { noticeFor } from "@/lib/notice-data";
 import { noticePdf } from "@/lib/notice-pdf";
 import { track } from "@/lib/events";

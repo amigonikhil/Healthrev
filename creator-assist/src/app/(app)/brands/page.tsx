@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Head, Item } from "@/components/ui";
-import { daysBetween } from "@/lib/dates";
-import { rowHref, sumAmounts, type DealView, type Tone } from "@/lib/deal-view";
+import { daysBetween } from "@creator-assist/shared/dates";
+import { rowHref, sumAmounts, type DealView, type Tone } from "@creator-assist/shared/deal-view";
 import { loadViews } from "@/lib/data";
 
 export const metadata = { title: "Brands · Creator Assist" };

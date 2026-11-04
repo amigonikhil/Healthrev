@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { NewDealButton } from "@/components/new-deal";
 import { Head, Item } from "@/components/ui";
-import { brandWithAgency, dealAmounts, listRow, rowHref } from "@/lib/deal-view";
+import { brandWithAgency, dealAmounts, listRow, rowHref } from "@creator-assist/shared/deal-view";
 import { loadViews } from "@/lib/data";
 
 export const metadata = { title: "Deals · Creator Assist" };

@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { useToast } from "@/components/client";
 import { addAdmin, creatorContact, revealContact, saveTaxDefaults, saveTemplates, setFeedback, setQueueStatus, updateAdmin } from "./actions";
 import type { QueueKind, QueueStatus } from "@/lib/admin/data";
-import type { ReminderTemplates } from "@/lib/messages";
+import type { ReminderTemplates } from "@creator-assist/shared/messages";
 import type { TaxDefaults } from "@/lib/app-settings";
 
 /** Today / 7 days / 30 days / All time / Custom, plus the sample-data and admin toggles. */

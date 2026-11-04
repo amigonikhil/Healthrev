@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { maskPhone } from "@/lib/admin/privacy";
 import { inRange, parseRange, type SP } from "@/lib/admin/range";
 import { getSetting, reminderTemplates, type TaxDefaults } from "@/lib/app-settings";
-import { fmtDate, fmtTimeIST, istDate } from "@/lib/dates";
+import { fmtDate, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
 import { AddAdmin, AdminRow, RangePicker, TaxDefaultsForm, TemplatesForm } from "../controls";
 
 const BUILT_IN: TaxDefaults = { gst_rate: 18, tds_rate: 10, rbi_bank_rate: 5.5, msme_multiple: 3 };

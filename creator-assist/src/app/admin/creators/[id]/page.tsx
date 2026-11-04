@@ -4,7 +4,7 @@ import { adminLog, requireAdmin } from "@/lib/admin/auth";
 import { EVENT_LABEL, FEATURES, loadEvents, loadQueues, QUEUE_TABS, waitingLabel } from "@/lib/admin/data";
 import { amountBand, maskPhone } from "@/lib/admin/privacy";
 import { qs, type SP } from "@/lib/admin/range";
-import { fmtDate, fmtTimeIST, istDate } from "@/lib/dates";
+import { fmtDate, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
 import { ContactButtons, ContactReveal } from "../../controls";
 
 const MILESTONES = ["signed_up", "onboarding_completed", "sample_loaded", "deal_created", "agreement_sent", "agreement_signed", "invoice_generated", "reminder_sent", "payment_recorded", "escalation_opened", "ais_uploaded", "feedback_sent"];

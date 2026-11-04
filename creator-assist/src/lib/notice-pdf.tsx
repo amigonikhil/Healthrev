@@ -1,8 +1,8 @@
 import "server-only";
 import path from "node:path";
 import { Document, Image, Page, renderToBuffer, StyleSheet, Text, View } from "@react-pdf/renderer";
-import { ADVOCATE } from "./advocate";
-import type { Notice, Para } from "./notice";
+import { ADVOCATE } from "@creator-assist/shared/advocate";
+import type { Notice, Para } from "@creator-assist/shared/notice";
 import { fonts } from "./pdf";
 
 // Advocate's letterhead, copied from the notice the owner supplied: logos either

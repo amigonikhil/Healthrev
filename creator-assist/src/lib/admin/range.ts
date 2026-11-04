@@ -1,4 +1,4 @@
-import { addDays, todayIST } from "../dates";
+import { addDays, todayIST } from "@creator-assist/shared/dates";
 
 export type RangeKey = "today" | "7d" | "30d" | "all" | "custom";
 export type Range = {

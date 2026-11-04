@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { BetaNote, Done } from "@/components/ui";
-import { ADVOCATE, LEGAL_CALL } from "@/lib/advocate";
+import { ADVOCATE, LEGAL_CALL } from "@creator-assist/shared/advocate";
 import { requireProfile } from "@/lib/data";
-import { fmtSlot } from "@/lib/slots";
+import { fmtSlot } from "@creator-assist/shared/slots";
 
 export default async function LegalCallBooked({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ b?: string }> }) {
   const [{ id }, { b }] = await Promise.all([params, searchParams]);

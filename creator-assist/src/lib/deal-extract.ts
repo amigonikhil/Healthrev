@@ -2,8 +2,8 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod/v4";
-import { ALL_DELIVERABLES, deliverableKey } from "./deliverables";
-import { PASTE_FIELDS, USAGE_SCOPE_VALUES, type RawExtraction } from "./pasted-deal";
+import { ALL_DELIVERABLES, deliverableKey } from "@creator-assist/shared/deliverables";
+import { PASTE_FIELDS, USAGE_SCOPE_VALUES, type RawExtraction } from "@creator-assist/shared/pasted-deal";
 
 // Reads a brand's message or screenshot into New deal fields. Nothing here is stored:
 // the text/image lives only for this request and is never logged.

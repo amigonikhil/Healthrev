@@ -1,6 +1,6 @@
 import { agreementPdf } from "@/lib/pdf";
 import { createClient } from "@/lib/supabase/server";
-import type { Agreement } from "@/lib/types";
+import type { Agreement } from "@creator-assist/shared/types";
 
 export const runtime = "nodejs";
 

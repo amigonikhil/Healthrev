@@ -4,8 +4,8 @@ import { trackClient } from "@/components/track";
 import { useState, useTransition } from "react";
 import { logWhatsAppReminder, scheduleTdsLadder, sendReminderEmail } from "@/app/actions/reminders";
 import { Seg, useToast } from "@/components/client";
-import { LANGS, tdsMessage, waLink } from "@/lib/messages";
-import type { Lang } from "@/lib/types";
+import { LANGS, tdsMessage, waLink } from "@creator-assist/shared/messages";
+import type { Lang } from "@creator-assist/shared/types";
 
 export function TdsComposer(p: {
   brandId: string; contact: string; phone: string | null; email: string | null; amount: number; invoiceNos: string[];

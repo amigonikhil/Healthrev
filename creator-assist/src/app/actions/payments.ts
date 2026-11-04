@@ -3,10 +3,10 @@
 import { redirect } from "next/navigation";
 import { audit } from "@/lib/audit";
 import { loadDeal, requireProfile } from "@/lib/data";
-import { addDays, nineAmIST, todayIST } from "@/lib/dates";
-import { form16aMessage } from "@/lib/messages";
-import { parseRupees } from "@/lib/money";
-import { str } from "@/lib/validate";
+import { addDays, nineAmIST, todayIST } from "@creator-assist/shared/dates";
+import { form16aMessage } from "@creator-assist/shared/messages";
+import { parseRupees } from "@creator-assist/shared/money";
+import { str } from "@creator-assist/shared/validate";
 import { track } from "@/lib/events";
 
 export type PayState = { error?: string } | undefined;

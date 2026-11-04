@@ -1,6 +1,6 @@
 import "server-only";
-import { NOTICE_DAYS } from "../advocate";
-import { addDays, daysBetween, istDate, todayIST } from "../dates";
+import { NOTICE_DAYS } from "@creator-assist/shared/advocate";
+import { addDays, daysBetween, istDate, todayIST } from "@creator-assist/shared/dates";
 import type { DB } from "../supabase/server";
 import { adminIds } from "./auth";
 import { redact } from "./privacy";

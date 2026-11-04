@@ -1,0 +1,17 @@
+{
+  "name": "@creator-assist/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Creator Assist logic shared by the web and mobile apps: types, calculations (GST, advance, TDS, balance, MSME interest, invoice numbering), reminder copy and deal views. Pure TypeScript, no server or UI code.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "node --import tsx --test src/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsx": "4.20.5",
+    "typescript": "5.9.2"
+  }
+}

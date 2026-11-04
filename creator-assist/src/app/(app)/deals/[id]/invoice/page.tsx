@@ -1,12 +1,12 @@
 import { BrandPreview } from "@/components/brand-preview";
 import { Row, Top } from "@/components/ui";
 import { reminderTemplates } from "@/lib/app-settings";
-import { fmtDate, fmtDay, todayIST } from "@/lib/dates";
+import { fmtDate, fmtDay, todayIST } from "@creator-assist/shared/dates";
 import { getTax, loadDealView } from "@/lib/data";
-import { buildInvoice } from "@/lib/invoice";
+import { buildInvoice } from "@creator-assist/shared/invoice";
 import { billToName } from "@/lib/invoice-data";
-import { amountInWords, inr, minus } from "@/lib/money";
-import type { DealFull, InvoiceLine, Profile } from "@/lib/types";
+import { amountInWords, inr, minus } from "@creator-assist/shared/money";
+import type { DealFull, InvoiceLine, Profile } from "@creator-assist/shared/types";
 import { GenerateForm, InvoiceActions } from "./actions";
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {

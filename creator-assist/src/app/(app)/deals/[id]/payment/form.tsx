@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { recordPayment } from "@/app/actions/payments";
 import { ActionForm, SubmitButton } from "@/components/client";
-import { inr, parseRupees } from "@/lib/money";
+import { inr, parseRupees } from "@creator-assist/shared/money";
 
 const r = (p: number) => String(Math.round(p / 100));
 

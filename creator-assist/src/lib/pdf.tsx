@@ -1,8 +1,8 @@
 import "server-only";
 import path from "node:path";
 import { Document, Font, Page, renderToBuffer, StyleSheet, Text, View } from "@react-pdf/renderer";
-import { fmtDateLong, fmtTimeIST, istDate } from "./dates";
-import type { Agreement, AgreementBody } from "./types";
+import { fmtDateLong, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
+import type { Agreement, AgreementBody } from "@creator-assist/shared/types";
 
 // Fonts are embedded so ₹ renders (the standard PDF fonts don't have it).
 const dir = path.join(process.cwd(), "src", "fonts");

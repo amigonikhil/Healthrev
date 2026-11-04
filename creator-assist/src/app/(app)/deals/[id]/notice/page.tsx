@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { Top } from "@/components/ui";
-import { ADVOCATE, NOTICE_DAYS } from "@/lib/advocate";
+import { ADVOCATE, NOTICE_DAYS } from "@creator-assist/shared/advocate";
 import { loadDealView } from "@/lib/data";
 import { siteUrl } from "@/lib/env";
-import { waLink } from "@/lib/messages";
-import { inr } from "@/lib/money";
+import { waLink } from "@creator-assist/shared/messages";
+import { inr } from "@creator-assist/shared/money";
 import { noticeFor, noticeToken } from "@/lib/notice-data";
 import { NoticePaper } from "./paper";
 import { NoticeSend } from "./send";

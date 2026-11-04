@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Chip, Top } from "@/components/ui";
-import { ADVOCATE, LEGAL_CALL, NOTICE_DAYS } from "@/lib/advocate";
-import { msmeAnnualRate } from "@/lib/calc";
+import { ADVOCATE, LEGAL_CALL, NOTICE_DAYS } from "@creator-assist/shared/advocate";
+import { msmeAnnualRate } from "@creator-assist/shared/calc";
 import { loadDealView } from "@/lib/data";
-import { addDays, daysBetween, fmtDateLong, istDate } from "@/lib/dates";
-import { inr } from "@/lib/money";
+import { addDays, daysBetween, fmtDateLong, istDate } from "@creator-assist/shared/dates";
+import { inr } from "@creator-assist/shared/money";
 import { noticeFor } from "@/lib/notice-data";
-import { fmtSlot } from "@/lib/slots";
+import { fmtSlot } from "@creator-assist/shared/slots";
 import { SamadhaanItem } from "./samadhaan";
 
 export default async function EscalatePage({ params }: { params: Promise<{ id: string }> }) {

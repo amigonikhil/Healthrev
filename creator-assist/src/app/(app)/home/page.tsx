@@ -4,10 +4,10 @@ import { SubmitButton } from "@/components/client";
 import { Help } from "@/components/help";
 import { NewDealButton } from "@/components/new-deal";
 import { Head, Item } from "@/components/ui";
-import { addDays, fmtWeekday } from "@/lib/dates";
-import { attentionRow, brandLabel, dealAmounts, rowHref, sumAmounts, type DealView } from "@/lib/deal-view";
+import { addDays, fmtWeekday } from "@creator-assist/shared/dates";
+import { attentionRow, brandLabel, dealAmounts, rowHref, sumAmounts, type DealView } from "@creator-assist/shared/deal-view";
 import { loadViews } from "@/lib/data";
-import { inr } from "@/lib/money";
+import { inr } from "@creator-assist/shared/money";
 
 export const metadata = { title: "Home · Creator Assist" };
 

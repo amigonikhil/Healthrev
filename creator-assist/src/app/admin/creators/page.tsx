@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { filtersOf, isActiveEvent, loadEvents, loadPeople } from "@/lib/admin/data";
 import { inRange, one, parseRange, qs, type SP } from "@/lib/admin/range";
-import { addDays, fmtDate, istDate, todayIST } from "@/lib/dates";
+import { addDays, fmtDate, istDate, todayIST } from "@creator-assist/shared/dates";
 import { RangePicker } from "../controls";
 
 export default async function Creators({ searchParams }: { searchParams: Promise<SP> }) {

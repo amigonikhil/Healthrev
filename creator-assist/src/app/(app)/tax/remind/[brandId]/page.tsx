@@ -2,11 +2,11 @@ import { redirect } from "next/navigation";
 import { Chip, Top } from "@/components/ui";
 import { decrypt } from "@/lib/crypto";
 import { loadViews } from "@/lib/data";
-import { fmtDay, istDate } from "@/lib/dates";
-import { STAGE_LABEL } from "@/lib/messages";
-import { inr } from "@/lib/money";
-import { taxHub } from "@/lib/tax";
-import type { AisEntry, Reminder } from "@/lib/types";
+import { fmtDay, istDate } from "@creator-assist/shared/dates";
+import { STAGE_LABEL } from "@creator-assist/shared/messages";
+import { inr } from "@creator-assist/shared/money";
+import { taxHub } from "@creator-assist/shared/tax";
+import type { AisEntry, Reminder } from "@creator-assist/shared/types";
 import { TdsComposer } from "./composer";
 
 export default async function TdsRemind({ params }: { params: Promise<{ brandId: string }> }) {

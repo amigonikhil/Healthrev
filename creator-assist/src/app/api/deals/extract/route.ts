@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { todayIST } from "@/lib/dates";
+import { todayIST } from "@creator-assist/shared/dates";
 import { extractDealFields, type ExtractInput } from "@/lib/deal-extract";
 import { track } from "@/lib/events";
-import { isEmptyExtraction, normalizeExtraction } from "@/lib/pasted-deal";
+import { isEmptyExtraction, normalizeExtraction } from "@creator-assist/shared/pasted-deal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 

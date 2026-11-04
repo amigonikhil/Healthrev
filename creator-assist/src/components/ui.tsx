@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { DealAmounts, Tone } from "@/lib/deal-view";
-import { inr } from "@/lib/money";
+import type { DealAmounts, Tone } from "@creator-assist/shared/deal-view";
+import { inr } from "@creator-assist/shared/money";
 import { BackButton } from "./client";
 import { FeedbackButton } from "./feedback";
 

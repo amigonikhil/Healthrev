@@ -1,10 +1,10 @@
 import "server-only";
 import { Document, Page, renderToBuffer, StyleSheet, Text, View } from "@react-pdf/renderer";
-import { allocate } from "./calc";
-import { fmtDateLong } from "./dates";
-import { amountInWords, inr } from "./money";
+import { allocate } from "@creator-assist/shared/calc";
+import { fmtDateLong } from "@creator-assist/shared/dates";
+import { amountInWords, inr } from "@creator-assist/shared/money";
 import { fonts } from "./pdf";
-import type { Brand, Invoice, Payment, Profile } from "./types";
+import type { Brand, Invoice, Payment, Profile } from "@creator-assist/shared/types";
 
 // Invoice layout: green header band, three-column detail blocks, green table
 // header, totals on the right, footer band. Colours sampled from the

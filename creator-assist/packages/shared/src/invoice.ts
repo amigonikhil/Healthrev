@@ -45,7 +45,11 @@ export function buildInvoice(args: {
   };
 }
 
+/** Invoice numbers are PREFIX/YYYY-YY/NNN and restart at 001 each financial year (April). */
 export const invoiceNumber = (prefix: string, fy: string, seq: number) => `${prefix}/${fy}/${String(seq).padStart(3, "0")}`;
+
+/** Next sequence in a financial year, from the highest one already used in that year (none = first invoice). */
+export const nextInvoiceSeq = (lastSeqThisFy: number | null | undefined) => (lastSeqThisFy ?? 0) + 1;
 
 /** Initials for the default invoice prefix: "Ravi Teja K" → "RTK". */
 export function defaultPrefix(name: string): string {

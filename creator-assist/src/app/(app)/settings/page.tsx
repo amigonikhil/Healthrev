@@ -6,12 +6,12 @@ import { SubmitButton, ThemeSwitch } from "@/components/client";
 import { Lock } from "@/components/lock";
 import { Head, Row } from "@/components/ui";
 import { rateDefaults, reminderTemplates } from "@/lib/app-settings";
-import { fyOf, todayIST } from "@/lib/dates";
-import { invoiceNumber } from "@/lib/invoice";
+import { fyOf, todayIST } from "@creator-assist/shared/dates";
+import { invoiceNumber } from "@creator-assist/shared/invoice";
 import { getTax, requireProfile } from "@/lib/data";
 import { isOwner } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { everyHours } from "@/lib/reminder-schedule";
+import { everyHours } from "@creator-assist/shared/reminder-schedule";
 import { DeleteAccount, RatesForm, ReminderForm } from "./forms";
 
 export const metadata = { title: "Settings · Creator Assist" };

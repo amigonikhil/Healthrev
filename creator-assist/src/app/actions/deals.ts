@@ -3,11 +3,11 @@
 import { redirect } from "next/navigation";
 import { audit } from "@/lib/audit";
 import { requireProfile } from "@/lib/data";
-import { todayIST } from "@/lib/dates";
-import { ALL_DELIVERABLES, deliverableKey, USAGE_MAX_MONTHS, usageMonths } from "@/lib/deliverables";
-import { parseRupees } from "@/lib/money";
-import { stateByName } from "@/lib/states";
-import { EMAIL_RE, GSTIN_RE, str, up } from "@/lib/validate";
+import { todayIST } from "@creator-assist/shared/dates";
+import { ALL_DELIVERABLES, deliverableKey, USAGE_MAX_MONTHS, usageMonths } from "@creator-assist/shared/deliverables";
+import { parseRupees } from "@creator-assist/shared/money";
+import { stateByName } from "@creator-assist/shared/states";
+import { EMAIL_RE, GSTIN_RE, str, up } from "@creator-assist/shared/validate";
 import { track } from "@/lib/events";
 
 export type DealFormState = { error?: string } | undefined;

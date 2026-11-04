@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { PASTED_DEAL_KEY, type PastedDeal } from "@/lib/pasted-deal";
+import { PASTED_DEAL_KEY, type PastedDeal } from "@creator-assist/shared/pasted-deal";
 
 const MAX_EDGE = 1568; // Claude reads screenshots best at this size or smaller
 

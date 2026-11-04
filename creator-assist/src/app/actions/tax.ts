@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { parseAis } from "@/lib/ais";
+import { parseAis } from "@creator-assist/shared/ais";
 import { audit } from "@/lib/audit";
 import { loadViews, requireProfile } from "@/lib/data";
-import { fyOf, todayIST } from "@/lib/dates";
-import { parseRupees } from "@/lib/money";
-import { taxHub } from "@/lib/tax";
-import type { AisEntry, Filing } from "@/lib/types";
-import { str, TAN_RE, up } from "@/lib/validate";
+import { fyOf, todayIST } from "@creator-assist/shared/dates";
+import { parseRupees } from "@creator-assist/shared/money";
+import { taxHub } from "@creator-assist/shared/tax";
+import type { AisEntry, Filing } from "@creator-assist/shared/types";
+import { str, TAN_RE, up } from "@creator-assist/shared/validate";
 import { track } from "@/lib/events";
 
 export async function setFiler(who: "creator_assist" | "own_ca") {

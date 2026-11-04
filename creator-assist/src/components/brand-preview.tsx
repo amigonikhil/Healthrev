@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { inr } from "@/lib/money";
-import { DEFAULT_TEMPLATES, paymentMessage, type ReminderTemplates } from "@/lib/messages";
-import type { Lang } from "@/lib/types";
+import { inr } from "@creator-assist/shared/money";
+import { DEFAULT_TEMPLATES, paymentMessage, type ReminderTemplates } from "@creator-assist/shared/messages";
+import type { Lang } from "@creator-assist/shared/types";
 
 /** The first automatic reminder exactly as the brand gets it (email; WhatsApp uses the same words). */
 export function BrandPreview(p: {

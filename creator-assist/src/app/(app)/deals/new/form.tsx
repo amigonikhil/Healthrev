@@ -3,11 +3,11 @@
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { createDeal } from "@/app/actions/deals";
 import { ActionForm, Seg, Stepper, SubmitButton } from "@/components/client";
-import { dealSummary, type GstMode, type TaxConfig } from "@/lib/calc";
-import { ALL_DELIVERABLES, DELIVERABLE_GROUPS, deliverableKey, deliverablesSummary, USAGE_MAX_MONTHS, USAGE_SCOPES } from "@/lib/deliverables";
-import { inr, minus, parseRupees } from "@/lib/money";
-import { PASTED_DEAL_KEY, type PasteField, type PastedDeal } from "@/lib/pasted-deal";
-import { STATES, stateByName } from "@/lib/states";
+import { dealSummary, type GstMode, type TaxConfig } from "@creator-assist/shared/calc";
+import { ALL_DELIVERABLES, DELIVERABLE_GROUPS, deliverableKey, deliverablesSummary, USAGE_MAX_MONTHS, USAGE_SCOPES } from "@creator-assist/shared/deliverables";
+import { inr, minus, parseRupees } from "@creator-assist/shared/money";
+import { PASTED_DEAL_KEY, type PasteField, type PastedDeal } from "@creator-assist/shared/pasted-deal";
+import { STATES, stateByName } from "@creator-assist/shared/states";
 
 type BrandOpt = { name: string; contact_name: string; contact_email: string; contact_whatsapp: string; state: string; gstin: string; agency_name: string; legal_name: string };
 type Terms = "30" | "45" | "60" | "custom";

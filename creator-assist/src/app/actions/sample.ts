@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { audit } from "@/lib/audit";
 import { decrypt } from "@/lib/crypto";
 import { getTax, requireProfile } from "@/lib/data";
-import { todayIST } from "@/lib/dates";
+import { todayIST } from "@creator-assist/shared/dates";
 import { seedDemoData } from "@/lib/seed";
 import { track } from "@/lib/events";
 

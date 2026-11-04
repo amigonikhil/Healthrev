@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Calculations, types and copy shared with the mobile app (TypeScript source).
+  transpilePackages: ["@creator-assist/shared"],
   // STANDALONE=1 reproduces Vercel's traced-files-only bundle locally.
   ...(process.env.STANDALONE ? { output: "standalone" as const } : {}),
   // This app lives in a subfolder of a repo that has its own lockfile.

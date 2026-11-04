@@ -1,11 +1,11 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import type { TaxConfig } from "./calc";
-import { todayIST } from "./dates";
-import { viewDeal, type DealView } from "./deal-view";
+import type { TaxConfig } from "@creator-assist/shared/calc";
+import { todayIST } from "@creator-assist/shared/dates";
+import { viewDeal, type DealView } from "@creator-assist/shared/deal-view";
 import { createClient, type DB } from "./supabase/server";
-import type { Brand, DealFull, Profile } from "./types";
+import type { Brand, DealFull, Profile } from "@creator-assist/shared/types";
 
 const one = <T,>(x: T | T[] | null | undefined): T | null => (Array.isArray(x) ? x[0] ?? null : x ?? null);
 

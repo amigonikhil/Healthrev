@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Done } from "@/components/ui";
 import { loadDealView } from "@/lib/data";
-import { inr } from "@/lib/money";
+import { inr } from "@creator-assist/shared/money";
 
 export default async function PaidPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ amt?: string; s?: string }> }) {
   const [{ id }, q] = await Promise.all([params, searchParams]);

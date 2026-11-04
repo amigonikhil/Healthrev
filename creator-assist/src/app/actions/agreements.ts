@@ -2,20 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { buildAgreement } from "@/lib/agreement";
+import { buildAgreement } from "@creator-assist/shared/agreement";
 import { audit } from "@/lib/audit";
-import { lateTerms } from "@/lib/calc";
+import { lateTerms } from "@creator-assist/shared/calc";
 import { decrypt, randomToken, sha256 } from "@/lib/crypto";
 import { getTax, loadDeal, requireProfile } from "@/lib/data";
 import { sendEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/env";
-import { todayIST } from "@/lib/dates";
-import { waLink } from "@/lib/messages";
+import { todayIST } from "@creator-assist/shared/dates";
+import { waLink } from "@creator-assist/shared/messages";
 import { agreementPdf } from "@/lib/pdf";
 import { byToken } from "@/lib/sign";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Agreement, AgreementBody, Profile } from "@/lib/types";
-import { EMAIL_RE } from "@/lib/validate";
+import type { Agreement, AgreementBody, Profile } from "@creator-assist/shared/types";
+import { EMAIL_RE } from "@creator-assist/shared/validate";
 import { track } from "@/lib/events";
 
 export type SendResult = { ok: true; link: string; wa: string | null; emailed: boolean; note?: string } | { ok: false; error: string };

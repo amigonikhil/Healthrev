@@ -3,8 +3,8 @@
 import { redirect } from "next/navigation";
 import { audit } from "@/lib/audit";
 import { requireProfile } from "@/lib/data";
-import { parseRupees } from "@/lib/money";
-import { REMIND_EVERY_HOURS } from "@/lib/reminder-schedule";
+import { parseRupees } from "@creator-assist/shared/money";
+import { REMIND_EVERY_HOURS } from "@creator-assist/shared/reminder-schedule";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 

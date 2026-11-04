@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { filtersOf, loadPeople } from "@/lib/admin/data";
 import { redact } from "@/lib/admin/privacy";
 import { inRange, one, parseRange, qs, type SP } from "@/lib/admin/range";
-import { fmtDate, fmtTimeIST, istDate } from "@/lib/dates";
+import { fmtDate, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
 import { Bars } from "../charts";
 import { FeedbackControls, RangePicker } from "../controls";
 

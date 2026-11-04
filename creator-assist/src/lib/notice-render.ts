@@ -1,11 +1,11 @@
 import "server-only";
 import { loadDeal, toTax } from "./data";
-import { todayIST } from "./dates";
-import { viewDeal } from "./deal-view";
+import { todayIST } from "@creator-assist/shared/dates";
+import { viewDeal } from "@creator-assist/shared/deal-view";
 import { noticeFor } from "./notice-data";
 import { noticePdf } from "./notice-pdf";
 import type { DB } from "./supabase/server";
-import type { Profile } from "./types";
+import type { Profile } from "@creator-assist/shared/types";
 
 /** Renders a deal's legal notice PDF as of its latest notice, for any user (service role). */
 export async function noticePdfForDeal(db: DB, dealId: string): Promise<{ pdf: Buffer; filename: string } | null> {

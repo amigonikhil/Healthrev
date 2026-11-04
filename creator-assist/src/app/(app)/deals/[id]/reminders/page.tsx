@@ -1,10 +1,10 @@
 import { Chip, Top } from "@/components/ui";
 import Link from "next/link";
-import { fmtDay, fmtTimeIST, istDate } from "@/lib/dates";
+import { fmtDay, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
 import { loadDealView } from "@/lib/data";
-import { STAGE_LABEL } from "@/lib/messages";
-import { inr } from "@/lib/money";
-import { everyHours, REMINDER_COUNT } from "@/lib/reminder-schedule";
+import { STAGE_LABEL } from "@creator-assist/shared/messages";
+import { inr } from "@creator-assist/shared/money";
+import { everyHours, REMINDER_COUNT } from "@creator-assist/shared/reminder-schedule";
 import { reminderTemplates } from "@/lib/app-settings";
 import { Composer } from "./composer";
 

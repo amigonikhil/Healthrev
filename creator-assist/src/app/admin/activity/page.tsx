@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { EVENT_LABEL, FEATURES, filtersOf, loadEvents, loadPeople } from "@/lib/admin/data";
 import { inRange, one, parseRange, qs, type SP } from "@/lib/admin/range";
-import { fmtDate, fmtTimeIST, istDate } from "@/lib/dates";
+import { fmtDate, fmtTimeIST, istDate } from "@creator-assist/shared/dates";
 import { RangePicker } from "../controls";
 
 // Key events (screen views and sign-in steps only when asked for).

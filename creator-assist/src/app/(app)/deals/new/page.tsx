@@ -1,6 +1,6 @@
 import { Top } from "@/components/ui";
 import { getTax, loadBrands, requireProfile } from "@/lib/data";
-import { todayIST } from "@/lib/dates";
+import { todayIST } from "@creator-assist/shared/dates";
 import { DealForm } from "./form";
 
 export const metadata = { title: "New paid collab · Creator Assist" };

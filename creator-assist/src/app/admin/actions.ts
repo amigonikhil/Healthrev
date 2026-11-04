@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { ReminderTemplates, TaxDefaults } from "@/lib/app-settings";
 import { adminLog, requireAdmin, requireOwner } from "@/lib/admin/auth";
 import { QUEUE_STATUSES, type QueueKind, type QueueStatus } from "@/lib/admin/data";
-import { waLink } from "@/lib/messages";
+import { waLink } from "@creator-assist/shared/messages";
 
 type Res = { ok: boolean; message: string };
 

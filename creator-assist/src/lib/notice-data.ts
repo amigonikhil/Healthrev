@@ -1,10 +1,10 @@
 import "server-only";
-import { parseLateClause, type TaxConfig } from "./calc";
+import { parseLateClause, type TaxConfig } from "@creator-assist/shared/calc";
 import { decrypt, hmac, safeEqual } from "./crypto";
-import { istDate, todayIST } from "./dates";
-import type { DealView } from "./deal-view";
-import { buildNotice } from "./notice";
-import type { Profile } from "./types";
+import { istDate, todayIST } from "@creator-assist/shared/dates";
+import type { DealView } from "@creator-assist/shared/deal-view";
+import { buildNotice } from "@creator-assist/shared/notice";
+import type { Profile } from "@creator-assist/shared/types";
 
 /** The notice for a deal, dated when it was last sent (or today, for the preview). */
 export function noticeFor(v: DealView, profile: Profile, tax: TaxConfig, opts: { fresh?: boolean } = {}) {

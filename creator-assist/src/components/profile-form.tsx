@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import type { FormState } from "@/app/actions/profile";
-import { STATES } from "@/lib/states";
+import { STATES } from "@creator-assist/shared/states";
 import { ActionForm, SubmitButton } from "./client";
 import { Lock } from "./lock";
 

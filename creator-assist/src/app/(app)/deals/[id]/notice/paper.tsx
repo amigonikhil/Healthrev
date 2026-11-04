@@ -1,5 +1,5 @@
-import { ADVOCATE } from "@/lib/advocate";
-import type { Notice, Para } from "@/lib/notice";
+import { ADVOCATE } from "@creator-assist/shared/advocate";
+import type { Notice, Para } from "@creator-assist/shared/notice";
 
 // On-screen copy of the notice PDF (same letterhead and layout), since phones
 // can't show a PDF inline.

@@ -1,8 +1,8 @@
 import { Row, Top } from "@/components/ui";
-import { ADVOCATE, LEGAL_CALL } from "@/lib/advocate";
+import { ADVOCATE, LEGAL_CALL } from "@creator-assist/shared/advocate";
 import { loadDealView } from "@/lib/data";
-import { inr } from "@/lib/money";
-import { callSlots } from "@/lib/slots";
+import { inr } from "@creator-assist/shared/money";
+import { callSlots } from "@creator-assist/shared/slots";
 import { LegalCallForm } from "./form";
 
 export const metadata = { title: "Talk to the legal team · Creator Assist" };

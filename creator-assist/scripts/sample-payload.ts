@@ -1,6 +1,6 @@
 // Prints the sample-data payload for a fake profile (used to test seed_sample locally).
 import { buildSamplePayload } from "../src/lib/seed";
-import type { Profile } from "../src/lib/types";
+import type { Profile } from "@creator-assist/shared/types";
 
 const userId = process.argv[2] ?? "00000000-0000-0000-0000-000000000001";
 const today = process.argv[3] ?? "2026-10-25";

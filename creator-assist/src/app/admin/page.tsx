@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { FEATURES, filtersOf, isActiveEvent, loadEvents, loadPeople, loadQueues, QUEUE_TABS, waitingLabel } from "@/lib/admin/data";
 import { inRange, istDay, parseRange, qs, type SP } from "@/lib/admin/range";
-import { addDays } from "@/lib/dates";
+import { addDays } from "@creator-assist/shared/dates";
 import { Bars, LineChart } from "./charts";
 import { RangePicker } from "./controls";
 

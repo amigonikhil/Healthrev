@@ -3,12 +3,12 @@
 import { useActionState, useState } from "react";
 import { deleteAccount, saveRates, saveReminderSettings } from "@/app/actions/settings";
 import { ActionForm, SubmitButton } from "@/components/client";
-import type { TaxConfig } from "@/lib/calc";
+import type { TaxConfig } from "@creator-assist/shared/calc";
 import { BrandPreview } from "@/components/brand-preview";
 import { Help } from "@/components/help";
-import type { ReminderTemplates } from "@/lib/messages";
-import type { Lang } from "@/lib/types";
-import { REMIND_EVERY_HOURS, REMINDER_COUNT } from "@/lib/reminder-schedule";
+import type { ReminderTemplates } from "@creator-assist/shared/messages";
+import type { Lang } from "@creator-assist/shared/types";
+import { REMIND_EVERY_HOURS, REMINDER_COUNT } from "@creator-assist/shared/reminder-schedule";
 
 export function ReminderForm(p: {
   every: number; whatsapp: boolean; email: boolean; language: string; terms: number;

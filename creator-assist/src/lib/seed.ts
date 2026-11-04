@@ -1,14 +1,14 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { buildAgreement } from "./agreement";
-import { lateTerms, type TaxConfig } from "./calc";
+import { buildAgreement } from "@creator-assist/shared/agreement";
+import { lateTerms, type TaxConfig } from "@creator-assist/shared/calc";
 import { randomToken } from "./crypto";
-import { addDays, fyOf, nineAmIST } from "./dates";
-import { buildInvoice, invoiceNumber } from "./invoice";
-import { everyHours, reminderSlots } from "./reminder-schedule";
-import { rupees } from "./money";
+import { addDays, fyOf, nineAmIST } from "@creator-assist/shared/dates";
+import { buildInvoice, invoiceNumber } from "@creator-assist/shared/invoice";
+import { everyHours, reminderSlots } from "@creator-assist/shared/reminder-schedule";
+import { rupees } from "@creator-assist/shared/money";
 import type { DB } from "./supabase/server";
-import type { Brand, Deal, DealDeliverable, Profile, UsageRights } from "./types";
+import type { Brand, Deal, DealDeliverable, Profile, UsageRights } from "@creator-assist/shared/types";
 
 // The prototype's demo set. Every date is relative to `today`, so the demo
 // always looks current: Voltra 18 days overdue, Glow due today, FitFuel due in 4.

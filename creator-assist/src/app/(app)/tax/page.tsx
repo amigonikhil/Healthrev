@@ -2,10 +2,10 @@ import Link from "next/link";
 import { Help } from "@/components/help";
 import { Chip, Head } from "@/components/ui";
 import { loadViews } from "@/lib/data";
-import { fmtDay, istDate } from "@/lib/dates";
-import { inr } from "@/lib/money";
-import { taxHub, upcomingFilings } from "@/lib/tax";
-import type { AisEntry, Filing } from "@/lib/types";
+import { fmtDay, istDate } from "@creator-assist/shared/dates";
+import { inr } from "@creator-assist/shared/money";
+import { taxHub, upcomingFilings } from "@creator-assist/shared/tax";
+import type { AisEntry, Filing } from "@creator-assist/shared/types";
 import { AisPanel, FilingAction, WhoFiles } from "./client";
 
 export const metadata = { title: "Tax hub · Creator Assist" };

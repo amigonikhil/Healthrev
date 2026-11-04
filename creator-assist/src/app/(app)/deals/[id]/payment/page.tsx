@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Row, Top } from "@/components/ui";
-import { fmtDay, todayIST } from "@/lib/dates";
+import { fmtDay, todayIST } from "@creator-assist/shared/dates";
 import { loadDealView } from "@/lib/data";
-import { inr } from "@/lib/money";
+import { inr } from "@creator-assist/shared/money";
 import { PaymentForm } from "./form";
 
 export default async function PaymentPage({ params }: { params: Promise<{ id: string }> }) {
