@@ -81,8 +81,13 @@ export async function extractDealFields(input: ExtractInput, today: string): Pro
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) return { ok: false, error: "Lots of people are pasting deals right now. Try again in a minute." };
     if (e instanceof Anthropic.APIError) {
-      console.error("paste deal: Claude API error", e.status); // status only: never log the pasted content
-      return { ok: false, error: "Something went wrong reading that. Try again, or fill in the form yourself." };
+      // Anthropic's error type and message describe the request/account, never the pasted
+      // content, so they're safe to log (the pasted text itself is never logged).
+      const type = (e.error as { error?: { type?: string } } | undefined)?.error?.type ?? "unknown";
+      console.error("paste deal: Claude API error", e.status, type, e.message);
+      // On the preview server (test builds) show the code so a tester can report it.
+      const ref = process.env.VERCEL_ENV === "preview" ? ` (${e.status ?? "?"} ${type})` : "";
+      return { ok: false, error: `Something went wrong reading that${ref}. Try again, or fill in the form yourself.` };
     }
     console.error("paste deal: request failed", e instanceof Error ? e.name : "unknown");
     return { ok: false, error: "Couldn't reach the reader. Check your connection and try again." };
