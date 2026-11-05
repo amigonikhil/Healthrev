@@ -116,6 +116,11 @@ show up without rebuilding.
 Push on Android also needs `google-services.json` from Firebase (see below); without it the app
 works, notifications just stay off.
 
+**If Paste a chat says "Something went wrong reading that (…)"** on a test build, the bracket has
+the reason from Claude: `401 authentication_error` means the server's `ANTHROPIC_API_KEY` (Vercel)
+is invalid; `400 invalid_request_error` is often an empty credit balance. Fix the key in Vercel and
+redeploy; the app itself doesn't need a new build.
+
 ## Push, links and the share target: what each needs
 
 | Feature | Needs | Where it goes |
