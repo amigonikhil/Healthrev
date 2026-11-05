@@ -34,6 +34,14 @@ export async function appConfig(): Promise<AppConfig> {
   return { flags, minAppVersion: min, signIn: { phone: process.env.NEXT_PUBLIC_SMS_ENABLED !== "false", email: true }, support: await supportContact() };
 }
 
+/** One remote switch, read fresh (off if the table has no row or the read fails). */
+export async function flagOn(f: FeatureFlag): Promise<boolean> {
+  try {
+    const { data } = await createAdminClient().from("feature_flags").select("enabled").eq("key", f).maybeSingle();
+    return !!data?.enabled;
+  } catch { return false; }
+}
+
 /** Help & support contact (app_settings key "support": {email, whatsapp}). Null until one is set. */
 async function supportContact(): Promise<AppConfig["support"]> {
   const s = await getSetting<{ email?: string; whatsapp?: string }>("support");

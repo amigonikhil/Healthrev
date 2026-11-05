@@ -1,4 +1,5 @@
 import { tdsEstimate } from "./calc";
+import { inr } from "./money";
 import { addDays, fmtMonth, fyOf, fyRange } from "./dates";
 import type { DealView } from "./deal-view";
 import type { AisEntry, Brand, Filing, Profile } from "./types";
@@ -95,3 +96,27 @@ export function upcomingFilings(views: DealView[], profile: Profile, filings: Fi
 }
 
 const fmtInr = (p: number) => "₹" + Math.round(p / 100).toLocaleString("en-IN");
+
+/**
+ * Plain-text summary for the creator's CA (shared from the app's share sheet or copied on the
+ * web): FY income, GST, TDS by payer with what's missing from AIS. Estimates; VERIFY WITH CA.
+ */
+export function caSummaryText(hub: TaxHub, p: Pick<Profile, "name" | "pan_masked" | "gstin">, filing?: { title: string; due: string }): string {
+  const lines = [
+    `Creator Assist summary · FY ${hub.fy}${filing ? ` · for ${filing.title} (due ${filing.due})` : ""}`,
+    `${p.name}${p.pan_masked ? ` · PAN ${p.pan_masked}` : ""}${p.gstin ? ` · GSTIN ${p.gstin}` : " · not GST-registered"}`,
+    "",
+    `Income invoiced: ${inr(hub.income)} (${hub.invoiceCount} invoice${hub.invoiceCount === 1 ? "" : "s"}, ${hub.brands} brand${hub.brands === 1 ? "" : "s"})`,
+    `GST collected: ${inr(hub.gst)}`,
+    `TDS deducted by brands: ${inr(hub.tdsExpected)}`,
+    `TDS showing in AIS: ${inr(hub.tdsInAis)}${hub.missingTotal ? ` (${inr(hub.missingTotal)} missing)` : ""}`,
+  ];
+  if (hub.payers.length) {
+    lines.push("", "TDS by payer:");
+    for (const x of hub.payers) {
+      lines.push(`- ${x.brand.name}${x.viaAgency && x.brand.agency_name ? ` (via ${x.brand.agency_name})` : ""}: ${inr(x.expected)} expected, ${inr(x.inAis)} in AIS${x.missing ? `, ${inr(x.missing)} missing` : ""} · invoices ${x.invoiceNos.join(", ")}`);
+    }
+  }
+  lines.push("", "Figures are estimates from my invoices in Creator Assist; please check them against the AIS and books.");
+  return lines.join("\n");
+}

@@ -8,6 +8,7 @@ import { TAN_RE } from "@creator-assist/shared/validate";
 import { audit } from "@/lib/audit";
 import { fail, track, type ProfileCtx } from "./context";
 import { listDeals } from "./deals";
+import { flagOn } from "./misc";
 
 /** Tax hub: income, GST, TDS by brands vs TDS in AIS, mismatches by brand, and filings coming up. */
 export async function taxHubView(ctx: ProfileCtx) {
@@ -39,13 +40,16 @@ const FILING_TYPES: Filing["type"][] = ["gstr1", "gstr3b", "advance_tax", "itr"]
 export async function sendFilingData(ctx: ProfileCtx, input: { type: Filing["type"]; period: string; due: string }): Promise<string> {
   if (!FILING_TYPES.includes(input.type) || !input.period || !/^\d{4}-\d{2}-\d{2}$/.test(input.due)) fail(400, "Unknown filing");
   const { db, profile } = ctx;
+  // Filing through Creator Assist is behind the file_with_us flag; while it's off the
+  // creator's own CA handles every filing.
+  const to = (await flagOn("file_with_us")) ? profile.files_with : "own_ca";
   const { error } = await db.from("filings").upsert({
-    type: input.type, period: input.period, due_date: input.due, handled_by: profile.files_with, status: "ready", data_sent_at: new Date().toISOString(),
+    type: input.type, period: input.period, due_date: input.due, handled_by: to, status: "ready", data_sent_at: new Date().toISOString(),
   }, { onConflict: "user_id,type,period" });
   if (error) return "Could not save: " + error.message;
-  await audit(db, ctx.user.id, "filing_data_sent", "filing", null, { type: input.type, period: input.period, to: profile.files_with });
+  await audit(db, ctx.user.id, "filing_data_sent", "filing", null, { type: input.type, period: input.period, to });
   await track(ctx, "filing_data_sent", { props: { type: input.type, period: input.period } });
-  return `Beta: marked as sent to ${profile.files_with === "own_ca" ? "your CA" : "Creator Assist"}. Nothing was actually filed.`;
+  return to === "own_ca" ? "Marked as sent to your CA." : "Marked as sent to Creator Assist. Book your call to finish the return.";
 }
 
 /**
