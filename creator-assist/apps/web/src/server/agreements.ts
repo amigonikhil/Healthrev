@@ -8,6 +8,7 @@ import { waLink } from "@creator-assist/shared/messages";
 import type { Agreement, AgreementBody, Profile } from "@creator-assist/shared/types";
 import { EMAIL_RE } from "@creator-assist/shared/validate";
 import { audit } from "@/lib/audit";
+import { sendPush } from "@/lib/push";
 import { decrypt, randomToken, sha256 } from "@/lib/crypto";
 import { sendEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/env";
@@ -154,6 +155,13 @@ export async function signAgreement(token: string, input: SignInput, ip: string 
     await admin.from("deals").update({ status: "agreed" }).eq("id", a.deal.id);
   }
   await audit(admin, a.user_id, "agreement_signed", "agreement", a.id, { signer: name, ip });
+  if (!a.is_sample) {
+    // Sent straight away, day or night: the creator is usually waiting for this one.
+    await sendPush(a.user_id, "agreement_signed", {
+      title: `${a.deal.brand.name} signed your agreement`, body: `Signed by ${name}. You can raise the invoice when the content is live.`,
+      url: `/deals/${a.deal_id}`, ref: a.id,
+    }, { urgent: true });
+  }
   await trackEvent(a.user_id, "agreement_signed", { sample: a.is_sample, props: { deal_id: a.deal_id }, platform: "web" });
 
   // Email a PDF copy to both parties (never for sample deals).

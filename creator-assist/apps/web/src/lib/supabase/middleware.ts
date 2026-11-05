@@ -8,7 +8,9 @@ const PUBLIC = [/^\/signin$/, /^\/about$/,
   // The versioned API authenticates each request itself (Supabase JWT or cookie) and answers 401 as JSON.
   /^\/api\/v1\//, /^\/s\//, /^\/auth\//, /^\/api\/cron\//, /^\/api\/r\//, /^\/api\/s\//, /^\/api\/n\//, /^\/api\/events$/,
   // /admin checks access itself and answers 404 to anyone who isn't an admin, signed in or not.
-  /^\/admin(\/|$)/];
+  /^\/admin(\/|$)/,
+  // App-link files the phones fetch (universal links on iOS, App Links on Android).
+  /^\/\.well-known\//];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

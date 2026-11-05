@@ -76,6 +76,9 @@ Calculations shared by every app live in `packages/shared` (`@creator-assist/sha
 | POST | `/reminders/email` | Email a reminder now |
 | GET | `/brands/{id}/tds` | TDS missing from AIS for a brand, its TDS reminders, and the creator's PAN for the message |
 | POST | `/brands/{id}/tds` | Schedule the TDS follow-ups `{ lang }` |
+| POST | `/push/tokens` | Register the phone for push `{ token, platform }` (Expo push token) |
+| DELETE | `/push/tokens` | Stop pushing to a phone `{ token }` (sign-out, notifications off) |
+| PUT | `/push/prefs` | Which pushes to send `{ prefs: { whatsapp_due, payment_due_today, overdue, agreement_signed, tds_mismatch, filing_due } }` (missing = on) → `{ prefs }` |
 | GET | `/deals/{id}/escalation` | Notice sent?, legal call booked?, amount claimed |
 | GET | `/deals/{id}/notice` | Legal notice as it would go out today, WhatsApp link, email recipient |
 | GET | `/deals/{id}/notice/pdf` | Notice PDF |

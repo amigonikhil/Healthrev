@@ -10,7 +10,9 @@ import { siteUrl } from "@/lib/env";
 import { paymentMessage, STAGE_LABEL, tdsMessage } from "@creator-assist/shared/messages";
 import { inr } from "@creator-assist/shared/money";
 import { everyHours, noticeDueAt } from "@creator-assist/shared/reminder-schedule";
+import { runPushTriggers } from "@/lib/push-triggers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { flagOn } from "@/server/misc";
 import type { Brand, DealFull, Profile, Reminder } from "@creator-assist/shared/types";
 
 export const runtime = "nodejs";
@@ -127,11 +129,12 @@ export async function GET(req: NextRequest) {
   }
 
   // 3. Every reminder has gone out and the interval after the last one has passed:
-  //    prompt the creator (once) to send the legal notice.
+  //    prompt the creator (once) to send the legal notice (only while that feature is on).
   let prompted = 0;
-  const { data: overdue } = await db.from("deals")
+  const noticeOn = await flagOn("lawyer_notice");
+  const { data: overdue } = noticeOn ? await db.from("deals")
     .select("*, brand:brands(*), deliverables:deal_deliverables(*), usage:usage_rights(*), invoice:invoices(*, payments(*)), agreements(*), reminders(*), escalations(*)")
-    .eq("status", "overdue").eq("is_sample", false).is("notice_prompted_at", null).limit(200);
+    .eq("status", "overdue").eq("is_sample", false).is("notice_prompted_at", null).limit(200) : { data: [] };
   for (const row of overdue ?? []) {
     const deal = normalizeDeal(row);
     const p = profiles.get(deal.user_id) ?? (await db.from("profiles").select("*").eq("id", deal.user_id).single<Profile>()).data;
@@ -151,5 +154,7 @@ export async function GET(req: NextRequest) {
       prompted++;
     }
   }
-  return NextResponse.json({ ok: true, due: reminders.length, sent, cancelled, digests: digest.size, notice_prompts: prompted });
+  // 4. Push notifications to the apps.
+  const push = await runPushTriggers(db, now);
+  return NextResponse.json({ ok: true, due: reminders.length, sent, cancelled, digests: digest.size, notice_prompts: prompted, push });
 }

@@ -13,7 +13,20 @@ export type Profile = {
   upi: string | null; invoice_prefix: string; default_terms_days: number; reminder_ladder: number[]; remind_every_hours: number;
   remind_whatsapp: boolean; remind_email: boolean; language: Lang; files_with: "creator_assist" | "own_ca";
   consent_at: string; sample_seeded_at: string | null; ais_updated_at: string | null;
+  /** Push notification switches; a missing key means on. */
+  push_prefs: Partial<Record<PushKind, boolean>>;
 };
+
+/** Push notifications the apps can receive (each can be switched off in Settings). */
+export type PushKind = "whatsapp_due" | "payment_due_today" | "overdue" | "agreement_signed" | "tds_mismatch" | "filing_due";
+export const PUSH_KINDS: { kind: PushKind; label: string; detail: string }[] = [
+  { kind: "whatsapp_due", label: "WhatsApp reminder due", detail: "When it's time to send a reminder from your WhatsApp" },
+  { kind: "payment_due_today", label: "Payment due today", detail: "On the day a brand's balance is due" },
+  { kind: "overdue", label: "Payment overdue", detail: "The day after a due date passes unpaid" },
+  { kind: "agreement_signed", label: "Agreement signed", detail: "As soon as a brand signs" },
+  { kind: "tds_mismatch", label: "TDS missing from AIS", detail: "When TDS a brand deducted isn't showing in your AIS" },
+  { kind: "filing_due", label: "Filing due in 7 days", detail: "A week before GST, advance tax and ITR due dates" },
+];
 
 export type Brand = {
   id: string; user_id: string; name: string; legal_name: string | null; gstin: string | null; tan: string | null;

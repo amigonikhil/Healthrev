@@ -12,7 +12,7 @@ import type { DeliverableDef } from "./deliverables";
 import type { ReminderTemplates } from "./messages";
 import type { PastedDeal } from "./pasted-deal";
 import type { TaxHub } from "./tax";
-import type { Agreement, AgreementBody, Brand, Filing, Invoice, Lang, Profile, Reminder } from "./types";
+import type { Agreement, AgreementBody, Brand, Filing, Invoice, Lang, Profile, PushKind, Reminder } from "./types";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string, public code?: string) {
@@ -139,6 +139,12 @@ export function createApiClient(o: ApiClientOptions) {
     sample: {
       load: () => post<{ message: string }>("/sample"),
       clear: () => del<{ message: string }>("/sample"),
+    },
+    push: {
+      /** Register this phone's Expo push token. */
+      register: (token: string, platform: "ios" | "android") => post<{ ok: true }>("/push/tokens", { token, platform }),
+      unregister: (token: string) => del<{ ok: true }>("/push/tokens", { token }),
+      prefs: (prefs: Partial<Record<PushKind, boolean>>) => put<{ prefs: Partial<Record<PushKind, boolean>> }>("/push/prefs", { prefs }),
     },
     notifications: {
       list: () => get<{ notifications: { id: string; title: string; link: string | null }[] }>("/notifications"),
