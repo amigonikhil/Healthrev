@@ -187,11 +187,10 @@ export const Field = forwardRef<TextInputInstance, { label: string; error?: stri
   const { c } = useTheme();
   return (
     <View style={{ gap: 6 }}>
-      <Txt v="small" w="semibold" color={c.text2} nativeID={`lbl-${label}`}>{label}</Txt>
+      <Txt v="small" w="semibold" color={c.text2} importantForAccessibility="no" accessibilityElementsHidden>{label}</Txt>
       <TextInput
         ref={ref}
         accessibilityLabel={label}
-        accessibilityLabelledBy={`lbl-${label}`}
         accessibilityHint={hint}
         placeholderTextColor={c.placeholder}
         selectionColor={c.primary}
