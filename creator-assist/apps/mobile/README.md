@@ -50,6 +50,31 @@ Test phone numbers).
 **Not in the app yet:** "File with Creator Assist" (AI call) and the paid legal call. Both charge a
 fee and nothing collects payment yet, so they stay hidden even if their flags are switched on.
 
+## Push, links and the share target: what each needs
+
+| Feature | Needs | Where it goes |
+|---|---|---|
+| Push tokens | An Expo account and `eas init` → project ID | `EAS_PROJECT_ID` when building (EAS env) |
+| Push on iPhone | An APNs key (Apple Developer account) | Uploaded once with `eas credentials` |
+| Push on Android | A Firebase project (free) → `google-services.json` | EAS file env var `GOOGLE_SERVICES_JSON` |
+| Universal links (iOS) | Apple Team ID | `APPLE_TEAM_ID` on the web app (Vercel) |
+| App Links (Android) | SHA-256 of the app signing key (Play Console) | `ANDROID_CERT_SHA256` on the web app |
+| Share target | Turning on `deal_from_chat` | `SHARE_TARGET=1` in that build's EAS profile |
+
+Without these, the app still works: notifications just stay off, https links open in the browser,
+and Paste a chat is only reachable from inside New deal (when its flag is on).
+
+- **Push** (sent by the web app's hourly cron and when a brand signs): WhatsApp reminder due,
+  payment due today, overdue, agreement signed, TDS missing from AIS, filing due in 7 days. Each
+  event notifies once, only 09:00–21:00 IST (signatures straight away), never for sample deals,
+  never with PAN, bank details or codes. Creators switch kinds off in Settings → Notifications.
+  The app offers notifications once, after the first deal.
+- **Deep links**: `creatorassist://deal/<id>` and https links to the web app open the matching
+  screen (same paths as the web); links opened while signed out open after sign-in. The brand
+  signing page always stays on the web.
+- **App lock**: optional Face ID / Touch ID / fingerprint (Settings), asked at launch and after a
+  minute in the background.
+
 ## Checks
 
 ```bash
