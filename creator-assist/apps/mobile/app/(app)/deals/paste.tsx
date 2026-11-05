@@ -30,15 +30,18 @@ export default function PasteChat() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
-  // Something shared into the app: take its text / link / first image, then let it go.
+  // Something shared into the app (WhatsApp → Forward → share, a screenshot from Photos…): read
+  // it straight away and open the filled-in New deal form. The creator still reviews and saves.
   useEffect(() => {
-    if (!hasShareIntent) return;
+    if (!hasShareIntent || !on) return;
     const t = [shareIntent.text, shareIntent.webUrl].filter(Boolean).join("\n").trim();
-    if (t) setText(t);
     const img = shareIntent.files?.find((f) => f.mimeType?.startsWith("image/"));
-    if (img) setShot({ uri: img.path, name: img.fileName || "screenshot.jpg", type: img.mimeType });
+    const s: Shot | null = img ? { uri: img.path, name: img.fileName || "screenshot.jpg", type: img.mimeType } : null;
+    if (t) setText(t);
+    if (s) setShot(s);
     resetShareIntent();
-  }, [hasShareIntent]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (t || s) void read(t, s);
+  }, [hasShareIntent, on]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!on) {
     return <SubScreen><Stack.Screen options={{ title: "Paste a chat" }} /><Note>This isn&apos;t available yet. Fill in the deal yourself for now.</Note><Button title="New deal" onPress={() => router.replace("/deals/new")} /></SubScreen>;
@@ -51,12 +54,12 @@ export default function PasteChat() {
     setShot({ uri: a.uri, name: a.fileName || "screenshot.jpg", type: a.mimeType || "image/jpeg", file: (a as { file?: File }).file });
   }
 
-  async function read() {
+  async function read(t: string = text, sh: Shot | null = shot) {
     setBusy(true); setErr("");
     try {
       const form = new FormData();
-      if (text.trim()) form.append("text", text.trim());
-      if (shot) form.append("image", shot.file ?? ({ uri: shot.uri, name: shot.name, type: shot.type } as unknown as Blob));
+      if (t.trim()) form.append("text", t.trim());
+      if (sh) form.append("image", sh.file ?? ({ uri: sh.uri, name: sh.name, type: sh.type } as unknown as Blob));
       const { deal } = await api.deals.extract(form);
       setPasted(deal);
       setText(""); setShot(null);
@@ -78,7 +81,7 @@ export default function PasteChat() {
         </View>
       ) : <Button title="Add a screenshot" kind="secondary" onPress={pick} />}
       {err ? <Note tone="warn">{err}</Note> : null}
-      <Button title="Fill in the deal" busy={busy} disabled={!text.trim() && !shot} onPress={read} />
+      <Button title={busy ? "Reading the chat…" : "Fill in the deal"} busy={busy} disabled={!text.trim() && !shot} onPress={() => read()} />
       <Txt v="small" color={c.muted} style={{ textAlign: "center" }}>We don&apos;t keep the chat. Nothing is saved until you review and save the deal.</Txt>
     </SubScreen>
   );

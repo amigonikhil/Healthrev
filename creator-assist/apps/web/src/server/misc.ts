@@ -11,6 +11,12 @@ import { fail, track, type Ctx, type ProfileCtx } from "./context";
 const FLAGS: FeatureFlag[] = ["lawyer_notice", "file_with_us", "deal_from_chat"];
 
 /**
+ * Flags forced on for this deployment only, e.g. FLAGS_ON=deal_from_chat on the preview server
+ * that test builds use, while production (same database) keeps the flag off.
+ */
+const forcedOn = (): Set<string> => new Set((process.env.FLAGS_ON ?? "").split(",").map((f) => f.trim()).filter(Boolean));
+
+/**
  * Remote switches and the minimum app version. Flags default to OFF: a flag the
  * table doesn't have, or a failed read, means the feature stays hidden.
  */
@@ -30,12 +36,14 @@ export async function appConfig(): Promise<AppConfig> {
   } catch (e) {
     console.error("app config read failed", e instanceof Error ? e.message : e);
   }
+  for (const f of FLAGS) if (forcedOn().has(f)) flags[f] = true;
   // Phone OTP needs DLT-registered SMS; until it's live the apps offer email codes only.
   return { flags, minAppVersion: min, signIn: { phone: process.env.NEXT_PUBLIC_SMS_ENABLED !== "false", email: true }, support: await supportContact() };
 }
 
 /** One remote switch, read fresh (off if the table has no row or the read fails). */
 export async function flagOn(f: FeatureFlag): Promise<boolean> {
+  if (forcedOn().has(f)) return true;
   try {
     const { data } = await createAdminClient().from("feature_flags").select("enabled").eq("key", f).maybeSingle();
     return !!data?.enabled;
