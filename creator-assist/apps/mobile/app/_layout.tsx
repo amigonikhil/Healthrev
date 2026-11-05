@@ -4,14 +4,19 @@ import { SpaceGrotesk_500Medium } from "@expo-google-fonts/space-grotesk/500Medi
 import { SpaceGrotesk_600SemiBold } from "@expo-google-fonts/space-grotesk/600SemiBold";
 import { SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk/700Bold";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { Stack, usePathname, useRouter, type Href } from "expo-router";
+import { ShareIntentProvider } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect, useRef } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AppLock } from "@/lib/app-lock";
 import { OfflineBanner } from "@/lib/offline";
+import { onPendingLink, peekPendingLink, setAppReady, setPendingLink, takePendingLink } from "@/lib/pending-link";
+import { syncPush } from "@/lib/push";
 import { PageTracker } from "@/lib/page-tracker";
 import { SessionProvider, useSession } from "@/session";
 import { useTheme } from "@/theme";
@@ -23,11 +28,13 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({ SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold });
   return (
     <SafeAreaProvider>
-      <SessionProvider>
-        <ToastProvider>
-          <Gate fontsLoaded={fontsLoaded} />
-        </ToastProvider>
-      </SessionProvider>
+      <ShareIntentProvider options={{ resetOnBackground: true }}>
+        <SessionProvider>
+          <ToastProvider>
+            <Gate fontsLoaded={fontsLoaded} />
+          </ToastProvider>
+        </SessionProvider>
+      </ShareIntentProvider>
     </SafeAreaProvider>
   );
 }
@@ -37,6 +44,7 @@ function Gate({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { status, error, refresh } = useSession();
   const { c, scheme } = useTheme();
   const ready = fontsLoaded && (status !== "loading" || !!error);
+  usePendingLinks(status === "ready" && ready);
 
   // Root background matches the theme (no white flash behind screens or the keyboard).
   useEffect(() => { void SystemUI.setBackgroundColorAsync(c.bg); }, [c.bg]);
@@ -80,6 +88,40 @@ function Gate({ fontsLoaded }: { fontsLoaded: boolean }) {
         </Stack.Protected>
       </Stack>
       <OfflineBanner />
+      <AppLock active={status === "ready"} />
     </>
   );
+}
+
+/**
+ * Opens what the app was asked to show (a deep link, a notification tap, a shared chat) once
+ * the creator is signed in, and keeps the push token fresh.
+ */
+function usePendingLinks(ready: boolean) {
+  const router = useRouter();
+  const pathname = usePathname();
+  // Taps on notifications: their data carries the screen to open.
+  useEffect(() => {
+    const open = (r: Notifications.NotificationResponse | null) => {
+      const url = r?.notification.request.content.data?.url;
+      if (typeof url === "string" && url.startsWith("/")) setPendingLink(url);
+      if (r) void Notifications.clearLastNotificationResponseAsync?.().catch(() => {});
+    };
+    void Notifications.getLastNotificationResponseAsync().then(open).catch(() => {});
+    const sub = Notifications.addNotificationResponseReceivedListener(open);
+    return () => sub.remove();
+  }, []);
+  useEffect(() => {
+    setAppReady(ready);
+    if (!ready) return;
+    void syncPush();
+    const flush = () => {
+      const p = peekPendingLink();
+      if (!p) return;
+      takePendingLink();
+      if (p !== pathname) router.push(p as Href);
+    };
+    flush();
+    return onPendingLink(flush);
+  }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
 }

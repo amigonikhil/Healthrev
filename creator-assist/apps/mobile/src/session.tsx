@@ -3,6 +3,7 @@ import { ApiError } from "@creator-assist/shared/api-client";
 import type { Session } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api } from "./lib/api";
+import { turnOffPush } from "./lib/push";
 import { supabase } from "./lib/supabase";
 
 type Status = "loading" | "signedOut" | "needsProfile" | "ready";
@@ -58,7 +59,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return {
       status, session: session ?? null, me, config, error,
       refresh: load,
-      signOut: async () => { await supabase.auth.signOut(); setMe(null); },
+      // Stop pushes to this phone first (needs the session), then sign out.
+      signOut: async () => { await turnOffPush(); await supabase.auth.signOut(); setMe(null); },
     };
   }, [session, me, config, error, load]);
 

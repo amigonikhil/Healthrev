@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { PushOffer } from "@/components/push-offer";
 import { FONTS, useTheme } from "@/theme";
 
 /**
@@ -7,7 +8,7 @@ import { FONTS, useTheme } from "@/theme";
  */
 export default function AppLayout() {
   const { c } = useTheme();
-  return (
+  return (<>
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: c.bg },
@@ -20,5 +21,6 @@ export default function AppLayout() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false, title: "Home" }} />
     </Stack>
-  );
+    <PushOffer />
+  </>);
 }

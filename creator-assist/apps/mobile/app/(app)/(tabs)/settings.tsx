@@ -1,13 +1,14 @@
 import { everyLabel, everyHours } from "@creator-assist/shared/reminder-schedule";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Linking } from "react-native";
 import { api } from "@/lib/api";
+import { lockEnabled, lockKind, setLockEnabled, type LockKind } from "@/lib/app-lock";
 import { downloadAndShare, openWeb } from "@/lib/links";
 import { errorText } from "@/lib/use-load";
 import { useSession } from "@/session";
 import { useTheme } from "@/theme";
-import { Button, Card, Field, Head, KV, ListItem, Note, Screen, Sheet, Txt, useToast } from "@/ui";
+import { Button, Card, Field, Head, KV, ListItem, Note, Screen, Sheet, Toggle, Txt, useToast } from "@/ui";
 
 const LANG_LABEL = { en: "English", te: "Telugu-English", hi: "Hinglish" } as const;
 
@@ -18,6 +19,8 @@ export default function Settings() {
   const toast = useToast();
   const [busy, setBusy] = useState<"sample" | "export" | "out" | null>(null);
   const [del, setDel] = useState(false);
+  const [lock, setLock] = useState<{ kind: LockKind; on: boolean } | null>(null);
+  useEffect(() => { void Promise.all([lockKind(), lockEnabled()]).then(([kind, on]) => setLock({ kind, on })); }, []);
   const p = me?.profile;
   if (!p) return null;
   const support = config?.support;
@@ -64,6 +67,16 @@ export default function Settings() {
 
       <ListItem title="Reminders" sub={`Every ${everyLabel(everyHours(p.remind_every_hours))} · ${[p.remind_whatsapp && "WhatsApp", p.remind_email && "email"].filter(Boolean).join(" + ") || "off"} · ${LANG_LABEL[p.language]}`} onPress={() => router.push("/settings/reminders")} />
       <ListItem title="Rates" sub="GST, TDS, RBI bank rate, late-payment interest" onPress={() => router.push("/settings/rates")} />
+      <ListItem title="Notifications" sub="Payments due, overdue, signed agreements, tax dates" onPress={() => router.push("/settings/notifications")} />
+      {lock?.kind.available && (
+        <Card>
+          <Toggle
+            label={`Lock with ${lock.kind.label}`} value={lock.on}
+            hint="Asks for it when you open the app, and after a minute away"
+            onChange={async (on) => { if (await setLockEnabled(on)) setLock({ ...lock, on }); }}
+          />
+        </Card>
+      )}
 
       <Card>
         <Txt v="h2" accessibilityRole="header">Your data</Txt>

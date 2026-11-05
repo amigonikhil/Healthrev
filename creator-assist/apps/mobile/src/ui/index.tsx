@@ -183,20 +183,23 @@ export const styles = StyleSheet.create({
 });
 
 /** A labelled text input (16pt radius, 48pt+ tall, label read with the field). */
-export const Field = forwardRef<TextInputInstance, { label: string; error?: string | null; hint?: string } & TextInputProps>(function Field({ label, error, hint, style, ...rest }, ref) {
+export const Field = forwardRef<TextInputInstance, { label: string; error?: string | null; hint?: string; check?: boolean } & TextInputProps>(function Field({ label, error, hint, check, style, ...rest }, ref) {
   const { c } = useTheme();
   return (
     <View style={{ gap: 6 }}>
-      <Txt v="small" w="semibold" color={c.text2} importantForAccessibility="no" accessibilityElementsHidden>{label}</Txt>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <Txt v="small" w="semibold" color={c.text2}>{label}</Txt>
+        {check ? <CheckTag /> : null}
+      </View>
       <TextInput
         ref={ref}
-        accessibilityLabel={label}
+        accessibilityLabel={check ? `${label}, please check` : label}
         accessibilityHint={hint}
         placeholderTextColor={c.placeholder}
         selectionColor={c.primary}
         {...rest}
         style={[{
-          minHeight: 52, borderRadius: radius.input, borderWidth: 1, borderColor: error ? c.primary : c.field, backgroundColor: c.surface,
+          minHeight: 52, borderRadius: radius.input, borderWidth: check ? 2 : 1, borderColor: error ? c.primary : check ? c.accent : c.field, backgroundColor: c.surface,
           paddingHorizontal: 14, paddingVertical: 12, color: c.text, fontFamily: FONTS.medium, fontSize: type.body + 1,
           opacity: rest.editable === false ? 0.6 : 1,
         }, style]}
@@ -205,6 +208,16 @@ export const Field = forwardRef<TextInputInstance, { label: string; error?: stri
     </View>
   );
 });
+
+/** "Check" tag on something the AI filled in but wasn't sure about. */
+export function CheckTag() {
+  const { c } = useTheme();
+  return (
+    <View style={{ backgroundColor: c.accent, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 1 }}>
+      <Txt v="tab" w="bold" color={c.onAccent}>Check</Txt>
+    </View>
+  );
+}
 
 /** Two or three options side by side (Mobile / Email, filters). */
 export function Seg<T extends string>({ label, value, options, onChange }: {

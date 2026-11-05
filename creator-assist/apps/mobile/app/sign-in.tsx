@@ -36,6 +36,14 @@ export default function SignIn() {
   const touched = useRef(false);
   useEffect(() => { if (!touched.current && !sent) setMode(phoneOn ? "phone" : "email"); }, [phoneOn, sent]);
 
+  // OTP autofill (iOS keyboard suggestion from Messages / Mail, Android autofill) drops in all
+  // six digits at once: verify straight away, once per code.
+  const autoTried = useRef("");
+  useEffect(() => {
+    const digits = code.replace(/\D/g, "");
+    if (sent && digits.length === 6 && !busy && autoTried.current !== digits) { autoTried.current = digits; void verify(); }
+  }, [code, sent]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const method = mode === "phone" ? "sms" : "email";
   const valid = mode === "phone" ? id.replace(/\D/g, "").length >= 10 : validEmail(id);
   const codeOk = code.replace(/\D/g, "").length >= 6;
