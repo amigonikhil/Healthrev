@@ -11,10 +11,11 @@ import * as SystemUI from "expo-system-ui";
 import { useEffect, useRef } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { OfflineBanner } from "@/lib/offline";
 import { PageTracker } from "@/lib/page-tracker";
 import { SessionProvider, useSession } from "@/session";
 import { useTheme } from "@/theme";
-import { Button, Txt } from "@/ui";
+import { Button, ToastProvider, Txt } from "@/ui";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -23,13 +24,15 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <SessionProvider>
-        <Gate fontsLoaded={fontsLoaded} />
+        <ToastProvider>
+          <Gate fontsLoaded={fontsLoaded} />
+        </ToastProvider>
       </SessionProvider>
     </SafeAreaProvider>
   );
 }
 
-/** Signed out → sign-in; signed in without a profile → setup; otherwise the tabs. */
+/** Signed out → sign-in; signed in without a profile → onboarding; otherwise the app. */
 function Gate({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { status, error, refresh } = useSession();
   const { c, scheme } = useTheme();
@@ -70,12 +73,13 @@ function Gate({ fontsLoaded }: { fontsLoaded: boolean }) {
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
         <Stack.Protected guard={status === "needsProfile"}>
-          <Stack.Screen name="setup" />
+          <Stack.Screen name="onboarding" />
         </Stack.Protected>
         <Stack.Protected guard={status === "ready"}>
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(app)" />
         </Stack.Protected>
       </Stack>
+      <OfflineBanner />
     </>
   );
 }

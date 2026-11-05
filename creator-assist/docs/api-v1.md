@@ -36,7 +36,7 @@ Calculations shared by every app live in `packages/shared` (`@creator-assist/sha
 ### Session and profile
 | Method | Path | |
 |---|---|---|
-| GET | `/config` | Feature flags (`lawyer_notice`, `file_with_us`, `deal_from_chat`; off unless enabled) and `minAppVersion` per platform. No auth. |
+| GET | `/config` | Feature flags (`lawyer_notice`, `file_with_us`, `deal_from_chat`; off unless enabled), `minAppVersion` per platform, `signIn` methods switched on, and the Help & support contact (`support`, null until `app_settings.support` is set). No auth. |
 | GET | `/me` | User, profile (null until onboarded), rates, `isAdmin`, `hasSampleData` |
 | POST | `/me/bootstrap` | Call once after sign-in: provisions the demo/reviewer account if this is it, then returns `/me` |
 | POST | `/profile` | Onboarding (`OnboardInput`). PAN and bank account are encrypted at rest. |
@@ -74,7 +74,7 @@ Calculations shared by every app live in `packages/shared` (`@creator-assist/sha
 | GET | `/deals/{id}/reminders` | Ladder, reminders sent by hand, current stage, message templates |
 | POST | `/reminders/whatsapp` | Log a reminder the creator sent from their own WhatsApp (the app opens the `wa.me` link) |
 | POST | `/reminders/email` | Email a reminder now |
-| GET | `/brands/{id}/tds` | TDS missing from AIS for a brand, and its TDS reminders |
+| GET | `/brands/{id}/tds` | TDS missing from AIS for a brand, its TDS reminders, and the creator's PAN for the message |
 | POST | `/brands/{id}/tds` | Schedule the TDS follow-ups `{ lang }` |
 | GET | `/deals/{id}/escalation` | Notice sent?, legal call booked?, amount claimed |
 | GET | `/deals/{id}/notice` | Legal notice as it would go out today, WhatsApp link, email recipient |

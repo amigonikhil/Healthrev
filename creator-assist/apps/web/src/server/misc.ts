@@ -1,5 +1,6 @@
 import "server-only";
 import type { AppConfig, FeatureFlag } from "@creator-assist/shared/api";
+import { getSetting } from "@/lib/app-settings";
 import { track as trackEvent } from "@/lib/events";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient as createCookieClient } from "@/lib/supabase/server";
@@ -30,7 +31,15 @@ export async function appConfig(): Promise<AppConfig> {
     console.error("app config read failed", e instanceof Error ? e.message : e);
   }
   // Phone OTP needs DLT-registered SMS; until it's live the apps offer email codes only.
-  return { flags, minAppVersion: min, signIn: { phone: process.env.NEXT_PUBLIC_SMS_ENABLED !== "false", email: true } };
+  return { flags, minAppVersion: min, signIn: { phone: process.env.NEXT_PUBLIC_SMS_ENABLED !== "false", email: true }, support: await supportContact() };
+}
+
+/** Help & support contact (app_settings key "support": {email, whatsapp}). Null until one is set. */
+async function supportContact(): Promise<AppConfig["support"]> {
+  const s = await getSetting<{ email?: string; whatsapp?: string }>("support");
+  const email = s?.email?.trim() || null;
+  const whatsapp = s?.whatsapp?.replace(/[^\d+]/g, "") || null;
+  return email || whatsapp ? { email, whatsapp } : null;
 }
 
 // ---------------------------------------------------------------- feedback

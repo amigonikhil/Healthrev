@@ -116,7 +116,7 @@ export function createApiClient(o: ApiClientOptions) {
     reminders: {
       logWhatsApp: (t: ReminderTarget) => post<{ ok: true }>("/reminders/whatsapp", t),
       email: (t: ReminderTarget & { cc: boolean }) => post<{ message: string }>("/reminders/email", t),
-      tds: (brandId: string) => get<{ payer: TaxHub["payers"][number]; ladder: Reminder[] }>(`/brands/${enc(brandId)}/tds`),
+      tds: (brandId: string) => get<{ payer: TaxHub["payers"][number]; ladder: Reminder[]; pan: string }>(`/brands/${enc(brandId)}/tds`),
       scheduleTds: (brandId: string, lang: Lang) => post<{ ok: true }>(`/brands/${enc(brandId)}/tds`, { lang }),
     },
 

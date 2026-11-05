@@ -28,43 +28,68 @@ export function Txt({ v = "body", w, color, style, children, ...rest }: {
   );
 }
 
-/** A tab's scrolling screen: safe-area top, 16pt sides, pull to refresh. */
-export function Screen({ children, refreshing, onRefresh, edges = ["top", "left", "right"] }: {
-  children: ReactNode; refreshing?: boolean; onRefresh?: () => void; edges?: ("top" | "bottom" | "left" | "right")[];
+/**
+ * A scrolling screen with 16pt sides, pull to refresh and the keyboard kept clear of fields.
+ * Tabs pass edges with "top"; screens under a native header leave the top to the header.
+ * `footer` (e.g. an ActionBar) stays pinned below the scroll area.
+ */
+export function Screen({ children, refreshing, onRefresh, edges = ["top", "left", "right"], footer }: {
+  children: ReactNode; refreshing?: boolean; onRefresh?: () => void; edges?: ("top" | "bottom" | "left" | "right")[]; footer?: ReactNode;
 }) {
   const { c } = useTheme();
   return (
     <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: space[6], gap: space[5], paddingBottom: space[8] }}
+        contentContainerStyle={{ padding: space[6], gap: space[5], paddingBottom: space[8] * 2 }}
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+        keyboardDismissMode="interactive"
         refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={c.muted} colors={[c.primary]} /> : undefined}
       >
         {children}
       </ScrollView>
+      {footer}
     </SafeAreaView>
   );
 }
+
+/** Screen under the native header (deal screens, settings pages). */
+export const SubScreen = (p: Omit<React.ComponentProps<typeof Screen>, "edges">) =>
+  <Screen {...p} edges={p.footer ? ["left", "right"] : ["left", "right", "bottom"]} />;
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   const { c } = useTheme();
   return <View style={[{ backgroundColor: c.surface, borderRadius: radius.card, borderWidth: 1, borderColor: c.cardBorder, padding: space[6], gap: space[5] }, style]}>{children}</View>;
 }
 
-export function Button({ title, onPress, kind = "primary", busy, disabled, accessibilityHint }: {
-  title: string; onPress: () => void; kind?: "primary" | "secondary"; busy?: boolean; disabled?: boolean; accessibilityHint?: string;
+export function Button({ title, onPress, kind = "primary", busy, disabled, accessibilityHint, flex }: {
+  title: string; onPress: () => void; kind?: "primary" | "secondary" | "danger"; busy?: boolean; disabled?: boolean; accessibilityHint?: string; flex?: boolean;
 }) {
   const { c } = useTheme();
-  const bg = kind === "primary" ? c.primary : c.surface3;
-  const fg = kind === "primary" ? c.onPrimary : c.text;
+  // Primary coral with #111 text; secondary neutral; destructive outlined coral (DESIGN.md).
+  const bg = kind === "primary" ? c.primary : kind === "danger" ? "transparent" : c.surface3;
+  const fg = kind === "primary" ? c.onPrimary : kind === "danger" ? c.primaryInk : c.text;
   const off = disabled || busy;
   return (
     <Pressable
       accessibilityRole="button" accessibilityLabel={title} accessibilityHint={accessibilityHint} accessibilityState={{ disabled: !!off, busy: !!busy }}
       onPress={off ? undefined : onPress}
-      style={({ pressed }) => [{ minHeight: Math.max(TAP, 52), borderRadius: radius.button, backgroundColor: bg, alignItems: "center", justifyContent: "center", paddingHorizontal: 18, opacity: off ? 0.5 : pressed ? 0.85 : 1 }]}
+      style={({ pressed }) => [{
+        minHeight: Math.max(TAP, 52), borderRadius: radius.button, backgroundColor: bg, alignItems: "center", justifyContent: "center", paddingHorizontal: 18,
+        borderWidth: kind === "danger" ? 2 : 0, borderColor: c.primary, opacity: off ? 0.5 : pressed ? 0.85 : 1,
+      }, flex ? { flex: 1 } : null]}
     >
-      {busy ? <ActivityIndicator color={fg} /> : <Txt w="bold" color={fg}>{title}</Txt>}
+      {busy ? <ActivityIndicator color={fg} /> : <Txt w="bold" color={fg} style={{ textAlign: "center" }}>{title}</Txt>}
+    </Pressable>
+  );
+}
+
+/** A text-style button (secondary links like "Clear date", "Preview what the brand sees"). */
+export function LinkButton({ title, onPress, hint }: { title: string; onPress: () => void; hint?: string }) {
+  const { c } = useTheme();
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityHint={hint} onPress={onPress} style={{ minHeight: TAP, justifyContent: "center", alignSelf: "center", paddingHorizontal: 8 }}>
+      <Txt w="semibold" color={c.text2} style={{ textDecorationLine: "underline" }}>{title}</Txt>
     </Pressable>
   );
 }
@@ -258,3 +283,6 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
     </View>
   );
 }
+
+export * from "./forms";
+export * from "./toast";

@@ -18,6 +18,8 @@ export type AppConfig = {
   minAppVersion: { ios: string; android: string };
   /** Which sign-in methods are switched on (phone OTP waits for SMS/DLT registration). */
   signIn: { phone: boolean; email: boolean };
+  /** Help & support contact in Settings; null hides it until it's set (app_settings "support"). */
+  support: { email: string | null; whatsapp: string | null } | null;
 };
 
 // ---------------------------------------------------------------- session / profile
