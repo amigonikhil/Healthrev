@@ -1,8 +1,9 @@
 import { fmtWeekday } from "@creator-assist/shared/dates";
-import { attentionRow, brandLabel, dealAmounts } from "@creator-assist/shared/deal-view";
+import { attentionRow, brandLabel, dealAmounts, rowHref } from "@creator-assist/shared/deal-view";
 import { inr } from "@creator-assist/shared/money";
 import { popShadow, radius } from "@creator-assist/shared/tokens";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 import { api } from "@/lib/api";
@@ -15,14 +16,15 @@ export default function Home() {
   const { c } = useTheme();
   const { me, refresh: refreshMe } = useSession();
   const { data, error, refreshing, refresh, reload } = useLoad(() => api.home());
+  const router = useRouter();
   const first = me?.profile?.name.split(/\s+/)[0] ?? "";
 
   return (
     <Screen refreshing={refreshing} onRefresh={refresh}>
-      <Head eyebrow={data ? fmtWeekday(data.today) : " "} title={first ? `Hi, ${first}` : "Home"} />
+      <Head eyebrow={data ? fmtWeekday(data.today) : " "} title={first ? `Hi, ${first}` : "Home"} action={{ label: "+ New deal", onPress: () => router.push("/deals/new") }} />
       {error && <LoadError message={error} onRetry={reload} />}
       {!data ? (!error && <Skeleton hero rows={3} />) : data.empty ? (
-        <Empty onLoaded={async () => { await Promise.all([reload(), refreshMe()]); }} />
+        <Empty onAdd={() => router.push("/deals/new")} onLoaded={async () => { await Promise.all([reload(), refreshMe()]); }} />
       ) : (<>
         <View
           accessible
@@ -51,6 +53,7 @@ export default function Home() {
             <Row
               key={v.d.id} avatar={v.d.brand.name} title={brandLabel(v.d)}
               sub={v.d.is_sample ? `Sample · ${r.sub}` : r.sub} amount={dealAmounts(v)} chip={{ label: r.chip, tone: r.tone }}
+              onPress={() => router.push(rowHref(v) as never)}
             />
           );
         })}
@@ -78,7 +81,7 @@ function Sticker({ label, dark }: { label: string; dark?: boolean }) {
   );
 }
 
-function Empty({ onLoaded }: { onLoaded: () => Promise<void> }) {
+function Empty({ onLoaded, onAdd }: { onLoaded: () => Promise<void>; onAdd: () => void }) {
   const { c } = useTheme();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -98,6 +101,7 @@ function Empty({ onLoaded }: { onLoaded: () => Promise<void> }) {
     <Card>
       <Txt v="h2" accessibilityRole="header">No deals yet</Txt>
       <Txt color={c.muted}>Add a paid collab to send an agreement, raise a GST invoice and get reminders going.</Txt>
+      <Button title="Add your first deal" onPress={onAdd} />
       <Button title="Try with sample data" kind="secondary" busy={busy} onPress={trySample} accessibilityHint="Loads example deals marked Sample. You can clear them in Settings." />
       {err ? <Note tone="warn">{err}</Note> : null}
       <Txt v="small" color={c.muted}>Sample deals are marked &quot;Sample&quot; and can be cleared any time in Settings.</Txt>

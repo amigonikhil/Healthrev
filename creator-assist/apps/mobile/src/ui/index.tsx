@@ -253,14 +253,22 @@ export function FilterChips<T extends string>({ value, options, onChange, label 
   );
 }
 
-/** Screen title with an optional small line above it (the date on Home). */
-export function Head({ title, eyebrow, sub }: { title: string; eyebrow?: string; sub?: string }) {
+/** Screen title with an optional small line above it (the date on Home) and an action on the right. */
+export function Head({ title, eyebrow, sub, action }: { title: string; eyebrow?: string; sub?: string; action?: { label: string; onPress: () => void } }) {
   const { c } = useTheme();
   return (
-    <View style={{ gap: 2, paddingTop: 4 }}>
-      {eyebrow ? <Txt v="small" w="semibold" color={c.muted}>{eyebrow}</Txt> : null}
-      <Txt v="h1" accessibilityRole="header">{title}</Txt>
-      {sub ? <Txt color={c.muted}>{sub}</Txt> : null}
+    <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, paddingTop: 4 }}>
+      <View style={{ flex: 1, gap: 2 }}>
+        {eyebrow ? <Txt v="small" w="semibold" color={c.muted}>{eyebrow}</Txt> : null}
+        <Txt v="h1" accessibilityRole="header">{title}</Txt>
+        {sub ? <Txt color={c.muted}>{sub}</Txt> : null}
+      </View>
+      {action ? (
+        <Pressable accessibilityRole="button" accessibilityLabel={action.label} onPress={action.onPress}
+          style={({ pressed }) => ({ minHeight: TAP, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: c.primary, justifyContent: "center", marginBottom: 4, opacity: pressed ? 0.85 : 1 })}>
+          <Txt v="chip" w="bold" color={c.onPrimary}>{action.label}</Txt>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
