@@ -101,7 +101,7 @@ Builds include EAS Update, so JavaScript changes reach phones over the air. From
 
 ```bash
 git pull origin native-app
-npx eas-cli update --channel preview --message "what changed"
+npx eas-cli update --channel preview --environment preview --message "what changed"
 ```
 
 Close and reopen the app twice: the first launch downloads the update, the next one runs it.
