@@ -212,7 +212,8 @@ const ok = (cond, msg) => { console.log((cond ? "  ✓ " : "  ✗ ") + msg); if 
   ok((await page.getByRole("radio", { name: "My own CA" }).getAttribute("aria-checked")) === "true", "filer toggle persists");
   await page.getByRole("button", { name: "Send ITR data to my CA" }).click();
   await page.waitForSelector(".toast.on");
-  ok((await page.locator(".toast").innerText()).includes("Beta"), "ITR send shows beta note");
+  const sentMsg = await page.locator(".toast").innerText();
+  ok(sentMsg.includes("Marked as sent to your CA") && !sentMsg.includes("Beta"), "ITR send: marked as sent to your CA, no beta wording");
   await page.getByRole("radio", { name: "Creator Assist" }).click();
   await page.goto(BASE + "/tax/file");
   await page.getByLabel("I consent to sharing my tax data with the filing CA").check();

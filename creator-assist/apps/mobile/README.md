@@ -31,15 +31,24 @@ Test phone numbers).
 
 ## What's where
 
-- `app/`: screens (file-based routes). `_layout.tsx` loads fonts and routes by session state:
-  signed out → `sign-in`, no profile yet → `setup`, otherwise the five tabs in `app/(tabs)/`.
+- `app/`: screens (file-based routes, same paths as the web so links map one to one).
+  - `_layout.tsx` loads fonts and routes by session state: signed out → `sign-in`, no profile →
+    `onboarding`, otherwise `(app)`.
+  - `(app)/_layout.tsx` is the signed-in stack with the native header (iOS swipe-back, Android back
+    button). Its first screen is the five tabs in `(app)/(tabs)/`; deal, tax and settings pages push
+    on top: `deals/new`, `deals/[id]` (+ `agreement`, `invoice`, `reminders`, `payment`, `paid`,
+    `escalate`, `notice`), `tax/remind/[brandId]`, `settings/profile|reminders|rates`.
 - `src/session.tsx`: the Supabase session plus `me` from `/api/v1/me/bootstrap`, and the remote
-  config (feature flags, minimum app version, sign-in methods) read once at start-up.
-- `src/lib/secure-storage.ts`: the session lives in the iOS Keychain / Android Keystore
-  (expo-secure-store), split into chunks because a session is larger than one entry allows.
-- `src/lib/page-tracker.tsx`: `page_view` per screen with the web's paths; the API client sends
-  `X-Client-Platform: ios | android`, so every event and sign-up records its platform.
-- `src/ui/`: Bold Creator components (text, buttons, fields, rows, chips, tiles) on the shared tokens.
+  config (feature flags, minimum app version, sign-in methods, support contact) read at start-up.
+- `src/lib/`: API client, SecureStore session storage (Keychain / Keystore, chunked), feature flags
+  (`useFlag`: an off feature isn't shown at all), WhatsApp / share sheet / PDF download helpers,
+  the offline banner, `page_view` tracking with the web's paths.
+- `src/ui/`: Bold Creator components on the shared tokens: text, buttons, fields, rows, chips,
+  tiles, bottom sheets, switches, steppers, native date pickers (iOS inline calendar, Android
+  Material dialog), searchable pickers, toasts (announced to VoiceOver / TalkBack), action bar.
+
+**Not in the app yet:** "File with Creator Assist" (AI call) and the paid legal call. Both charge a
+fee and nothing collects payment yet, so they stay hidden even if their flags are switched on.
 
 ## Checks
 
