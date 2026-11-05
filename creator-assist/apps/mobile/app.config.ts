@@ -18,7 +18,8 @@ const googleServices = process.env.GOOGLE_SERVICES_JSON;
 
 const config: ExpoConfig = {
   name: "Creator Assist",
-  slug: "creator-assist",
+  // Must match the EAS project's slug on expo.dev (project 037679d5-…).
+  slug: "creatorsassist",
   scheme: "creatorassist",
   version: "1.0.0",
   orientation: "portrait",
