@@ -53,6 +53,19 @@ Test phone numbers).
 **Not in the app yet:** "File with Creator Assist" (AI call) and the paid legal call. Both charge a
 fee and nothing collects payment yet, so they stay hidden even if their flags are switched on.
 
+## Live preview in a browser (fastest loop)
+
+For layout and flow changes, run the app in a browser with hot reload against a local stack
+(Supabase + the web app on :3000). Set the URLs as paths so a small proxy can serve the app,
+`/api` and Supabase (`/sb`) from one address:
+
+```bash
+EXPO_PUBLIC_API_URL=/api/v1 EXPO_PUBLIC_SUPABASE_URL=/sb EXPO_PUBLIC_SUPABASE_ANON_KEY=<local anon key> npx expo start --web
+```
+
+Don't set `CI=1`: it turns reloads off. Native-only parts (share sheet, Face ID, push, the
+native date pickers) only run on a phone or simulator.
+
 ## Test on your phone (before the store)
 
 Builds come from EAS (expo.dev, free plan) using the profiles in `eas.json`. `preview` and

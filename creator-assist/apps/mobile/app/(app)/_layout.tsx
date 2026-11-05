@@ -4,7 +4,7 @@ import { useHeaderOptions } from "@/ui";
 
 // A screen opened straight from a link, a notification or the share sheet still has Home
 // underneath, so Back / Close always has somewhere to go.
-export const unstable_settings = { initialRouteName: "(tabs)" };
+export const unstable_settings = { anchor: "(tabs)" };
 
 /**
  * Signed-in screens. The five tabs are the first screen; deal, tax and settings pages push on

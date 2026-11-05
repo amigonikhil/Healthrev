@@ -6,7 +6,7 @@ import { useTheme } from "@/theme";
 import { TAP, useHeaderOptions } from "@/ui";
 
 // Opening /deals/new/money directly (a link) still puts Brand underneath.
-export const unstable_settings = { initialRouteName: "index" };
+export const unstable_settings = { anchor: "index" };
 
 /**
  * New paid collab, in three steps: Brand → Deliverables → Fee & payment. Each step is its own
