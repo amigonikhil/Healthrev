@@ -1,7 +1,7 @@
 import { radius, space, toneColors, type } from "@creator-assist/shared/tokens";
 import { inr } from "@creator-assist/shared/money";
 import { forwardRef, type ReactNode } from "react";
-import { ActivityIndicator, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputInstance, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
+import { ActivityIndicator, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance, type StyleProp, type TextInputInstance, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FONTS, useTheme, type Weight } from "../theme";
 
@@ -33,13 +33,15 @@ export function Txt({ v = "body", w, color, style, children, ...rest }: {
  * Tabs pass edges with "top"; screens under a native header leave the top to the header.
  * `footer` (e.g. an ActionBar) stays pinned below the scroll area.
  */
-export function Screen({ children, refreshing, onRefresh, edges = ["top", "left", "right"], footer }: {
+export function Screen({ children, refreshing, onRefresh, edges = ["top", "left", "right"], footer, scrollRef }: {
   children: ReactNode; refreshing?: boolean; onRefresh?: () => void; edges?: ("top" | "bottom" | "left" | "right")[]; footer?: ReactNode;
+  scrollRef?: React.RefObject<ScrollViewInstance | null>;
 }) {
   const { c } = useTheme();
   return (
     <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={{ padding: space[6], gap: space[5], paddingBottom: space[8] * 2 }}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
