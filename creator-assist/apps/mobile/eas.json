@@ -1,0 +1,45 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "22.18.0",
+      "pnpm": "10.28.0",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://elnnqrpqoyjektkblzok.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_FV1Wl1fd5XWO41z9Q_Qz_g_DjasDv-A"
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://creator-assist-git-native-app-amigonikhil008-6122.vercel.app/api/v1",
+        "APP_LINK_HOST": "creator-assist-git-native-app-amigonikhil008-6122.vercel.app",
+        "SHARE_TARGET": "1"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://creator-assist-git-native-app-amigonikhil008-6122.vercel.app/api/v1",
+        "APP_LINK_HOST": "creator-assist-git-native-app-amigonikhil008-6122.vercel.app"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://creator-assist-neon.vercel.app/api/v1"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

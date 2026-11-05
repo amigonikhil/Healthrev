@@ -50,6 +50,46 @@ Test phone numbers).
 **Not in the app yet:** "File with Creator Assist" (AI call) and the paid legal call. Both charge a
 fee and nothing collects payment yet, so they stay hidden even if their flags are switched on.
 
+## Test on your phone (before the store)
+
+Builds come from EAS (expo.dev, free plan) using the profiles in `eas.json`. `preview` and
+`development` talk to the `native-app` preview server; `production` talks to the live site.
+Test builds use the same Supabase database as the live site (a separate staging database comes
+with production hardening), so sign in with your own email.
+
+On your computer (Node 22, pnpm 10):
+
+```bash
+git clone https://github.com/amigonikhil/Healthrev.git && cd Healthrev && git checkout native-app
+cd creator-assist && pnpm install && cd apps/mobile
+npx eas-cli login
+```
+
+**Android** (no paid account needed):
+
+```bash
+npx eas-cli build --platform android --profile preview
+```
+
+When it finishes (about 15 minutes), open the link or scan the QR code on your phone and install
+the APK (allow "install unknown apps" for your browser when asked).
+
+**iPhone** needs the Apple Developer Program ($99 a year, also needed for the App Store):
+
+```bash
+npx eas-cli device:create          # open the link on your iPhone to register it
+npx eas-cli build --platform ios --profile preview
+```
+
+Then open the link on the iPhone to install. After a later production build, TestFlight works too.
+
+`--profile development` makes a development build instead: it also has the share target and
+loads JavaScript from `pnpm --filter @creator-assist/mobile start` on your computer, so changes
+show up without rebuilding.
+
+Push on Android also needs `google-services.json` from Firebase (see below); without it the app
+works, notifications just stay off.
+
 ## Push, links and the share target: what each needs
 
 | Feature | Needs | Where it goes |
