@@ -7,7 +7,7 @@ import { useState, type ReactNode } from "react";
 import { FlatList, Modal, Platform, Pressable, Switch, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FONTS, useTheme } from "../theme";
-import { Button, TAP, Txt } from "./index";
+import { Button, CheckTag, TAP, Txt } from "./index";
 
 const tick = () => { if (Platform.OS !== "web") void Haptics.selectionAsync(); };
 
@@ -84,8 +84,8 @@ const toISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padSta
  * Date field: the native picker on each platform (iOS inline calendar in a sheet, Android
  * Material date picker dialog). Values are 'YYYY-MM-DD'.
  */
-export function DateField({ label, value, onChange, min, max, placeholder = "Choose a date", clearable }: {
-  label: string; value: string; onChange: (v: string) => void; min?: string; max?: string; placeholder?: string; clearable?: boolean;
+export function DateField({ label, value, onChange, min, max, placeholder = "Choose a date", clearable, check }: {
+  label: string; value: string; onChange: (v: string) => void; min?: string; max?: string; placeholder?: string; clearable?: boolean; check?: boolean;
 }) {
   const { c, scheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -94,7 +94,7 @@ export function DateField({ label, value, onChange, min, max, placeholder = "Cho
 
   if (Platform.OS === "web") {
     // Browser preview only: a plain text field.
-    return <FieldLike label={label}><TextInput accessibilityLabel={label} value={value} onChangeText={onChange} placeholder="YYYY-MM-DD" placeholderTextColor={c.placeholder} style={{ color: c.text, fontFamily: FONTS.medium, fontSize: 16, flex: 1 }} /></FieldLike>;
+    return <FieldLike label={label} check={check}><TextInput accessibilityLabel={label} value={value} onChangeText={onChange} placeholder="YYYY-MM-DD" placeholderTextColor={c.placeholder} style={{ color: c.text, fontFamily: FONTS.medium, fontSize: 16, flex: 1 }} /></FieldLike>;
   }
 
   const show = () => {
@@ -108,7 +108,7 @@ export function DateField({ label, value, onChange, min, max, placeholder = "Cho
   };
 
   return (<>
-    <FieldLike label={label} onPress={show} value={value ? fmtDate(value) : ""} placeholder={placeholder} icon="calendar-outline" />
+    <FieldLike label={label} onPress={show} value={value ? fmtDate(value) : ""} placeholder={placeholder} icon="calendar-outline" check={check} />
     {clearable && value ? <Pressable accessibilityRole="button" onPress={() => onChange("")} style={{ alignSelf: "flex-start", minHeight: 32, justifyContent: "center" }}><Txt v="small" w="semibold" color={c.text2} style={{ textDecorationLine: "underline" }}>Clear date</Txt></Pressable> : null}
     <Sheet open={open} onClose={() => setOpen(false)} title={label}>
       <DateTimePicker
@@ -122,28 +122,35 @@ export function DateField({ label, value, onChange, min, max, placeholder = "Cho
 }
 
 /** Something that looks like a text field but opens a picker. */
-function FieldLike({ label, value, placeholder, onPress, icon, children }: {
+function FieldLike({ label, value, placeholder, onPress, icon, children, check, error, hint }: {
   label: string; value?: string; placeholder?: string; onPress?: () => void; icon?: React.ComponentProps<typeof Ionicons>["name"]; children?: ReactNode;
+  check?: boolean; error?: string | null; hint?: string;
 }) {
   const { c } = useTheme();
   return (
     <View style={{ gap: 6 }}>
-      <Txt v="small" w="semibold" color={c.text2}>{label}</Txt>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <Txt v="small" w="semibold" color={c.text2}>{label}</Txt>
+        {check ? <CheckTag /> : null}
+      </View>
       <Pressable
         disabled={!onPress} onPress={onPress} accessibilityRole={onPress ? "button" : undefined}
-        accessibilityLabel={onPress ? `${label}: ${value || placeholder}` : undefined}
-        style={{ minHeight: 52, borderRadius: radius.input, borderWidth: 1, borderColor: c.field, backgroundColor: c.surface, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", gap: 10 }}
+        accessibilityLabel={onPress ? `${label}${check ? ", please check" : ""}: ${value || placeholder}` : undefined}
+        accessibilityHint={hint}
+        style={{ minHeight: 52, borderRadius: radius.input, borderWidth: check || error ? 2 : 1, borderColor: error ? c.primary : check ? c.accent : c.field, backgroundColor: c.surface, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", gap: 10 }}
       >
         {children ?? <Txt w="medium" color={value ? c.text : c.placeholder} style={{ flex: 1, fontSize: 16 }}>{value || placeholder}</Txt>}
         {icon ? <Ionicons name={icon} size={20} color={c.muted} /> : null}
       </Pressable>
+      {error ? <Txt v="small" w="semibold" color={c.warnText} accessibilityRole="alert">{error}</Txt> : hint ? <Txt v="small" color={c.muted}>{hint}</Txt> : null}
     </View>
   );
 }
 
 /** Pick one from a list in a bottom sheet (states, durations…), with search for long lists. */
-export function Select<T extends string>({ label, value, options, onChange, placeholder = "Choose" }: {
+export function Select<T extends string>({ label, value, options, onChange, placeholder = "Choose", check, error, hint }: {
   label: string; value: T | ""; options: { value: T; label: string }[]; onChange: (v: T) => void; placeholder?: string;
+  /** Filled in by the AI but not sure: highlighted with a Check tag. */ check?: boolean; error?: string | null; hint?: string;
 }) {
   const { c } = useTheme();
   const [open, setOpen] = useState(false);
@@ -151,7 +158,7 @@ export function Select<T extends string>({ label, value, options, onChange, plac
   const shown = q ? options.filter((o) => o.label.toLowerCase().includes(q.toLowerCase())) : options;
   const current = options.find((o) => o.value === value)?.label ?? "";
   return (<>
-    <FieldLike label={label} value={current} placeholder={placeholder} onPress={() => { setQ(""); setOpen(true); }} icon="chevron-down" />
+    <FieldLike label={label} value={current} placeholder={placeholder} onPress={() => { setQ(""); setOpen(true); }} icon="chevron-down" check={check} error={error} hint={hint} />
     <Sheet open={open} onClose={() => setOpen(false)} title={label}>
       {options.length > 8 && (
         <TextInput
@@ -230,4 +237,17 @@ export function ActionBar({ children }: { children: ReactNode }) {
       {children}
     </View>
   );
+}
+
+/** The native stack header in the app's colours and type (signed-in stack and the New deal wizard). */
+export function useHeaderOptions() {
+  const { c } = useTheme();
+  return {
+    headerStyle: { backgroundColor: c.bg },
+    headerTintColor: c.text,
+    headerTitleStyle: { fontFamily: FONTS.bold, fontSize: 18 },
+    headerShadowVisible: false,
+    headerBackButtonDisplayMode: "minimal" as const,
+    contentStyle: { backgroundColor: c.bg },
+  };
 }

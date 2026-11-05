@@ -18,16 +18,16 @@ const plusDays = (d, n) => new Date(Date.parse(d) + n * 864e5).toISOString().sli
 const GO_LIVE = plusDays(istToday(), 14);
 
 const empty = {
-  brand_name: null, contact_name: null, contact_email: null, contact_whatsapp: null, deliverables: [], other_deliverables: [],
+  brand_name: null, paid_by: null, agency_name: null, billing_state: null, gstin: null, contact_name: null, contact_email: null, contact_whatsapp: null, deliverables: [], other_deliverables: [],
   fee_rupees: null, fee_gst: "not_mentioned", advance_rupees: null, usage_rights: null, go_live_date: null, payment_terms_days: null, unsure: [],
 };
 const FROM_TEXT = {
-  ...empty, brand_name: "Glow Labs", contact_name: "Priya Nair", contact_email: "priya@glowlabs.in", contact_whatsapp: "+91 98765 43210",
+  ...empty, brand_name: "Glow Labs", paid_by: "agency", agency_name: "Spark Agency", billing_state: "Maharashtra", contact_name: "Priya Nair", contact_email: "priya@glowlabs.in", contact_whatsapp: "+91 98765 43210",
   deliverables: [{ key: "Instagram|Reel", quantity: 1 }, { key: "Instagram|Story", quantity: 3 }], other_deliverables: ["Product photos for the website"],
   fee_rupees: 45000, fee_gst: "plus_gst", advance_rupees: 22500, usage_rights: { months: 3, perpetual: false, scope: "organic_paid" },
-  go_live_date: GO_LIVE, payment_terms_days: 30, unsure: ["advance"],
+  go_live_date: GO_LIVE, payment_terms_days: 30, unsure: ["advance", "billing_state"],
 };
-const FROM_IMAGE = { ...empty, brand_name: "Orbit Audio", deliverables: [{ key: "Instagram|Reel", quantity: 2 }], fee_rupees: 30000, payment_terms_days: 50, unsure: ["fee", "payment_terms"] };
+const FROM_IMAGE = { ...empty, brand_name: "Orbit Audio", gstin: "29AAACO1234M1Z2", deliverables: [{ key: "Instagram|Reel", quantity: 2 }], fee_rupees: 30000, payment_terms_days: 50, unsure: ["fee", "payment_terms"] };
 
 // Mock Claude: answers by what was sent (text / image / junk) and records the requests.
 const calls = [];
@@ -59,7 +59,7 @@ async function otpFor(email) {
   throw new Error("no OTP email");
 }
 
-const PASTE = `Hi Asha! Loved your last reel 😍 This is Priya from Glow Labs (priya@glowlabs.in, +91 98765 43210).
+const PASTE = `Hi Asha! Loved your last reel 😍 This is Priya from Spark Agency, a Mumbai-based influencer agency, writing for Glow Labs (priya@glowlabs.in, +91 98765 43210).
 For our serum launch we'd like 1 Reel + 3 Stories, going live in two weeks. Budget is ₹45k + GST.
 We usually pay 50% advance and the rest within 30 days of invoice. Usage on our page + ads for 3 months.
 Could you also send a few product photos for the website?`;
@@ -123,11 +123,15 @@ Could you also send a few product photos for the website?`;
   ok((await page.locator("input[name=go_live]").inputValue()) === GO_LIVE, "go-live date prefilled");
   ok((await page.getByRole("radio", { name: "30 days" }).getAttribute("aria-checked")) === "true", "30-day terms");
   ok((await page.locator(".info").innerText()).includes("Product photos for the website"), "other asks listed, not dropped");
+  ok((await page.getByRole("radio", { name: "An agency" }).getAttribute("aria-checked")) === "true" && (await page.locator("input[name=agency]").inputValue()) === "Spark Agency", "agency that pays prefilled");
+  ok((await page.locator("select[name=brand_state]").inputValue()) === "Maharashtra", "payer's state read from 'Mumbai-based'");
+  ok(!!(await page.getByText("Agency's state (they're invoiced)").count()), "state label says it's the agency's");
+  ok(req.body.system.includes("billing_state") && req.body.system.includes("Bengaluru"), "model is told how to find the payer's state");
 
   const advCard = page.locator(".card", { has: page.locator("input[name=advance_on]") });
   ok(await advCard.evaluate((el) => el.classList.contains("ai-check")), "unsure field (advance) is highlighted");
   ok((await advCard.evaluate((el) => getComputedStyle(el).boxShadow)).includes("rgb"), "highlight is visible (yellow outline)");
-  ok((await page.locator(".ai-check").count()) === 1, "only the unsure field is highlighted");
+  ok((await page.locator(".ai-check").count()) === 2, "only the unsure fields (advance, state) are highlighted");
   await page.screenshot({ path: __dirname + "/.shots/paste-2-form.png", fullPage: true });
   await page.locator("input[name=advance]").fill("20000");
   ok(!(await advCard.evaluate((el) => el.classList.contains("ai-check"))), "highlight clears once the creator edits it");
@@ -139,12 +143,13 @@ Could you also send a few product photos for the website?`;
   ok(!/Glow Labs|serum launch/.test(sql(`select coalesce(string_agg(t::text, ''), '') from (select row_to_json(x) t from audit_log x where user_id='${uid}') s`)), "paste not in the audit log");
 
   console.log("Review and save");
-  await page.locator("select[name=brand_state]").selectOption("Maharashtra");
   await page.getByRole("button", { name: "Save without agreement" }).click();
   await page.waitForURL(/\/deals\/[0-9a-f-]{36}$/, { timeout: 20000 });
   ok(dealCount() === 1, "deal saved only when the creator taps Save");
   const saved = sql(`select fee_paise || ',' || advance_paise || ',' || terms_days || ',' || go_live_date from deals where user_id='${uid}'`);
   ok(saved === `4500000,2000000,30,${GO_LIVE}`, "saved deal has the reviewed values: " + saved);
+  const payer = sql(`select d.paid_by || ',' || b.agency_name || ',' || b.state from deals d join brands b on b.id = d.brand_id where d.user_id='${uid}'`);
+  ok(payer === "agency,Spark Agency,Maharashtra", "saved as paid by the agency, in its state: " + payer);
 
   console.log("Screenshot");
   await page.goto(BASE + "/deals");
@@ -160,6 +165,7 @@ Could you also send a few product photos for the website?`;
   ok((await page.getByLabel(/^Brand/).first().inputValue()) === "Orbit Audio", "brand read from the screenshot");
   ok((await page.getByRole("radio", { name: "Custom" }).getAttribute("aria-checked")) === "true" && (await page.locator("input[aria-label='payment days']").inputValue()) === "50", "50-day terms go to Custom");
   ok((await page.locator(".ai-check").count()) === 2, "fee and terms highlighted");
+  ok((await page.locator("select[name=brand_state]").inputValue()) === "Karnataka" && (await page.locator("input[name=brand_gstin]").inputValue()) === "29AAACO1234M1Z2", "GSTIN read, and its state code (29) fills the state");
   await page.screenshot({ path: __dirname + "/.shots/paste-4-form-from-screenshot.png", fullPage: true });
   ok((await page.locator(".info").innerText()).includes("add the contact") === false && (await page.locator(".info").innerText()).match(/add the|Check everything/), "banner asks to check");
 

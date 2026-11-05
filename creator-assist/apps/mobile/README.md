@@ -38,6 +38,9 @@ Test phone numbers).
     button). Its first screen is the five tabs in `(app)/(tabs)/`; deal, tax and settings pages push
     on top: `deals/new`, `deals/[id]` (+ `agreement`, `invoice`, `reminders`, `payment`, `paid`,
     `escalate`, `notice`), `tax/remind/[brandId]`, `settings/profile|reminders|rates`.
+  - `deals/new/` is the New deal wizard: its own stack of three screens (`index` brand and who
+    pays, `deliverables`, `money` fee and terms) sharing one draft from `src/components/deal-draft.tsx`.
+    Paste a chat fills the draft and returns to the wizard.
 - `src/session.tsx`: the Supabase session plus `me` from `/api/v1/me/bootstrap`, and the remote
   config (feature flags, minimum app version, sign-in methods, support contact) read at start-up.
 - `src/lib/`: API client, SecureStore session storage (Keychain / Keystore, chunked), feature flags

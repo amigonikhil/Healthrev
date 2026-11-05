@@ -1,12 +1,18 @@
 // "Paste deal": what Claude reads out of a pasted brand message or screenshot, cleaned up
 // for the New deal form. Pure, so the form (client) and the extractor (server) share it.
 import { ALL_DELIVERABLES, deliverableKey, USAGE_MAX_MONTHS } from "./deliverables";
+import { STATES, stateByCode, stateByName } from "./states";
+import { GSTIN_RE } from "./validate";
 
 /** Fields the form can highlight as "check this". */
 export const PASTE_FIELDS = [
-  "brand_name", "contact_name", "contact_email", "contact_whatsapp", "deliverables",
+  "brand_name", "paid_by", "billing_state", "contact_name", "contact_email", "contact_whatsapp", "deliverables",
   "fee", "advance", "usage_rights", "go_live_date", "payment_terms",
 ] as const;
+
+/** State names Claude may answer with for billing_state (GST state list). */
+export const STATE_NAMES = STATES.map((s) => s.name) as [string, ...string[]];
+
 export type PasteField = (typeof PASTE_FIELDS)[number];
 
 export const USAGE_SCOPE_VALUES = ["organic_paid", "organic", "paid"] as const;
@@ -14,6 +20,12 @@ export const USAGE_SCOPE_VALUES = ["organic_paid", "organic", "paid"] as const;
 /** Raw shape Claude returns (structured output); numbers in rupees. */
 export type RawExtraction = {
   brand_name: string | null;
+  /** "agency" when an influencer / talent / marketing agency manages and pays for the collab. */
+  paid_by: "brand" | "agency" | null;
+  agency_name: string | null;
+  /** State of whoever is invoiced (the agency when it pays), from "Bengaluru-based", an address or a GSTIN. */
+  billing_state: string | null;
+  gstin: string | null;
   contact_name: string | null;
   contact_email: string | null;
   contact_whatsapp: string | null;
@@ -31,6 +43,12 @@ export type RawExtraction = {
 /** What the New deal form is prefilled with. Amounts stay in rupees, as typed in the form. */
 export type PastedDeal = {
   brand: string;
+  /** null = the message doesn't say who pays. */
+  paidBy: "brand" | "agency" | null;
+  agency: string;
+  /** A name from STATES, or "" when unknown. */
+  state: string;
+  gstin: string;
   contactName: string;
   contactEmail: string;
   contactWhatsapp: string;
@@ -74,6 +92,19 @@ export function normalizeExtraction(raw: RawExtraction, today: string): PastedDe
     deliverables.set(d.key, Math.min(max, (deliverables.get(d.key) ?? 0) + q));
   }
 
+  // Who pays, and the state of whoever is invoiced (decides IGST vs CGST + SGST).
+  const agency = clean(raw.agency_name);
+  let paidBy = raw.paid_by === "agency" || raw.paid_by === "brand" ? raw.paid_by : null;
+  if (paidBy === "agency" && !agency) unsure.add("paid_by");
+  if (!paidBy && agency) { paidBy = "agency"; unsure.add("paid_by"); }
+  const gstinRaw = clean(raw.gstin, 20).toUpperCase().replace(/\s/g, "");
+  const gstin = GSTIN_RE.test(gstinRaw) ? gstinRaw : "";
+  let state = stateByName(raw.billing_state)?.name ?? "";
+  if (raw.billing_state && !state) unsure.add("billing_state");
+  // A GSTIN's first two digits are the state code: trust it over a guess from a city.
+  const fromGstin = gstin ? stateByCode(gstin.slice(0, 2))?.name : undefined;
+  if (fromGstin && fromGstin !== state) { if (state) unsure.add("billing_state"); state = fromGstin; }
+
   const fee = money(raw.fee_rupees);
   let advance = money(raw.advance_rupees);
   if (advance && fee && advance > fee) { advance = null; unsure.add("advance"); unsure.add("fee"); }
@@ -94,23 +125,23 @@ export function normalizeExtraction(raw: RawExtraction, today: string): PastedDe
   if (termsDays !== null && (termsDays < 1 || termsDays > 365)) { termsDays = null; unsure.add("payment_terms"); }
 
   const out: Omit<PastedDeal, "unsure" | "missing"> = {
-    brand: clean(raw.brand_name), contactName: clean(raw.contact_name), contactEmail, contactWhatsapp,
+    brand: clean(raw.brand_name), paidBy, agency, state, gstin, contactName: clean(raw.contact_name), contactEmail, contactWhatsapp,
     deliverables: [...deliverables].map(([key, quantity]) => ({ key, quantity })),
     otherDeliverables: raw.other_deliverables.map((s) => clean(s, 80)).filter(Boolean).slice(0, 10),
     fee, feeGst: raw.fee_gst, advance, usage, goLive, termsDays,
   };
   const filled: Record<PasteField, boolean> = {
-    brand_name: !!out.brand, contact_name: !!out.contactName, contact_email: !!out.contactEmail, contact_whatsapp: !!out.contactWhatsapp,
+    brand_name: !!out.brand, paid_by: out.paidBy !== null, billing_state: !!out.state, contact_name: !!out.contactName, contact_email: !!out.contactEmail, contact_whatsapp: !!out.contactWhatsapp,
     deliverables: out.deliverables.length > 0, fee: out.fee !== null, advance: out.advance !== null, usage_rights: out.usage !== null,
     go_live_date: out.goLive !== null, payment_terms: out.termsDays !== null,
   };
   return {
     ...out,
     unsure: PASTE_FIELDS.filter((f) => unsure.has(f)),
-    missing: (["brand_name", "deliverables", "fee"] as const).filter((f) => !filled[f]),
+    missing: (["brand_name", "billing_state", "deliverables", "fee"] as const).filter((f) => !filled[f]),
   };
 }
 
 /** True when the paste had nothing deal-like in it. */
 export const isEmptyExtraction = (d: PastedDeal) =>
-  !d.brand && !d.contactName && !d.contactEmail && !d.contactWhatsapp && !d.deliverables.length && d.fee === null && d.advance === null && !d.usage && !d.goLive && d.termsDays === null;
+  !d.brand && !d.agency && !d.state && !d.contactName && !d.contactEmail && !d.contactWhatsapp && !d.deliverables.length && d.fee === null && d.advance === null && !d.usage && !d.goLive && d.termsDays === null;

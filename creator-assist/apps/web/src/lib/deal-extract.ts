@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod/v4";
 import { ALL_DELIVERABLES, deliverableKey } from "@creator-assist/shared/deliverables";
-import { PASTE_FIELDS, USAGE_SCOPE_VALUES, type RawExtraction } from "@creator-assist/shared/pasted-deal";
+import { PASTE_FIELDS, STATE_NAMES, USAGE_SCOPE_VALUES, type RawExtraction } from "@creator-assist/shared/pasted-deal";
 
 // Reads a brand's message or screenshot into New deal fields. Nothing here is stored:
 // the text/image lives only for this request and is never logged.
@@ -12,6 +12,10 @@ const KEYS = ALL_DELIVERABLES.map(deliverableKey) as [string, ...string[]];
 
 const Extraction = z.object({
   brand_name: z.string().nullable().describe("Brand the creator is working for (not the agency, not the creator)"),
+  paid_by: z.enum(["brand", "agency"]).nullable().describe("Who manages the collab and pays the creator"),
+  agency_name: z.string().nullable().describe("Influencer / talent / marketing agency handling the deal, if any"),
+  billing_state: z.enum(STATE_NAMES).nullable().describe("Indian state or UT of whoever pays the creator (the agency if an agency pays)"),
+  gstin: z.string().nullable().describe("GSTIN of whoever pays, if given"),
   contact_name: z.string().nullable().describe("Person at the brand or agency handling the deal"),
   contact_email: z.string().nullable(),
   contact_whatsapp: z.string().nullable().describe("Phone / WhatsApp number of the contact, digits with country code if given"),
@@ -38,6 +42,9 @@ The creator will review every field before saving, so leave a field null rather 
 
 Field guidance:
 - brand_name: the brand being promoted. If an agency is writing on the brand's behalf, still give the brand.
+- paid_by / agency_name: "agency" when an influencer, talent or marketing agency is running the collab for the brand ("we're X, an influencer agency, reaching out on behalf of Y", an agency signature, "the agency will process payment"); give its name in agency_name. "brand" when the brand itself is writing and paying. null if you can't tell.
+- billing_state: the Indian state or union territory of whoever pays the creator: the agency when an agency pays, otherwise the brand. Read it from phrases like "a Bengaluru-based skincare brand" or "Mumbai-based influencer agency", an office address, a signature, or a GSTIN (its first two digits are the GST state code). Map cities to states (Bengaluru/Bangalore → Karnataka, Mumbai/Pune → Maharashtra, Gurugram/Gurgaon → Haryana, Noida → Uttar Pradesh, New Delhi → Delhi, Hyderabad → Telangana, Chennai → Tamil Nadu, Kolkata → West Bengal, Ahmedabad → Gujarat, Kochi → Kerala, Jaipur → Rajasthan). Mark it unsure when you inferred it from a city, or when only the brand's location is given but an agency pays.
+- gstin: the payer's GSTIN exactly as written, if one appears.
 - deliverables: map each requested piece of content to a key from this list and give the quantity. Put anything that fits none of them in other_deliverables instead.
 ${DELIVERABLE_LIST}
 - fee_rupees: the final agreed total fee as a plain number of rupees (45k = 45000, 1.2L or 1.2 lakh = 120000). If several amounts appear, use the latest one both sides seem to agree on and mark fee unsure. fee_gst says whether that amount is "+ GST" or "inclusive of GST".

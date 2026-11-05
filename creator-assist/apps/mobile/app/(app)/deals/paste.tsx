@@ -63,7 +63,9 @@ export default function PasteChat() {
       const { deal } = await api.deals.extract(form);
       setPasted(deal);
       setText(""); setShot(null);
-      router.replace("/deals/new");
+      // Back onto the New deal wizard it was opened from (which picks the deal up), or opens
+      // the wizard in place of this screen when the chat was shared in from another app.
+      router.dismissTo("/deals/new");
     } catch (e) { setErr(errorText(e)); setBusy(false); }
   }
 

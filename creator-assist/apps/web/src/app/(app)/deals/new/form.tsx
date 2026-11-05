@@ -59,8 +59,9 @@ export function DealForm({ tax, creator, brands, today }: {
       ...(saved ?? b), name: saved?.name ?? p.brand,
       contact_name: p.contactName || saved?.contact_name || "", contact_email: p.contactEmail || saved?.contact_email || "",
       contact_whatsapp: p.contactWhatsapp || saved?.contact_whatsapp || "",
+      agency_name: p.agency || saved?.agency_name || "", state: p.state || saved?.state || "", gstin: p.gstin || saved?.gstin || "",
     }));
-    if (saved?.agency_name) setPaidBy("agency");
+    if (p.paidBy === "agency" || (!p.paidBy && saved?.agency_name)) setPaidBy("agency");
     setPicked(Object.fromEntries(p.deliverables.map((d) => [d.key, true])));
     setQty(Object.fromEntries(p.deliverables.map((d) => [d.key, d.quantity])));
     if (p.usage) { setUsage(true); setMonths(p.usage.months); setPerpetual(p.usage.perpetual); setScope(p.usage.scope); }
@@ -115,19 +116,19 @@ export function DealForm({ tax, creator, brands, today }: {
       </label>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <span className="sub" style={{ fontWeight: 600 }}>Who pays you?</span>
-        <Seg name="paid_by" label="Who pays you?" value={paidBy} onChange={setPaidBy} options={[{ value: "brand", label: "Brand directly" }, { value: "agency", label: "An agency" }]} />
+        <Seg name="paid_by" label="Who pays you?" value={paidBy} onChange={(v) => { touch("paid_by"); setPaidBy(v); }} options={[{ value: "brand", label: "Brand directly" }, { value: "agency", label: "An agency" }]} />
       </div>
-      {paidBy === "agency" && <label className="f">Agency name<input name="agency" value={brand.agency_name} onChange={(e) => set("agency_name", e.target.value)} placeholder="Spark Agency" required /></label>}
+      {paidBy === "agency" && <label className={`f${check("paid_by") ? " ai-check" : ""}`}><Lab f="paid_by" on={check}>Agency name</Lab><input name="agency" value={brand.agency_name} onChange={(e) => { touch("paid_by"); set("agency_name", e.target.value); }} placeholder="Spark Agency" required /></label>}
       <label className={`f${check("contact_name") ? " ai-check" : ""}`}><Lab f="contact_name" on={check}>{paidBy === "agency" ? "Agency contact" : "Brand contact"}</Lab><input name="contact_name" value={brand.contact_name} onChange={(e) => { touch("contact_name"); set("contact_name", e.target.value); }} placeholder="Arjun Mehta" autoComplete="off" /></label>
       <label className={`f${check("contact_email") ? " ai-check" : ""}`}><Lab f="contact_email" on={check}>Contact email</Lab><input name="contact_email" type="email" value={brand.contact_email} onChange={(e) => { touch("contact_email"); set("contact_email", e.target.value); }} placeholder="arjun@voltra.in" autoComplete="off" /></label>
       <label className={`f${check("contact_whatsapp") ? " ai-check" : ""}`}><Lab f="contact_whatsapp" on={check}>Contact WhatsApp</Lab><input name="contact_whatsapp" inputMode="tel" value={brand.contact_whatsapp} onChange={(e) => { touch("contact_whatsapp"); set("contact_whatsapp", e.target.value); }} placeholder="+91 90000 12345" autoComplete="off" /></label>
-      <label className="f">Brand&apos;s state
-        <select name="brand_state" value={brand.state} onChange={(e) => set("state", e.target.value)} required>
+      <label className={`f${check("billing_state") ? " ai-check" : ""}`}><Lab f="billing_state" on={check}>{paidBy === "agency" ? "Agency's state (they're invoiced)" : "Brand's state"}</Lab>
+        <select name="brand_state" value={brand.state} onChange={(e) => { touch("billing_state"); set("state", e.target.value); }} required>
           <option value="" disabled>Choose state</option>
           {STATES.map((x) => <option key={x.code} value={x.name}>{x.name} ({x.code})</option>)}
         </select>
       </label>
-      <label className="f">Brand GSTIN (optional)<input name="brand_gstin" value={brand.gstin} onChange={(e) => set("gstin", e.target.value)} placeholder="29AAACV1234M1Z2" maxLength={15} style={{ textTransform: "uppercase" }} /></label>
+      <label className="f">{paidBy === "agency" ? "Agency GSTIN (optional)" : "Brand GSTIN (optional)"}<input name="brand_gstin" value={brand.gstin} onChange={(e) => set("gstin", e.target.value)} placeholder="29AAACV1234M1Z2" maxLength={15} style={{ textTransform: "uppercase" }} /></label>
       <input type="hidden" name="brand_legal" value={brand.legal_name} />
 
       <details className={`card${check("deliverables") ? " ai-check" : ""}`} open>
@@ -242,7 +243,7 @@ export function DealForm({ tax, creator, brands, today }: {
 }
 
 const MISSING_LABEL: Record<PasteField, string> = {
-  brand_name: "brand", contact_name: "contact", contact_email: "contact email", contact_whatsapp: "WhatsApp number",
+  brand_name: "brand", paid_by: "who pays you", billing_state: "state for GST", contact_name: "contact", contact_email: "contact email", contact_whatsapp: "WhatsApp number",
   deliverables: "deliverables", fee: "fee", advance: "advance", usage_rights: "usage rights", go_live_date: "go-live date", payment_terms: "payment terms",
 };
 const listOf = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs.at(-1)}`);
