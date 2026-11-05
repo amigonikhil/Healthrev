@@ -31,6 +31,12 @@ const config: ExpoConfig = {
   },
   android: {
     package: "in.creatorassist.app",
+    // The app never uses the camera, microphone, shared storage or drawing over other apps;
+    // keep libraries' defaults out of the store build (Play data-safety answers rely on this).
+    blockedPermissions: [
+      "android.permission.CAMERA", "android.permission.RECORD_AUDIO", "android.permission.SYSTEM_ALERT_WINDOW",
+      "android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE",
+    ],
     ...(googleServices ? { googleServicesFile: googleServices } : {}),
     intentFilters: [{
       action: "VIEW",
@@ -49,7 +55,9 @@ const config: ExpoConfig = {
     ["expo-image-picker", { photosPermission: "Choose a screenshot of a brand's message to fill in a deal.", cameraPermission: false, microphonePermission: false }],
     ...(SHARE_TARGET ? [["expo-share-intent", {
       iosActivationRules: { NSExtensionActivationSupportsText: true, NSExtensionActivationSupportsWebURLWithMaxCount: 1, NSExtensionActivationSupportsImageWithMaxCount: 1 },
-      iosShareExtensionName: "Creator Assist",
+      // Shown under the icon in the share sheet. (It also names the extension target, so it
+      // can't be just "Creator Assist": that's the app target's name.)
+      iosShareExtensionName: "Add to Creator Assist",
       androidIntentFilters: ["text/*", "image/*"],
     }] as [string, Record<string, unknown>]] : []),
   ],
