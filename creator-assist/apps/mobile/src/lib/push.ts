@@ -47,10 +47,13 @@ export async function turnOnPush(): Promise<PushState> {
 
 /** Stops pushes to this phone (Settings switch, or sign-out). */
 export async function turnOffPush(): Promise<void> {
-  const token = await SecureStore.getItemAsync(TOKEN_KEY);
-  if (!token) return;
-  try { await api.push.unregister(token); } catch { /* signed out already: the server drops it on next send */ }
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  if (Platform.OS === "web") return;
+  try {
+    const token = await SecureStore.getItemAsync(TOKEN_KEY);
+    if (!token) return;
+    try { await api.push.unregister(token); } catch { /* signed out already: the server drops it on next send */ }
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+  } catch { /* never block signing out */ }
 }
 
 /** At start-up: re-register if notifications are on (tokens can change). Never prompts. */

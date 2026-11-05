@@ -23,7 +23,11 @@ export async function lockKind(): Promise<LockKind> {
   return { available: hw && enrolled, label };
 }
 
-export const lockEnabled = async () => (await SecureStore.getItemAsync(KEY)) === "1";
+/** Is the lock switched on? Never throws (no Keychain / Keystore means no lock). */
+export async function lockEnabled(): Promise<boolean> {
+  if (Platform.OS === "web") return false;
+  try { return (await SecureStore.getItemAsync(KEY)) === "1"; } catch { return false; }
+}
 
 const unlock = (prompt = "Unlock Creator Assist") =>
   LocalAuthentication.authenticateAsync({ promptMessage: prompt, cancelLabel: "Cancel", disableDeviceFallback: false });
