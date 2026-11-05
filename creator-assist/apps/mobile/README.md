@@ -94,6 +94,21 @@ npx eas-cli build --platform ios --profile preview
 
 Then open the link on the iPhone to install. After a later production build, TestFlight works too.
 
+### Pushing a new version to a test build (no reinstall)
+
+Builds include EAS Update, so JavaScript changes reach phones over the air. From `apps/mobile`, with
+`.env` copied from `.env.example`:
+
+```bash
+git pull origin native-app
+npx eas-cli update --channel preview --message "what changed"
+```
+
+Close and reopen the app twice: the first launch downloads the update, the next one runs it.
+Updates only reach builds of the same app version (`version` in `app.config.ts`). Anything that
+adds or changes native code (a new Expo module, permissions, the share target, icons) needs a new
+build instead.
+
 `--profile development` makes a development build instead: it also has the share target and
 loads JavaScript from `pnpm --filter @creator-assist/mobile start` on your computer, so changes
 show up without rebuilding.

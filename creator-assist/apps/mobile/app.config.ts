@@ -16,6 +16,9 @@ const SHARE_TARGET = process.env.SHARE_TARGET === "1";
 /** FCM (Android push): path to google-services.json from the Firebase project (an EAS file env var; kept out of git). */
 const googleServices = process.env.GOOGLE_SERVICES_JSON;
 
+/** The EAS project on expo.dev (builds, push tokens, over-the-air updates). Public. */
+const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID || "037679d5-c8ff-429a-8d5b-6403a5a0fb40";
+
 const config: ExpoConfig = {
   name: "Creator Assist",
   // Must match the EAS project's slug on expo.dev (project 037679d5-…).
@@ -24,6 +27,10 @@ const config: ExpoConfig = {
   version: "1.0.0",
   orientation: "portrait",
   userInterfaceStyle: "automatic",
+  // Over-the-air JavaScript updates (EAS Update). An update only reaches builds with the same
+  // app version, so anything that changes native code ships as a new build with a new version.
+  runtimeVersion: { policy: "appVersion" },
+  updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}`, checkAutomatically: "ON_LOAD", fallbackToCacheTimeout: 0 },
   ios: {
     bundleIdentifier: "in.creatorassist.app",
     supportsTablet: false,
@@ -65,7 +72,7 @@ const config: ExpoConfig = {
   experiments: { typedRoutes: true },
   extra: {
     // The EAS project (expo.dev). Push tokens and EAS Build / Submit use it.
-    eas: { projectId: process.env.EAS_PROJECT_ID || "037679d5-c8ff-429a-8d5b-6403a5a0fb40" },
+    eas: { projectId: EAS_PROJECT_ID },
     shareTarget: SHARE_TARGET,
   },
 };

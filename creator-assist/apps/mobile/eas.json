@@ -20,23 +20,28 @@
         "EXPO_PUBLIC_API_URL": "https://creator-assist-git-native-app-amigonikhil008-6122.vercel.app/api/v1",
         "APP_LINK_HOST": "creator-assist-git-native-app-amigonikhil008-6122.vercel.app",
         "SHARE_TARGET": "1"
-      }
+      },
+      "channel": "development"
     },
     "preview": {
       "extends": "base",
       "distribution": "internal",
-      "android": { "buildType": "apk" },
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://creator-assist-git-native-app-amigonikhil008-6122.vercel.app/api/v1",
         "APP_LINK_HOST": "creator-assist-git-native-app-amigonikhil008-6122.vercel.app"
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "extends": "base",
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://creator-assist-neon.vercel.app/api/v1"
-      }
+      },
+      "channel": "production"
     }
   },
   "submit": {
