@@ -74,7 +74,18 @@ npx eas-cli build --platform android --profile preview
 When it finishes (about 15 minutes), open the link or scan the QR code on your phone and install
 the APK (allow "install unknown apps" for your browser when asked).
 
-**iPhone** needs the Apple Developer Program ($99 a year, also needed for the App Store):
+**iPhone, free, today: Expo Go.** Install **Expo Go** from the App Store, put the iPhone on the same
+Wi-Fi as your computer, then:
+
+```bash
+cp .env.example .env
+pnpm go            # add --tunnel if the phone and computer aren't on the same network
+```
+
+Scan the QR code with the iPhone camera. The app runs inside Expo Go (not under its own icon), so
+the share target and https links don't apply there; everything else, including Face ID lock, works.
+
+**iPhone, as a real app** needs the Apple Developer Program ($99 a year, also needed for the App Store):
 
 ```bash
 npx eas-cli device:create          # open the link on your iPhone to register it

@@ -6,7 +6,7 @@ import { SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk/700Bold";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack, usePathname, useRouter, type Href } from "expo-router";
-import { ShareIntentProvider } from "expo-share-intent";
+import { ShareIntentModule, ShareIntentProvider } from "expo-share-intent";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
@@ -28,7 +28,8 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({ SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold });
   return (
     <SafeAreaProvider>
-      <ShareIntentProvider options={{ resetOnBackground: true }}>
+      {/* Off where the native share module isn't built in (Expo Go, store builds without the share target). */}
+      <ShareIntentProvider options={{ resetOnBackground: true, disabled: !ShareIntentModule }}>
         <SessionProvider>
           <ToastProvider>
             <Gate fontsLoaded={fontsLoaded} />
