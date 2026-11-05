@@ -63,8 +63,8 @@ const config: ExpoConfig = {
   ],
   experiments: { typedRoutes: true },
   extra: {
-    // From `eas init` (Expo account). Push tokens need it; without it notifications stay off.
-    eas: process.env.EAS_PROJECT_ID ? { projectId: process.env.EAS_PROJECT_ID } : undefined,
+    // The EAS project (expo.dev). Push tokens and EAS Build / Submit use it.
+    eas: { projectId: process.env.EAS_PROJECT_ID || "037679d5-c8ff-429a-8d5b-6403a5a0fb40" },
     shareTarget: SHARE_TARGET,
   },
 };

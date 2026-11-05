@@ -54,7 +54,7 @@ fee and nothing collects payment yet, so they stay hidden even if their flags ar
 
 | Feature | Needs | Where it goes |
 |---|---|---|
-| Push tokens | An Expo account and `eas init` → project ID | `EAS_PROJECT_ID` when building (EAS env) |
+| Push tokens | The EAS project (linked: `037679d5-c8ff-429a-8d5b-6403a5a0fb40`) | `app.config.ts` → `extra.eas.projectId` |
 | Push on iPhone | An APNs key (Apple Developer account) | Uploaded once with `eas credentials` |
 | Push on Android | A Firebase project (free) → `google-services.json` | EAS file env var `GOOGLE_SERVICES_JSON` |
 | Universal links (iOS) | Apple Team ID | `APPLE_TEAM_ID` on the web app (Vercel) |
